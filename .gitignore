@@ -1,0 +1,14 @@
+# ignore all .pyc files
+*.pyc
+# ignore all .pyo files
+*.pyo
+# ignore all files int he __pycache__ directories
+__pycache__/
+try/__pycache__/
+# ignore all .log files
+*.log
+*.html
+*.csv
+*.xlsx
+*.png
+*.exe
