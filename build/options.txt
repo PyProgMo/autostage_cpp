@@ -1,0 +1,6 @@
+DEBUG        = True
+SCAN1000QPOS = True
+USBSN        = 109021162
+LOG_FILE     = scan_log.txt
+string DLL_NAME = E7XX_GCS2_DLL.dll
+errorlog_file = error_log.txt
