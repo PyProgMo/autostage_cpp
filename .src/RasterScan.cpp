@@ -1,5 +1,5 @@
 // RasterScan.cpp
-#include "PIStage.h"
+#include "PIStageProxy.h"
 #include "AndorCamera.h"
 #include <vector>
 #include <fstream>
@@ -23,7 +23,7 @@ struct ScanConfig {
     float  exposureS =  0.001f;// 1 ms per spectrum
 };
 
-void runRasterScan(PIStage& stage, AndorCamera& cam, const ScanConfig& cfg)
+void runRasterScan(PIStageProxy& stage, AndorCamera& cam, const ScanConfig& cfg)
 {
     int nX = (int)std::round((cfg.xStop - cfg.xStart) / cfg.xStep) + 1;
     int nY = (int)std::round((cfg.yStop - cfg.yStart) / cfg.yStep) + 1;
@@ -128,7 +128,7 @@ void runRasterScan(PIStage& stage, AndorCamera& cam, const ScanConfig& cfg)
 // ── main ────────────────────────────────────────────────────────────────────
 int main() {
     try {
-        PIStage stage;
+        PIStageProxy stage;
         stage.loadDLL("E7XX_GCS2_DLL.dll");
         stage.connect("109021162");
 
