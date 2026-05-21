@@ -130,7 +130,7 @@ int main() {
     try {
         PIStage stage;
         stage.loadDLL("E7XX_GCS2_DLL.dll");
-        stage.connect("0123456789");
+        stage.connect("109021162");
 
         AndorCamera cam;
         cam.loadDLL("atmcd64d.dll");
