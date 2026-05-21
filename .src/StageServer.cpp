@@ -10,7 +10,7 @@ void ProcessClient(HANDLE hPipe) {
     bool running = true;
 
     while (running) {
-        IpcMessage req = {0};
+        IpcMessage req = {};
         DWORD bytesRead = 0;
         BOOL result = ReadFile(hPipe, &req, sizeof(req), &bytesRead, NULL);
 
@@ -23,7 +23,7 @@ void ProcessClient(HANDLE hPipe) {
             break;
         }
 
-        IpcMessage res = {0};
+        IpcMessage res = {};
         res.command = req.command;
         res.status = 0;
 

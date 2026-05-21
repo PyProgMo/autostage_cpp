@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <string>
 #include <stdexcept>
+#include <vector>
 
 // ── PI GCS2 function pointer typedefs ─────────────────────────────────────
 typedef int  (__cdecl *FP_ConnectUSB)       (const char* sSerialNum);

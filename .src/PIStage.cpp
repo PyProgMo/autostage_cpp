@@ -4,6 +4,10 @@
 #include <iostream>
 #include <stdexcept>
 
+PIStage::PIStage() {
+    // Constructor
+}
+
 template<typename T>
 T PIStage::loadProc(const char* name) {
     T fp = reinterpret_cast<T>(GetProcAddress(hDll_, name));
@@ -78,8 +82,6 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
     // paramID: 2=Axis, 1=TrigMode, 3=StepSize, 4=StartPos, 5=StopPos, 6=PulseWidth
     const int    lines[]  = { channel, channel, channel, channel, channel, channel };
     const int    params[] = {       2,        1,        3,        4,        5,        6 };
-    const double vals[]   = {     0.0,      0.0,  stepMM, startMM,  stopMM,
-                                  (double)pulseWidthUs };
 
     // Param 2 (axis) needs special handling — axis is a string, 
     // but PI encodes X=1, Y=2, Z=3 as a double

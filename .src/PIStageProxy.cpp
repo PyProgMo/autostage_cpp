@@ -58,67 +58,67 @@ void PIStageProxy::sendCommand(const IpcMessage& msg, IpcMessage& response) {
 }
 
 void PIStageProxy::loadDLL(const std::string& dllPath) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::LoadDLL;
     strncpy(req.strArg, dllPath.c_str(), sizeof(req.strArg) - 1);
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 void PIStageProxy::connect(const std::string& serialNum) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::Connect;
     strncpy(req.strArg, serialNum.c_str(), sizeof(req.strArg) - 1);
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 void PIStageProxy::disconnect() {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::Disconnect;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     try {
         sendCommand(req, res);
     } catch (...) {}
 }
 
 void PIStageProxy::moveAbs(const char* axis, double position) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::MoveAbs;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
     req.dArgs[0] = position;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 double PIStageProxy::getPos(const char* axis) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::GetPos;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
     return res.dArgs[0];
 }
 
 void PIStageProxy::waitOnTarget(const char* axis, int timeoutMs) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::WaitOnTarget;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
     req.iArgs[0] = timeoutMs;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 void PIStageProxy::configureTriggerOutput(int channel, const char* axis,
                             double startMM, double stepMM,
                             double stopMM,  int pulseWidthUs) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::ConfigTriggerOut;
     req.iArgs[0] = channel;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
@@ -127,74 +127,74 @@ void PIStageProxy::configureTriggerOutput(int channel, const char* axis,
     req.dArgs[2] = stopMM;
     req.iArgs[1] = pulseWidthUs;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 void PIStageProxy::enableTriggerOutput(int channel, bool enable) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::EnableTriggerOut;
     req.iArgs[0] = channel;
     req.iArgs[1] = enable ? 1 : 0;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 void PIStageProxy::waitForTriggerInput(int trigChannel, int timeoutMs) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::WaitTriggerIn;
     req.iArgs[0] = trigChannel;
     req.iArgs[1] = timeoutMs;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 void PIStageProxy::setWaitOnGo(const char* axis, int conditionMask) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::SetWaitOnGo;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
     req.iArgs[0] = conditionMask;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 void PIStageProxy::setupDataRecorder(int table, const char* source, int option) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::SetupDataRecorder;
     req.iArgs[0] = table;
     strncpy(req.strArg, source, sizeof(req.strArg) - 1);
     req.iArgs[1] = option;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 void PIStageProxy::setRecordTrigger(int triggerSource, int axis, double thresholdMM) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::SetRecordTrigger;
     req.iArgs[0] = triggerSource;
     req.iArgs[1] = axis;
     req.dArgs[0] = thresholdMM;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 void PIStageProxy::setRecordRate(int cycleDiv) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::SetRecordRate;
     req.iArgs[0] = cycleDiv;
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
 }
 
 std::vector<double> PIStageProxy::readRecorder(int startOffset, int numValues,
                                  const int* tables, int nTables) {
-    IpcMessage req = {0};
+    IpcMessage req = {};
     req.command = IpcCommand::ReadRecorder;
     req.iArgs[0] = startOffset;
     req.iArgs[1] = numValues;
@@ -203,7 +203,7 @@ std::vector<double> PIStageProxy::readRecorder(int startOffset, int numValues,
         req.iArgs[3 + i] = tables[i];
     }
     
-    IpcMessage res = {0};
+    IpcMessage res = {};
     sendCommand(req, res);
     
     std::vector<double> data;
