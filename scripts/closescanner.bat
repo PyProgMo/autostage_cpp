@@ -1,10 +1,8 @@
 @echo off
 
-echo Steppe RasterScan64
-net stop "RasterScan64"
+taskkill /IM RasterScan64.exe /F
 
-echo Stoppe StageServer
-net stop "StageServer"
+taskkill /IM StageServer.exe /F
 
 echo Fertig.
 pause

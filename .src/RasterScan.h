@@ -11,11 +11,11 @@
 struct ScanConfig {
     // Stage geometry
     double xStart     =  0.0;    // mm — scan line start
-    double xStop      =  5.0;    // mm — scan line end
-    double xStep      =  0.001;  // mm — pixel pitch along X (= CTO step)
+    double xStop      =  0.300;  // mm — scan line end (300 µm supported window)
+    double xStep      =  0.001;   // mm — pixel pitch along X (= CTO step)
     double yStart     =  0.0;    // mm — first line
-    double yStop      =  2.0;    // mm — last line
-    double yStep      =  0.001;  // mm — line pitch along Y
+    double yStop      =  0.300;   // mm — last line (300 µm supported window)
+    double yStep      =  0.001;   // mm — line pitch along Y
 
     // Trigger
     int    trigOutCh  =  1;      // CTO/TRO output channel index

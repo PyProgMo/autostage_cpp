@@ -6,6 +6,7 @@
 #include <iostream>
 #include <chrono>
 #include <cmath>
+#include <stdexcept>
 
 // ── Scan parameters ────────────────────────────────────────────────────────
 struct ScanConfig {
@@ -28,8 +29,40 @@ struct ScanConfig {
     float  exposureS =  0.001f;// 1 ms per spectrum
 };
 
+namespace {
+constexpr double kMaxScanMm = 0.300;      // 300 µm
+constexpr double kMinStepMm = 0.000002;   // 2 nm (manual lower bound)
+constexpr double kWarnStepMm = 0.000010;  // 10 nm (practical noise floor)
+
+void validateScanAxis(const char* name, double startMm, double stopMm, double stepMm) {
+    if (startMm < 0.0 || stopMm < 0.0 || startMm > kMaxScanMm || stopMm > kMaxScanMm) {
+        throw std::runtime_error(std::string(name) + ": scan range must stay within 0 to 0.300 mm");
+    }
+    if (stopMm < startMm) {
+        throw std::runtime_error(std::string(name) + ": stop must be greater than or equal to start");
+    }
+    if (stepMm <= 0.0) {
+        throw std::runtime_error(std::string(name) + ": step must be positive");
+    }
+    if (stepMm < kMinStepMm) {
+        throw std::runtime_error(std::string(name) + ": step must be at least 2 nm");
+    }
+    if (stepMm < kWarnStepMm) {
+        std::cerr << "Warning: " << name << " step " << (stepMm * 1e6)
+                  << " nm is below the practical 10 nm noise floor\n";
+    }
+}
+
+void validateScanConfig(const ScanConfig& cfg) {
+    validateScanAxis("X", cfg.xStart, cfg.xStop, cfg.xStep);
+    validateScanAxis("Y", cfg.yStart, cfg.yStop, cfg.yStep);
+}
+} // namespace
+
 void runRasterScan(PIStageProxy& stage, AndorCamera& cam, const ScanConfig& cfg)
 {
+    validateScanConfig(cfg);
+
     int nX = (int)std::round((cfg.xStop - cfg.xStart) / cfg.xStep) + 1;
     int nY = (int)std::round((cfg.yStop - cfg.yStart) / cfg.yStep) + 1;
     int nPix = cam.getXPixels(); // spectral pixels per spectrum
@@ -167,11 +200,11 @@ int main() {
 
         ScanConfig cfg;
         cfg.xStart   = 0.0;
-        cfg.xStop    = 2.0;
-        cfg.xStep    = 0.002;   // 2 µm steps
+        cfg.xStop    = 0.300;   // 300 µm range limit
+        cfg.xStep    = 0.001;   // 1 µm steps (safe default)
         cfg.yStart   = 0.0;
-        cfg.yStop    = 2.0;
-        cfg.yStep    = 0.002;
+        cfg.yStop    = 0.300;   // 300 µm range limit
+        cfg.yStep    = 0.001;
         cfg.exposureS = 0.002f; // 2 ms
 
         runRasterScan(stage, cam, cfg);
