@@ -1,5 +1,6 @@
 // PIStage.cpp
 #include "PIStage.h"
+#include "Logger.h"
 #include <vector>
 #include <iostream>
 #include <stdexcept>
@@ -163,7 +164,9 @@ void PIStage::checkError() {
     if (err != 0) {
         char msg[256] = {};
         pTranslateError(err, msg, sizeof(msg));
-        throw std::runtime_error(std::string("PI Error: ") + msg);
+        std::string message = std::string("PI Error: code=") + std::to_string(err) + " message=" + msg;
+        AppLogger::instance().error(message);
+        throw std::runtime_error(message);
     }
 }
 

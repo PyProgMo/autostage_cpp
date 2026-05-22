@@ -17,6 +17,7 @@ mkdir -p "$SCRIPT_DIR/build"
 -o "$SCRIPT_DIR/build/RasterScan64.exe" \
 "$SCRIPT_DIR/.src/RasterScan.cpp" \
 "$SCRIPT_DIR/.src/PIStageProxy.cpp" \
+"$SCRIPT_DIR/.src/Logger.cpp" \
 "$SCRIPT_DIR/.src/AndorCamera.cpp" \
 -I"$SCRIPT_DIR/.src" \
 -Wall

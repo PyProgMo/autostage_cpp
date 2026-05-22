@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <vector>
 
+struct IpcMessage;
+
 class PIStageProxy {
 public:
     PIStageProxy();

@@ -1,10 +1,14 @@
 // PIStageProxy.cpp
 #include "PIStageProxy.h"
 #include "IpcStructs.h"
+#include "Logger.h"
+
 #include <iostream>
 #include <cstring>
+#include <sstream>
 
 PIStageProxy::PIStageProxy() {
+    AppLogger::instance().info(std::string("PIStageProxy: connecting to pipe ") + PIPE_NAME);
     // Attempt to connect to the named pipe 
     // Wait until the server is available
     while (1) {
@@ -18,17 +22,18 @@ PIStageProxy::PIStageProxy() {
             NULL);
 
         if (hPipe_ != INVALID_HANDLE_VALUE) {
+            AppLogger::instance().info("PIStageProxy: connected to stage pipe");
             break;
         }
 
         if (GetLastError() != ERROR_PIPE_BUSY) {
-            std::cerr << "Could not open pipe. Is StageServer running?\n";
+            AppLogger::instance().error("PIStageProxy: could not open pipe. Is StageServer running?");
             Sleep(1000);
             continue;
         }
 
         if (!WaitNamedPipeA(PIPE_NAME, 1000)) {
-            std::cerr << "Could not open pipe: 1 second wait timed out.\n";
+            AppLogger::instance().error("PIStageProxy: could not open pipe: 1 second wait timed out");
             continue;
         }
     }
@@ -42,7 +47,7 @@ PIStageProxy::~PIStageProxy() {
 }
 
 void PIStageProxy::sendCommand(const IpcMessage& msg, IpcMessage& response) {
-    std::cerr << "PIStageProxy: sending command " << static_cast<int>(msg.command) << "\n";
+    AppLogger::instance().info(std::string("PIStageProxy: sending command ") + ipcMessageSummary(msg));
     // Robust write: ensure entire message is written
     const BYTE* outPtr = reinterpret_cast<const BYTE*>(&msg);
     size_t toWrite = sizeof(IpcMessage);
@@ -50,12 +55,15 @@ void PIStageProxy::sendCommand(const IpcMessage& msg, IpcMessage& response) {
     while (toWrite > 0) {
         if (!WriteFile(hPipe_, outPtr, (DWORD)toWrite, &bytesWritten, NULL)) {
             DWORD err = GetLastError();
-            throw std::runtime_error(std::string("Failed to write to pipe, GLE=") + std::to_string(err));
+            std::string message = std::string("PIStageProxy: failed to write to pipe, GLE=") + std::to_string(err) +
+                                  " cmd=" + ipcCommandName(msg.command);
+            AppLogger::instance().error(message);
+            throw std::runtime_error(message);
         }
         outPtr += bytesWritten;
         toWrite -= bytesWritten;
     }
-    std::cerr << "PIStageProxy: write complete for command " << static_cast<int>(msg.command) << "\n";
+    AppLogger::instance().info(std::string("PIStageProxy: write complete for command ") + ipcCommandName(msg.command));
 
     // Robust read: loop until we have the full response header
     BYTE* inPtr = reinterpret_cast<BYTE*>(&response);
@@ -64,23 +72,35 @@ void PIStageProxy::sendCommand(const IpcMessage& msg, IpcMessage& response) {
     while (toRead > 0) {
         if (!ReadFile(hPipe_, inPtr, (DWORD)toRead, &bytesRead, NULL)) {
             DWORD err = GetLastError();
-            throw std::runtime_error(std::string("Failed to read response from pipe, GLE=") + std::to_string(err));
+            std::string message = std::string("PIStageProxy: failed to read response from pipe, GLE=") + std::to_string(err) +
+                                  " cmd=" + ipcCommandName(msg.command);
+            AppLogger::instance().error(message);
+            throw std::runtime_error(message);
         }
         if (bytesRead == 0) {
-            throw std::runtime_error("Failed to read response from pipe: zero bytes read");
+            std::string message = std::string("PIStageProxy: failed to read response from pipe: zero bytes read cmd=") +
+                                  ipcCommandName(msg.command);
+            AppLogger::instance().error(message);
+            throw std::runtime_error(message);
         }
         inPtr += bytesRead;
         toRead -= bytesRead;
     }
 
-    std::cerr << "PIStageProxy: read complete for command " << static_cast<int>(msg.command) << "\n";
+    AppLogger::instance().info(std::string("PIStageProxy: read complete for command ") + ipcCommandName(msg.command) +
+                               " status=" + std::to_string(response.status));
 
     if (response.status != 0) {
-        throw std::runtime_error(std::string("PIStageProxy: Server returned error status: ") + std::to_string(response.status));
+        std::string message = std::string("PIStageProxy: server returned error status: ") + std::to_string(response.status) +
+                              " cmd=" + ipcCommandName(msg.command) +
+                              " detail='" + response.strArg + "'";
+        AppLogger::instance().error(message);
+        throw std::runtime_error(message);
     }
 }
 
 void PIStageProxy::loadDLL(const std::string& dllPath) {
+    AppLogger::instance().info(std::string("PIStageProxy: loadDLL path='") + dllPath + "'");
     IpcMessage req = {};
     req.command = IpcCommand::LoadDLL;
     strncpy(req.strArg, dllPath.c_str(), sizeof(req.strArg) - 1);
@@ -90,6 +110,7 @@ void PIStageProxy::loadDLL(const std::string& dllPath) {
 }
 
 void PIStageProxy::connect(const std::string& serialNum) {
+    AppLogger::instance().info(std::string("PIStageProxy: connect serial='") + serialNum + "'");
     IpcMessage req = {};
     req.command = IpcCommand::Connect;
     strncpy(req.strArg, serialNum.c_str(), sizeof(req.strArg) - 1);
@@ -99,16 +120,20 @@ void PIStageProxy::connect(const std::string& serialNum) {
 }
 
 void PIStageProxy::disconnect() {
+    AppLogger::instance().info("PIStageProxy: disconnect request");
     IpcMessage req = {};
     req.command = IpcCommand::Disconnect;
     
     IpcMessage res = {};
     try {
         sendCommand(req, res);
-    } catch (...) {}
+    } catch (const std::exception& e) {
+        AppLogger::instance().error(std::string("PIStageProxy: disconnect failed: ") + e.what());
+    }
 }
 
 void PIStageProxy::moveAbs(const char* axis, double position) {
+    AppLogger::instance().info(std::string("PIStageProxy: moveAbs axis=") + axis + " position=" + std::to_string(position));
     IpcMessage req = {};
     req.command = IpcCommand::MoveAbs;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
@@ -119,16 +144,19 @@ void PIStageProxy::moveAbs(const char* axis, double position) {
 }
 
 double PIStageProxy::getPos(const char* axis) {
+    AppLogger::instance().info(std::string("PIStageProxy: getPos axis=") + axis);
     IpcMessage req = {};
     req.command = IpcCommand::GetPos;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
     
     IpcMessage res = {};
     sendCommand(req, res);
+    AppLogger::instance().info(std::string("PIStageProxy: getPos axis=") + axis + " value=" + std::to_string(res.dArgs[0]));
     return res.dArgs[0];
 }
 
 void PIStageProxy::waitOnTarget(const char* axis, int timeoutMs) {
+    AppLogger::instance().info(std::string("PIStageProxy: waitOnTarget axis=") + axis + " timeoutMs=" + std::to_string(timeoutMs));
     IpcMessage req = {};
     req.command = IpcCommand::WaitOnTarget;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
@@ -141,6 +169,12 @@ void PIStageProxy::waitOnTarget(const char* axis, int timeoutMs) {
 void PIStageProxy::configureTriggerOutput(int channel, const char* axis,
                             double startMM, double stepMM,
                             double stopMM,  int pulseWidthUs) {
+    AppLogger::instance().info(std::string("PIStageProxy: configureTriggerOutput channel=") + std::to_string(channel) +
+                               " axis=" + axis +
+                               " startMM=" + std::to_string(startMM) +
+                               " stepMM=" + std::to_string(stepMM) +
+                               " stopMM=" + std::to_string(stopMM) +
+                               " pulseWidthUs=" + std::to_string(pulseWidthUs));
     IpcMessage req = {};
     req.command = IpcCommand::ConfigTriggerOut;
     req.iArgs[0] = channel;
@@ -155,6 +189,8 @@ void PIStageProxy::configureTriggerOutput(int channel, const char* axis,
 }
 
 void PIStageProxy::enableTriggerOutput(int channel, bool enable) {
+    AppLogger::instance().info(std::string("PIStageProxy: enableTriggerOutput channel=") + std::to_string(channel) +
+                               " enable=" + (enable ? "true" : "false"));
     IpcMessage req = {};
     req.command = IpcCommand::EnableTriggerOut;
     req.iArgs[0] = channel;
@@ -165,6 +201,8 @@ void PIStageProxy::enableTriggerOutput(int channel, bool enable) {
 }
 
 void PIStageProxy::waitForTriggerInput(int trigChannel, int timeoutMs) {
+    AppLogger::instance().info(std::string("PIStageProxy: waitForTriggerInput channel=") + std::to_string(trigChannel) +
+                               " timeoutMs=" + std::to_string(timeoutMs));
     IpcMessage req = {};
     req.command = IpcCommand::WaitTriggerIn;
     req.iArgs[0] = trigChannel;
@@ -175,6 +213,7 @@ void PIStageProxy::waitForTriggerInput(int trigChannel, int timeoutMs) {
 }
 
 void PIStageProxy::setWaitOnGo(const char* axis, int conditionMask) {
+    AppLogger::instance().info(std::string("PIStageProxy: setWaitOnGo axis=") + axis + " mask=" + std::to_string(conditionMask));
     IpcMessage req = {};
     req.command = IpcCommand::SetWaitOnGo;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
@@ -185,6 +224,9 @@ void PIStageProxy::setWaitOnGo(const char* axis, int conditionMask) {
 }
 
 void PIStageProxy::setupDataRecorder(int table, const char* source, int option) {
+    AppLogger::instance().info(std::string("PIStageProxy: setupDataRecorder table=") + std::to_string(table) +
+                               " source=" + source +
+                               " option=" + std::to_string(option));
     IpcMessage req = {};
     req.command = IpcCommand::SetupDataRecorder;
     req.iArgs[0] = table;
@@ -196,6 +238,9 @@ void PIStageProxy::setupDataRecorder(int table, const char* source, int option) 
 }
 
 void PIStageProxy::setRecordTrigger(int triggerSource, int axis, double thresholdMM) {
+    AppLogger::instance().info(std::string("PIStageProxy: setRecordTrigger triggerSource=") + std::to_string(triggerSource) +
+                               " axis=" + std::to_string(axis) +
+                               " thresholdMM=" + std::to_string(thresholdMM));
     IpcMessage req = {};
     req.command = IpcCommand::SetRecordTrigger;
     req.iArgs[0] = triggerSource;
@@ -207,6 +252,7 @@ void PIStageProxy::setRecordTrigger(int triggerSource, int axis, double threshol
 }
 
 void PIStageProxy::setRecordRate(int cycleDiv) {
+    AppLogger::instance().info(std::string("PIStageProxy: setRecordRate cycleDiv=") + std::to_string(cycleDiv));
     IpcMessage req = {};
     req.command = IpcCommand::SetRecordRate;
     req.iArgs[0] = cycleDiv;
@@ -217,6 +263,9 @@ void PIStageProxy::setRecordRate(int cycleDiv) {
 
 std::vector<double> PIStageProxy::readRecorder(int startOffset, int numValues,
                                  const int* tables, int nTables) {
+    AppLogger::instance().info(std::string("PIStageProxy: readRecorder startOffset=") + std::to_string(startOffset) +
+                               " numValues=" + std::to_string(numValues) +
+                               " nTables=" + std::to_string(nTables));
     IpcMessage req = {};
     req.command = IpcCommand::ReadRecorder;
     req.iArgs[0] = startOffset;
@@ -234,8 +283,11 @@ std::vector<double> PIStageProxy::readRecorder(int startOffset, int numValues,
         data.resize(res.dataSize / sizeof(double));
         DWORD bytesRead = 0;
         if (!ReadFile(hPipe_, data.data(), res.dataSize, &bytesRead, NULL)) {
-            throw std::runtime_error("Failed to read variable data from pipe");
+            std::string message = "PIStageProxy: failed to read variable data from pipe";
+            AppLogger::instance().error(message);
+            throw std::runtime_error(message);
         }
+        AppLogger::instance().info(std::string("PIStageProxy: readRecorder payload bytes=") + std::to_string(bytesRead));
     }
     return data;
 }

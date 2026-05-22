@@ -10,4 +10,4 @@ mkdir -p "$SCRIPT_DIR/build"
 cd "$SCRIPT_DIR/build"
 
 echo "Compiling  (32-bit)..."
-g++ -m32 -O2 -std=gnu++11 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lpthread -Wl,-Bdynamic -lpthread -Wl,-Bdynamic -o ./StageServer.exe ../.src/StageServer.cpp ../.src/PIStage.cpp -I../.src -Wall
+g++ -m32 -O2 -std=gnu++11 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lpthread -Wl,-Bdynamic -lpthread -Wl,-Bdynamic -o ./StageServer.exe ../.src/StageServer.cpp ../.src/PIStage.cpp ../.src/Logger.cpp -I../.src -Wall

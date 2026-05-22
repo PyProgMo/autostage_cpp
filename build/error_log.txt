@@ -1,0 +1,58 @@
+2026-05-22 17:27:26.886 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
+2026-05-22 17:27:27.889 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
+2026-05-22 17:27:28.900 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
+2026-05-22 17:27:29.911 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
+2026-05-22 17:27:30.920 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
+2026-05-22 17:27:31.925 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
+2026-05-22 17:27:32.933 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
+2026-05-22 17:27:55.111 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.112 [ERROR] StageServer: exception executing command ConfigTriggerOut: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.112 [ERROR] StageServer: ConfigTriggerOut/EnableTriggerOut failed; continuing without hardware CTO
+2026-05-22 17:27:55.112 [ERROR] PIStageProxy: server returned error status: -1 cmd=ConfigTriggerOut detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.113 [ERROR] Hardware sync unavailable: PIStageProxy: server returned error status: -1 cmd=ConfigTriggerOut detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.116 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.116 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.117 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.118 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.118 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.119 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.120 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.120 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.120 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.126 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.126 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.127 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.128 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.128 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.128 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.130 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.130 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.130 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.204 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.205 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.205 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.206 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.207 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.207 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.208 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.208 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.209 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.214 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.214 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.214 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.215 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.215 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.216 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.217 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.217 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.217 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.321 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.321 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.321 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.322 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.323 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.323 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.324 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.324 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-22 17:27:55.324 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 17:27:55.834 [ERROR] RasterScan: fatal: Andor error in GetImages16: code 20024
