@@ -126,7 +126,6 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
     double valsC[] = { 1.0, stepMM, startMM, stopMM, (double)pulseWidthUs, axisCode };
 
     if (pCTO(id_, lines, paramsA, valsA, 6)) return;
-    if (pCTO(id_, lines, paramsA, valsA, 6)) return;
     else {
         int err = pGetError ? pGetError(id_) : 0;
         char msg[256] = {};

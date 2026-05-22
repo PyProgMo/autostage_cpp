@@ -513,3 +513,30 @@ tatus=0
 2026-05-22 17:37:18.139 [INFO] PIStageProxy: read complete for command GetPos status=-1
 2026-05-22 17:37:18.139 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
 2026-05-22 17:37:18.139 [INFO] RasterScan: pose after line X move command X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-22 22:46:14.203 [INFO] Starting StageServer (32-bit)
+2026-05-22 22:46:14.205 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-22 22:46:18.938 [INFO] RasterScan: starting
+2026-05-22 22:46:18.939 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-22 22:46:18.940 [INFO] PIStageProxy: connected to stage pipe
+2026-05-22 22:46:18.940 [INFO] StageServer: client connected
+2026-05-22 22:46:18.940 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-22 22:46:18.940 [INFO] StageServer: client handler started
+2026-05-22 22:46:18.940 [INFO] PIStageProxy: sending command LoadDLL status=0 str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-22 22:46:18.940 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-22 22:46:18.940 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-22 22:46:18.941 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-22 22:46:19.683 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-22 22:46:19.683 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-22 22:46:19.684 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-22 22:46:19.684 [INFO] PIStageProxy: sending command Connect status=0 str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-22 22:46:19.684 [INFO] PIStageProxy: write complete for command Connect
+2026-05-22 22:46:19.684 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-22 22:46:19.685 [INFO] StageServer: Connect serial='109021162'
+2026-05-22 22:46:19.690 [ERROR] StageServer: exception executing command Connect: PI stage connection failed
+2026-05-22 22:46:19.690 [INFO] StageServer: response sent for Connect status=-1
+2026-05-22 22:46:19.690 [INFO] PIStageProxy: read complete for command Connect status=-1
+2026-05-22 22:46:19.691 [ERROR] PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed'
+2026-05-22 22:46:19.691 [ERROR] RasterScan: fatal: PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed'
+2026-05-22 22:46:19.691 [INFO] StageServer: client disconnected
+2026-05-22 22:46:19.694 [INFO] StageServer: client disconnected, restarting loop...
+2026-05-22 22:46:19.694 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...

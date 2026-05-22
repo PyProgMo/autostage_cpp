@@ -130,3 +130,6 @@
 2026-05-22 17:37:18.139 [ERROR] PI Error: code=1 message=Parameter syntax error
 2026-05-22 17:37:18.139 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
 2026-05-22 17:37:18.139 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-22 22:46:19.690 [ERROR] StageServer: exception executing command Connect: PI stage connection failed
+2026-05-22 22:46:19.691 [ERROR] PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed'
+2026-05-22 22:46:19.691 [ERROR] RasterScan: fatal: PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed'
