@@ -10,17 +10,28 @@ PIStage::PIStage() {
 
 template<typename T>
 T PIStage::loadProc(const char* name) {
-    T fp = reinterpret_cast<T>(GetProcAddress(hDll_, name));
-    if (!fp) {
-        // Try with E7XX_ prefix if PI_ was requested
-        std::string sName = name;
-        if (sName.substr(0, 3) == "PI_") {
-            sName.replace(0, 3, "E7XX_");
-            fp = reinterpret_cast<T>(GetProcAddress(hDll_, sName.c_str()));
-        }
+    std::vector<std::string> candidates;
+    candidates.emplace_back(name);
+    std::string sName(name);
+
+    if (sName.rfind("PI_", 0) == 0) {
+        std::string base = sName.substr(3);
+        candidates.emplace_back("E7XX_" + base);
+        candidates.emplace_back("E7XX_q" + base);
+        candidates.emplace_back("q" + base);
+        candidates.emplace_back(base);
+    } else {
+        candidates.emplace_back("E7XX_" + sName);
+        candidates.emplace_back("E7XX_q" + sName);
+        candidates.emplace_back("q" + sName);
     }
-    if (!fp) throw std::runtime_error(std::string("Cannot find: ") + name);
-    return fp;
+
+    for (const auto& c : candidates) {
+        T fp = reinterpret_cast<T>(GetProcAddress(hDll_, c.c_str()));
+        if (fp) return fp;
+    }
+
+    throw std::runtime_error(std::string("Cannot find: ") + name);
 }
 
 void PIStage::loadDLL(const std::string& dllPath) {
