@@ -13,6 +13,8 @@ typedef BOOL (__stdcall *FP_IsConnected)      (int id);
 typedef BOOL (__stdcall *FP_CloseConnection)  (int id);
 
 typedef BOOL (__stdcall *FP_MOV)  (int id, const char* axes, const double* values);
+typedef BOOL (__stdcall *FP_SVO)  (int id, const char* axes, const BOOL* enabled);
+typedef BOOL (__stdcall *FP_GcsCommandset) (int id, const char* command);
 typedef BOOL (__stdcall *FP_qPOS) (int id, const char* axes, double* values);
 typedef BOOL (__stdcall *FP_IsMoving)(int id, const char* axes, BOOL* moving);
 typedef BOOL (__stdcall *FP_WTR)  (int id, int nTriggerInput, int nTimeout_ms, BOOL bIgnoreRange);
@@ -57,6 +59,7 @@ public:
     void connect(const std::string& serialNum);
     void disconnect();
 
+    void enableServo(const char* axis, bool enable);
     void moveAbs(const char* axis, double position);
     double getPos(const char* axis);
     void waitOnTarget(const char* axis, int timeoutMs = 10000);
@@ -91,6 +94,8 @@ private:
     FP_IsConnected      pIsConnected      = nullptr;
     FP_CloseConnection  pCloseConnection  = nullptr;
     FP_MOV              pMOV              = nullptr;
+    FP_SVO              pSVO              = nullptr;
+    FP_GcsCommandset    pGcsCommandset    = nullptr;
     FP_qPOS             pqPOS             = nullptr;
     FP_IsMoving         pIsMoving         = nullptr;
     FP_WTR              pWTR              = nullptr;

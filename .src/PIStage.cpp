@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+#include <cstdio>
 
 PIStage::PIStage() {
     // Constructor
@@ -43,6 +44,8 @@ void PIStage::loadDLL(const std::string& dllPath) {
     pIsConnected     = loadProc<FP_IsConnected>     ("PI_IsConnected");
     pCloseConnection = loadProc<FP_CloseConnection> ("PI_CloseConnection");
     pMOV             = loadProc<FP_MOV>             ("PI_MOV");
+    pSVO             = loadProc<FP_SVO>             ("PI_SVO");
+    pGcsCommandset   = loadProc<FP_GcsCommandset>   ("PI_GcsCommandset");
     pqPOS            = loadProc<FP_qPOS>            ("PI_qPOS");
     pIsMoving        = loadProc<FP_IsMoving>        ("PI_IsMoving");
     pWTR             = loadProc<FP_WTR>             ("PI_WTR");
@@ -62,8 +65,15 @@ void PIStage::connect(const std::string& serialNum) {
     if (id_ < 0) throw std::runtime_error("PI stage connection failed");
 }
 
+void PIStage::enableServo(const char* axis, bool enable) {
+    std::string cmd = std::string("SVO ") + axis + " " + (enable ? "1" : "0");
+    if (!pGcsCommandset(id_, cmd.c_str())) checkError();
+}
+
 void PIStage::moveAbs(const char* axis, double position) {
-    if (!pMOV(id_, axis, &position)) checkError();
+    char buf[128];
+    std::snprintf(buf, sizeof(buf), "MOV %s %.17g", axis, position);
+    if (!pGcsCommandset(id_, buf)) checkError();
 }
 
 double PIStage::getPos(const char* axis) {

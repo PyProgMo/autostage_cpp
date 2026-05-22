@@ -37,6 +37,11 @@ void ProcessClient(HANDLE hPipe) {
                 break;
             case IpcCommand::Connect:
                 stage.connect(req.strArg);
+                try {
+                    stage.enableServo("X", true);
+                } catch (const std::exception& e) {
+                    std::cerr << "Servo enable failed: " << e.what() << "\n";
+                }
                 std::cout << "Connected to stage.\n";
                 break;
             case IpcCommand::Disconnect:
@@ -116,7 +121,7 @@ void ProcessClient(HANDLE hPipe) {
             if (req.command == IpcCommand::ConfigTriggerOut ||
                 req.command == IpcCommand::EnableTriggerOut) {
                 std::cerr << "ConfigTriggerOut failed; continuing without hardware CTO.\n";
-                res.status = 0; // pretend success so client can continue for testing
+                res.status = -1; // let the client fall back to software timing
                 strncpy(res.strArg, e.what(), sizeof(res.strArg) - 1);
             } else {
                 res.status = -1;

@@ -19,8 +19,12 @@ struct ScanConfig {
     int    trigCh    =  1;     // CTO output channel
     int    trigInCh  =  1;     // WTR input channel (Andor "frame done")
     int    pulseUs   =  50;    // CTO pulse width in µs
+    bool   useHardwareSync = true; // try CTO/TRO + WGO path first
+    bool   allowSoftwareFallback = true; // fall back to unsynchronized scan if hardware sync fails
+    bool   useRecorder = false; // enable only after recorder path is validated
 
     // Andor
+    AndorCamera::TriggerMode triggerMode = AndorCamera::TriggerMode::FastExternal;
     float  exposureS =  0.001f;// 1 ms per spectrum
 };
 
@@ -33,24 +37,43 @@ void runRasterScan(PIStageProxy& stage, AndorCamera& cam, const ScanConfig& cfg)
     std::cout << "Scan: " << nX << " x " << nY
               << " points, " << nPix << " spectral px\n";
 
+    bool hardwareSync = cfg.useHardwareSync;
+
     // ── 1. Configure PI output trigger (CTO) ─────────────────────────────
     // Fire one TTL pulse every xStep mm along X → triggers one Andor exposure
-    stage.configureTriggerOutput(cfg.trigCh, "X",
-                                 cfg.xStart, cfg.xStep,
-                                 cfg.xStop,  cfg.pulseUs);
-    stage.enableTriggerOutput(cfg.trigCh, true);
+    if (hardwareSync) {
+        try {
+            stage.configureTriggerOutput(cfg.trigCh, "X",
+                                         cfg.xStart, cfg.xStep,
+                                         cfg.xStop,  cfg.pulseUs);
+            stage.enableTriggerOutput(cfg.trigCh, true);
+        } catch (const std::exception& e) {
+            std::cerr << "Hardware sync unavailable: " << e.what() << "\n";
+            if (!cfg.allowSoftwareFallback) throw;
+            hardwareSync = false;
+        }
+    }
 
-    // ── 2. Configure Andor: FVB kinetic, fast-external trigger ───────────
-    // nX spectra per line (one per CTO pulse)
-    cam.configureFVBKinetic(cfg.exposureS, nX);
+    // ── 2. Configure Andor: FVB kinetic with trigger fallback ────────────
+    // Prefer the requested mode, but fall back if this driver/camera rejects it.
+    try {
+        cam.configureFVBKinetic(cfg.exposureS, nX, cfg.triggerMode);
+    } catch (const std::exception& e) {
+        std::cerr << "Andor trigger setup failed: " << e.what() << "\n";
+        if (!cfg.allowSoftwareFallback) throw;
+        hardwareSync = false;
+        cam.configureFVBKinetic(cfg.exposureS, nX, AndorCamera::TriggerMode::Internal);
+    }
 
     // ── 3. Setup PI data recorder (optional: capture actual X positions) ──
-    // Table 1: X actual position, option 2 = actual pos
-    stage.setupDataRecorder(1, "X", 2);
-    // Record every 4th servo cycle
-    stage.setRecordRate(4);
-    // Trigger recording when next move starts (source=3)
-    stage.setRecordTrigger(3);
+    if (cfg.useRecorder) {
+        // Table 1: X actual position, option 2 = actual pos
+        stage.setupDataRecorder(1, "X", 2);
+        // Record every 4th servo cycle
+        stage.setRecordRate(4);
+        // Trigger recording when next move starts (source=3)
+        stage.setRecordTrigger(3);
+    }
 
     // ── 4. Move stage to start position ───────────────────────────────────
     stage.moveAbs("X", cfg.xStart);
@@ -72,15 +95,16 @@ void runRasterScan(PIStageProxy& stage, AndorCamera& cam, const ScanConfig& cfg)
         stage.waitOnTarget("Y");
         stage.waitOnTarget("X");
 
-        // 5b. Arm Andor — waiting for nX trigger pulses
+        // 5b. Arm Andor — waiting for nX trigger pulses, or free-running fallback
         cam.startAcquisition();
 
-        // 5c. Arm stage: WGO — gate X move on external trigger input
-        //     so stage + Andor start simultaneously
-        //     conditionMask 0x1 = wait for trigger input line 1
-        stage.setWaitOnGo("X", 0x1);
+        // 5c. Arm stage: WGO only if hardware sync is active
+        if (hardwareSync) {
+            // conditionMask 0x1 = wait for trigger input line 1
+            stage.setWaitOnGo("X", 0x1);
+        }
 
-        // 5d. Issue X move — stage waits for WGO condition
+        // 5d. Issue X move — stage waits for WGO condition if enabled
         stage.moveAbs("X", cfg.xStop);
         // (stage is now armed but not yet moving)
 
@@ -106,13 +130,17 @@ void runRasterScan(PIStageProxy& stage, AndorCamera& cam, const ScanConfig& cfg)
     }
 
     // ── 6. Disable output trigger ─────────────────────────────────────────
-    stage.enableTriggerOutput(cfg.trigCh, false);
+    if (hardwareSync) {
+        stage.enableTriggerOutput(cfg.trigCh, false);
+    }
 
     // ── 7. Read recorder data (actual stage positions) ────────────────────
-    const int tables[] = { 1 };
-    auto positions = stage.readRecorder(1, nX, tables, 1);
-    std::cout << "Actual X[0]=" << positions[0]
-              << " X[last]=" << positions.back() << " mm\n";
+    if (cfg.useRecorder) {
+        const int tables[] = { 1 };
+        auto positions = stage.readRecorder(1, nX, tables, 1);
+        std::cout << "Actual X[0]=" << positions[0]
+                  << " X[last]=" << positions.back() << " mm\n";
+    }
 
     // ── 8. Save hyperspectral cube (raw binary) ───────────────────────────
     std::ofstream out("scan_cube.raw", std::ios::binary);
