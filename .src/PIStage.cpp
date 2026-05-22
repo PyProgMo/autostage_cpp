@@ -11,6 +11,14 @@ PIStage::PIStage() {
 template<typename T>
 T PIStage::loadProc(const char* name) {
     T fp = reinterpret_cast<T>(GetProcAddress(hDll_, name));
+    if (!fp) {
+        // Try with E7XX_ prefix if PI_ was requested
+        std::string sName = name;
+        if (sName.substr(0, 3) == "PI_") {
+            sName.replace(0, 3, "E7XX_");
+            fp = reinterpret_cast<T>(GetProcAddress(hDll_, sName.c_str()));
+        }
+    }
     if (!fp) throw std::runtime_error(std::string("Cannot find: ") + name);
     return fp;
 }

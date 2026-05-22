@@ -27,8 +27,8 @@ PIStageProxy::PIStageProxy() {
             continue;
         }
 
-        if (!WaitNamedPipeA(PIPE_NAME, 5000)) {
-            std::cerr << "Could not open pipe: 5 second wait timed out.\n";
+        if (!WaitNamedPipeA(PIPE_NAME, 1000)) {
+            std::cerr << "Could not open pipe: 1 second wait timed out.\n";
             continue;
         }
     }
