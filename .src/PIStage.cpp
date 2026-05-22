@@ -106,7 +106,8 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
     // but PI encodes X=1, Y=2, Z=3 as a double
     double axisCode = (axis[0] == 'X') ? 1.0 :
                       (axis[0] == 'Y') ? 2.0 : 3.0;
-    double valsFixed[] = { axisCode, 0.0, stepMM, startMM, stopMM,
+    // Set TrigMode to 1 (typical hardware trigger mode) instead of 0
+    double valsFixed[] = { axisCode, 1.0, stepMM, startMM, stopMM,
                            (double)pulseWidthUs };
 
     if (!pCTO(id_, lines, params, valsFixed, 6)) checkError();

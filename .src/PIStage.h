@@ -6,45 +6,46 @@
 #include <vector>
 
 // ── PI GCS2 function pointer typedefs ─────────────────────────────────────
-typedef int  (__cdecl *FP_ConnectUSB)       (const char* sSerialNum);
-typedef int  (__cdecl *FP_ConnectRS232)     (int port, int baud);
-typedef BOOL (__cdecl *FP_IsConnected)      (int id);
-typedef BOOL (__cdecl *FP_CloseConnection)  (int id);
 
-typedef BOOL (__cdecl *FP_MOV)  (int id, const char* axes, const double* values);
-typedef BOOL (__cdecl *FP_qPOS) (int id, const char* axes, double* values);
-typedef BOOL (__cdecl *FP_IsMoving)(int id, const char* axes, BOOL* moving);
-typedef BOOL (__cdecl *FP_WTR)  (int id, int nTriggerInput, int nTimeout_ms, BOOL bIgnoreRange);
+typedef int  (__stdcall *FP_ConnectUSB)       (const char* sSerialNum);
+typedef int  (__stdcall *FP_ConnectRS232)     (int port, int baud);
+typedef BOOL (__stdcall *FP_IsConnected)      (int id);
+typedef BOOL (__stdcall *FP_CloseConnection)  (int id);
 
-typedef BOOL (__cdecl *FP_WGO)  (int id, const char* axes, const int* conditions);
+typedef BOOL (__stdcall *FP_MOV)  (int id, const char* axes, const double* values);
+typedef BOOL (__stdcall *FP_qPOS) (int id, const char* axes, double* values);
+typedef BOOL (__stdcall *FP_IsMoving)(int id, const char* axes, BOOL* moving);
+typedef BOOL (__stdcall *FP_WTR)  (int id, int nTriggerInput, int nTimeout_ms, BOOL bIgnoreRange);
+
+typedef BOOL (__stdcall *FP_WGO)  (int id, const char* axes, const int* conditions);
 
 // CTO: SetTriggerOutput parameters
-typedef BOOL (__cdecl *FP_CTO)  (int id,
+typedef BOOL (__stdcall *FP_CTO)  (int id,
                                   const int*    triggerlines,
                                   const int*    params,
                                   const double* values,
                                   int           nItems);
-typedef BOOL (__cdecl *FP_TRO)  (int id,
+typedef BOOL (__stdcall *FP_TRO)  (int id,
                                   const int*  triggerlines,
                                   const BOOL* enabled,
                                   int         nItems);
 
 // Data Recorder
-typedef BOOL (__cdecl *FP_DRC)  (int id,
+typedef BOOL (__stdcall *FP_DRC)  (int id,
                                   const int*    tables,
                                   const char**  sources,
                                   const int*    options,
                                   int           nItems);
-typedef BOOL (__cdecl *FP_DRT)  (int id, int triggerSource, int axis, double value);
-typedef BOOL (__cdecl *FP_RTR)  (int id, int recordRate);
-typedef BOOL (__cdecl *FP_DRR)  (int id,
+typedef BOOL (__stdcall *FP_DRT)  (int id, int triggerSource, int axis, double value);
+typedef BOOL (__stdcall *FP_RTR)  (int id, int recordRate);
+typedef BOOL (__stdcall *FP_DRR)  (int id,
                                   double*     data,
                                   int         startOffset,
                                   int         numValues,
                                   const int*  tables,
                                   int         nTables);
-typedef int  (__cdecl *FP_GetError)   (int id);
-typedef BOOL (__cdecl *FP_TranslateError)(int err, char* buf, int bufsize);
+typedef int  (__stdcall *FP_GetError)   (int id);
+typedef BOOL (__stdcall *FP_TranslateError)(int err, char* buf, int bufsize);
 
 // ── PIStage class ──────────────────────────────────────────────────────────
 class PIStage {

@@ -42,18 +42,41 @@ PIStageProxy::~PIStageProxy() {
 }
 
 void PIStageProxy::sendCommand(const IpcMessage& msg, IpcMessage& response) {
+    std::cerr << "PIStageProxy: sending command " << static_cast<int>(msg.command) << "\n";
+    // Robust write: ensure entire message is written
+    const BYTE* outPtr = reinterpret_cast<const BYTE*>(&msg);
+    size_t toWrite = sizeof(IpcMessage);
     DWORD bytesWritten = 0;
-    if (!WriteFile(hPipe_, &msg, sizeof(IpcMessage), &bytesWritten, NULL)) {
-        throw std::runtime_error("Failed to write to pipe");
+    while (toWrite > 0) {
+        if (!WriteFile(hPipe_, outPtr, (DWORD)toWrite, &bytesWritten, NULL)) {
+            DWORD err = GetLastError();
+            throw std::runtime_error(std::string("Failed to write to pipe, GLE=") + std::to_string(err));
+        }
+        outPtr += bytesWritten;
+        toWrite -= bytesWritten;
+    }
+    std::cerr << "PIStageProxy: write complete for command " << static_cast<int>(msg.command) << "\n";
+
+    // Robust read: loop until we have the full response header
+    BYTE* inPtr = reinterpret_cast<BYTE*>(&response);
+    size_t toRead = sizeof(IpcMessage);
+    DWORD bytesRead = 0;
+    while (toRead > 0) {
+        if (!ReadFile(hPipe_, inPtr, (DWORD)toRead, &bytesRead, NULL)) {
+            DWORD err = GetLastError();
+            throw std::runtime_error(std::string("Failed to read response from pipe, GLE=") + std::to_string(err));
+        }
+        if (bytesRead == 0) {
+            throw std::runtime_error("Failed to read response from pipe: zero bytes read");
+        }
+        inPtr += bytesRead;
+        toRead -= bytesRead;
     }
 
-    DWORD bytesRead = 0;
-    if (!ReadFile(hPipe_, &response, sizeof(IpcMessage), &bytesRead, NULL)) {
-        throw std::runtime_error("Failed to read response from pipe");
-    }
-    
+    std::cerr << "PIStageProxy: read complete for command " << static_cast<int>(msg.command) << "\n";
+
     if (response.status != 0) {
-        throw std::runtime_error("PIStageProxy: Server returned error status");
+        throw std::runtime_error(std::string("PIStageProxy: Server returned error status: ") + std::to_string(response.status));
     }
 }
 

@@ -15,10 +15,11 @@ void ProcessClient(HANDLE hPipe) {
         BOOL result = ReadFile(hPipe, &req, sizeof(req), &bytesRead, NULL);
 
         if (!result || bytesRead == 0) {
-            if (GetLastError() == ERROR_BROKEN_PIPE) {
+            DWORD gle = GetLastError();
+            if (gle == ERROR_BROKEN_PIPE) {
                 std::cout << "Client disconnected.\n";
             } else {
-                std::cerr << "Read failed.\n";
+                std::cerr << "Read failed, GLE=" << gle << "\n";
             }
             break;
         }
@@ -26,6 +27,8 @@ void ProcessClient(HANDLE hPipe) {
         IpcMessage res = {};
         res.command = req.command;
         res.status = 0;
+
+        std::cout << "Processing command " << static_cast<int>(req.command) << "\n";
 
         try {
             switch (req.command) {
@@ -50,9 +53,11 @@ void ProcessClient(HANDLE hPipe) {
                 stage.waitOnTarget(req.strArg, req.iArgs[0]);
                 break;
             case IpcCommand::ConfigTriggerOut:
+                std::cout << "Calling configureTriggerOutput...\n";
                 stage.configureTriggerOutput(req.iArgs[0], req.strArg,
                                         req.dArgs[0], req.dArgs[1],
                                         req.dArgs[2], req.iArgs[1]);
+                std::cout << "Returned from configureTriggerOutput.\n";
                 break;
             case IpcCommand::EnableTriggerOut:
                 stage.enableTriggerOutput(req.iArgs[0], req.iArgs[1] != 0);
@@ -84,10 +89,16 @@ void ProcessClient(HANDLE hPipe) {
                 res.dataSize = (int32_t)(data.size() * sizeof(double));
                 
                 DWORD bytesWritten = 0;
-                WriteFile(hPipe, &res, sizeof(res), &bytesWritten, NULL);
-                
+                if (!WriteFile(hPipe, &res, sizeof(res), &bytesWritten, NULL)) {
+                    std::cerr << "Write response header failed, GLE=" << GetLastError() << "\n";
+                    break;
+                }
+
                 if (res.dataSize > 0) {
-                    WriteFile(hPipe, data.data(), res.dataSize, &bytesWritten, NULL);
+                    if (!WriteFile(hPipe, data.data(), res.dataSize, &bytesWritten, NULL)) {
+                        std::cerr << "Write response payload failed, GLE=" << GetLastError() << "\n";
+                        break;
+                    }
                 }
                 continue; // we already wrote the response header
             }
@@ -108,7 +119,10 @@ void ProcessClient(HANDLE hPipe) {
         // Send normal response
         if (req.command != IpcCommand::ReadRecorder) {
             DWORD bytesWritten = 0;
-            WriteFile(hPipe, &res, sizeof(res), &bytesWritten, NULL);
+            if (!WriteFile(hPipe, &res, sizeof(res), &bytesWritten, NULL)) {
+                std::cerr << "Write response failed, GLE=" << GetLastError() << "\n";
+                break;
+            }
         }
     }
 }
