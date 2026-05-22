@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <chrono>
+#include <cmath>
 
 // ── Scan parameters ────────────────────────────────────────────────────────
 struct ScanConfig {

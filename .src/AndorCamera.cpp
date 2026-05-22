@@ -3,6 +3,15 @@
 #include <stdexcept>
 #include <iostream>
 
+AndorCamera::AndorCamera() {}
+
+AndorCamera::~AndorCamera() {
+    shutdown();
+    if (hDll_) {
+        FreeLibrary(hDll_);
+    }
+}
+
 template<typename T>
 T AndorCamera::loadProc(const char* name) {
     T fp = reinterpret_cast<T>(GetProcAddress(hDll_, name));

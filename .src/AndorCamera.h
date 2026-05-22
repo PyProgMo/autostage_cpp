@@ -9,8 +9,6 @@
 #define DRV_ACQUIRING        20072
 #define DRV_IDLE             20073
 
-typedef unsigned int DWORD;
-
 // ── SDK2 function pointer typedefs ────────────────────────────────────────
 typedef unsigned int (__stdcall *FP_Initialize)         (char* dir);
 typedef unsigned int (__stdcall *FP_GetDetector)        (int* xpix, int* ypix);
