@@ -540,3 +540,28 @@ tatus=0
 2026-05-22 22:46:19.691 [INFO] StageServer: client disconnected
 2026-05-22 22:46:19.694 [INFO] StageServer: client disconnected, restarting loop...
 2026-05-22 22:46:19.694 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-22 22:51:10.108 [INFO] Starting StageServer (32-bit)
+2026-05-22 22:51:10.109 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-22 22:51:14.332 [INFO] RasterScan: starting
+2026-05-22 22:51:14.333 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-22 22:51:14.333 [INFO] PIStageProxy: connected to stage pipe
+2026-05-22 22:51:14.333 [INFO] StageServer: client connected
+2026-05-22 22:51:14.334 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-22 22:51:14.334 [INFO] StageServer: client handler started
+2026-05-22 22:51:14.334 [INFO] PIStageProxy: sending command LoadDLL status=0 str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-22 22:51:14.334 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-22 22:51:14.335 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-22 22:51:14.335 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-22 22:51:14.344 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-22 22:51:14.345 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-22 22:51:14.345 [INFO] PIStageProxy: sending command Connect status=0 str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-22 22:51:14.346 [INFO] PIStageProxy: write complete for command Connect
+2026-05-22 22:51:14.346 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-22 22:51:14.346 [INFO] StageServer: Connect serial='109021162'
+2026-05-22 22:51:14.356 [INFO] StageServer: connected to stage
+2026-05-22 22:51:14.357 [INFO] StageServer: response sent for Connect status=0
+2026-05-22 22:51:14.357 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-22 22:51:14.466 [ERROR] RasterScan: fatal: Andor error in Initialize: code 20992
+2026-05-22 22:51:14.466 [INFO] StageServer: client disconnected
+2026-05-22 22:51:14.513 [INFO] StageServer: client disconnected, restarting loop...
+2026-05-22 22:51:14.514 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...

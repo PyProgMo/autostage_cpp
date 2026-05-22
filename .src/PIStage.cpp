@@ -63,7 +63,16 @@ void PIStage::loadDLL(const std::string& dllPath) {
 
 void PIStage::connect(const std::string& serialNum) {
     id_ = pConnectUSB(serialNum.c_str());
-    if (id_ < 0) throw std::runtime_error("PI stage connection failed");
+    if (id_ < 0) {
+        int err = pGetError ? pGetError(id_) : 0;
+        char msg[256] = {};
+        if (pTranslateError) pTranslateError(err, msg, sizeof(msg));
+        std::string message = std::string("PI stage connection failed: code=") +
+                              std::to_string(err) + " msg=" + msg +
+                              " serial=" + serialNum;
+        AppLogger::instance().error(message);
+        throw std::runtime_error(message);
+    }
 }
 
 void PIStage::enableServo(const char* axis, bool enable) {

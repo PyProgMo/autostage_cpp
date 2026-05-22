@@ -133,3 +133,4 @@
 2026-05-22 22:46:19.690 [ERROR] StageServer: exception executing command Connect: PI stage connection failed
 2026-05-22 22:46:19.691 [ERROR] PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed'
 2026-05-22 22:46:19.691 [ERROR] RasterScan: fatal: PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed'
+2026-05-22 22:51:14.466 [ERROR] RasterScan: fatal: Andor error in Initialize: code 20992
