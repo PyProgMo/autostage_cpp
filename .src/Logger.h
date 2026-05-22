@@ -1,3 +1,21 @@
+#pragma once
+#include <string>
+
+namespace Logger {
+    enum class Level { INFO, ERROR, DEBUG };
+
+    // Initialize logger (optional). Tries to read build/options.txt for LOG_FILE names.
+    void init();
+
+    void info(const std::string& msg);
+    void error(const std::string& msg);
+    void debug(const std::string& msg);
+
+    // Convenience printf-like helpers
+    void infof(const char* fmt, ...);
+    void errorf(const char* fmt, ...);
+    void debugf(const char* fmt, ...);
+}
 // Logger.h
 #pragma once
 

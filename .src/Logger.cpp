@@ -1,3 +1,130 @@
+#include "Logger.h"
+#include <fstream>
+#include <iostream>
+#include <mutex>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+#include <cstdarg>
+#include <string>
+#include <filesystem>
+
+static std::ofstream g_logFile;
+static std::ofstream g_errFile;
+static std::mutex g_logMutex;
+static bool g_inited = false;
+
+static std::string timeNow() {
+    using namespace std::chrono;
+    auto now = system_clock::now();
+    auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+    std::time_t t = system_clock::to_time_t(now);
+    std::tm tm;
+#ifdef _WIN32
+    localtime_s(&tm, &t);
+#else
+    localtime_r(&t, &tm);
+#endif
+    std::ostringstream ss;
+    ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << '.' << std::setfill('0') << std::setw(3) << ms.count();
+    return ss.str();
+}
+
+static void writeLine(std::ofstream& f, const std::string& line) {
+    if (f.is_open()) {
+        f << line << "\n";
+        f.flush();
+    }
+}
+
+void Logger::init() {
+    std::lock_guard<std::mutex> lk(g_logMutex);
+    if (g_inited) return;
+
+    // Default names
+    std::string logName = "scan_log.txt";
+    std::string errName = "error_log.txt";
+
+    // Try to read build/options.txt for LOG_FILE/errorlog_file
+    std::filesystem::path opts = std::filesystem::current_path() / "build" / "options.txt";
+    if (!std::filesystem::exists(opts)) {
+        // try relative path
+        opts = std::filesystem::path("build") / "options.txt";
+    }
+    if (std::filesystem::exists(opts)) {
+        std::ifstream in(opts.string());
+        std::string line;
+        while (std::getline(in, line)) {
+            auto pos = line.find('=');
+            if (pos == std::string::npos) continue;
+            std::string key = line.substr(0, pos);
+            std::string val = line.substr(pos + 1);
+            // trim
+            auto trim = [](std::string s){
+                size_t a = s.find_first_not_of(" \t\r\n");
+                size_t b = s.find_last_not_of(" \t\r\n");
+                if (a==std::string::npos) return std::string();
+                return s.substr(a, b - a + 1);
+            };
+            key = trim(key);
+            val = trim(val);
+            if (key == "LOG_FILE") logName = val;
+            if (key == "errorlog_file") errName = val;
+        }
+    }
+
+    g_logFile.open(logName, std::ios::app);
+    g_errFile.open(errName, std::ios::app);
+    g_inited = true;
+}
+
+static void vlog(std::ofstream& out, const char* fmt, va_list ap) {
+    char buf[1024];
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+    std::string line = std::string("[") + timeNow() + "] " + buf;
+    writeLine(out, line);
+}
+
+void Logger::info(const std::string& msg) {
+    std::lock_guard<std::mutex> lk(g_logMutex);
+    if (!g_inited) init();
+    std::string line = std::string("[INFO] ") + msg;
+    writeLine(g_logFile, std::string("") + timeNow() + " " + line);
+    std::cout << line << std::endl;
+}
+
+void Logger::error(const std::string& msg) {
+    std::lock_guard<std::mutex> lk(g_logMutex);
+    if (!g_inited) init();
+    std::string line = std::string("[ERROR] ") + msg;
+    writeLine(g_errFile, std::string("") + timeNow() + " " + line);
+    std::cerr << line << std::endl;
+}
+
+void Logger::debug(const std::string& msg) {
+    std::lock_guard<std::mutex> lk(g_logMutex);
+    if (!g_inited) init();
+    std::string line = std::string("[DEBUG] ") + msg;
+    writeLine(g_logFile, std::string("") + timeNow() + " " + line);
+}
+
+void Logger::infof(const char* fmt, ...) {
+    va_list ap; va_start(ap, fmt);
+    char buf[1024]; vsnprintf(buf, sizeof(buf), fmt, ap); va_end(ap);
+    info(std::string(buf));
+}
+
+void Logger::errorf(const char* fmt, ...) {
+    va_list ap; va_start(ap, fmt);
+    char buf[1024]; vsnprintf(buf, sizeof(buf), fmt, ap); va_end(ap);
+    error(std::string(buf));
+}
+
+void Logger::debugf(const char* fmt, ...) {
+    va_list ap; va_start(ap, fmt);
+    char buf[1024]; vsnprintf(buf, sizeof(buf), fmt, ap); va_end(ap);
+    debug(std::string(buf));
+}
 // Logger.cpp
 #include "Logger.h"
 

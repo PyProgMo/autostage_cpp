@@ -126,8 +126,29 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
     double valsC[] = { 1.0, stepMM, startMM, stopMM, (double)pulseWidthUs, axisCode };
 
     if (pCTO(id_, lines, paramsA, valsA, 6)) return;
+    if (pCTO(id_, lines, paramsA, valsA, 6)) return;
+    else {
+        int err = pGetError ? pGetError(id_) : 0;
+        char msg[256] = {};
+        if (pTranslateError) pTranslateError(err, msg, sizeof(msg));
+        AppLogger::instance().error(std::string("PIStage: CTO paramsA failed: code=") + std::to_string(err) + " msg=" + msg);
+    }
+
     if (pCTO(id_, lines, paramsB, valsB, 6)) return;
+    else {
+        int err = pGetError ? pGetError(id_) : 0;
+        char msg[256] = {};
+        if (pTranslateError) pTranslateError(err, msg, sizeof(msg));
+        AppLogger::instance().error(std::string("PIStage: CTO paramsB failed: code=") + std::to_string(err) + " msg=" + msg);
+    }
+
     if (pCTO(id_, lines, paramsC, valsC, 6)) return;
+    else {
+        int err = pGetError ? pGetError(id_) : 0;
+        char msg[256] = {};
+        if (pTranslateError) pTranslateError(err, msg, sizeof(msg));
+        AppLogger::instance().error(std::string("PIStage: CTO paramsC failed: code=") + std::to_string(err) + " msg=" + msg);
+    }
 
     // None succeeded — throw with PI error info
     checkError();
