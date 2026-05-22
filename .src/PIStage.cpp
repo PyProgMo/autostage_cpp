@@ -97,20 +97,29 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
                                      double startMM, double stepMM,
                                      double stopMM, int pulseWidthUs)
 {
-    // CTO takes arrays of (triggerline, paramID, value) triples
-    // paramID: 2=Axis, 1=TrigMode, 3=StepSize, 4=StartPos, 5=StopPos, 6=PulseWidth
-    const int    lines[]  = { channel, channel, channel, channel, channel, channel };
-    const int    params[] = {       2,        1,        3,        4,        5,        6 };
-
-    // Param 2 (axis) needs special handling — axis is a string, 
-    // but PI encodes X=1, Y=2, Z=3 as a double
+    // Prepare axis code (X=1, Y=2, Z=3)
     double axisCode = (axis[0] == 'X') ? 1.0 :
                       (axis[0] == 'Y') ? 2.0 : 3.0;
-    // Set TrigMode to 1 (typical hardware trigger mode) instead of 0
-    double valsFixed[] = { axisCode, 1.0, stepMM, startMM, stopMM,
-                           (double)pulseWidthUs };
 
-    if (!pCTO(id_, lines, params, valsFixed, 6)) checkError();
+    const int lines[] = { channel, channel, channel, channel, channel, channel };
+
+    // Try multiple parameter orderings — some firmware expects different layouts.
+    const int paramsA[] = { 2, 1, 3, 4, 5, 6 };
+    double valsA[] = { axisCode, 1.0, stepMM, startMM, stopMM, (double)pulseWidthUs };
+
+    const int paramsB[] = { 1, 2, 3, 4, 5, 6 };
+    double valsB[] = { 1.0, axisCode, stepMM, startMM, stopMM, (double)pulseWidthUs };
+
+    // Candidate C: use axis as integer placed later
+    const int paramsC[] = { 1, 3, 4, 5, 6, 2 };
+    double valsC[] = { 1.0, stepMM, startMM, stopMM, (double)pulseWidthUs, axisCode };
+
+    if (pCTO(id_, lines, paramsA, valsA, 6)) return;
+    if (pCTO(id_, lines, paramsB, valsB, 6)) return;
+    if (pCTO(id_, lines, paramsC, valsC, 6)) return;
+
+    // None succeeded — throw with PI error info
+    checkError();
 }
 
 void PIStage::enableTriggerOutput(int channel, bool enable) {
