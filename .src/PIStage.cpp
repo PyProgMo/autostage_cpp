@@ -11,7 +11,7 @@ PIStage::PIStage() {
 }
 
 template<typename T>
-T PIStage::loadProc(const char* name) {
+T PIStage::loadProc(const char* name, bool required) {
     std::vector<std::string> candidates;
     candidates.emplace_back(name);
     std::string sName(name);
@@ -33,7 +33,8 @@ T PIStage::loadProc(const char* name) {
         if (fp) return fp;
     }
 
-    throw std::runtime_error(std::string("Cannot find: ") + name);
+    if (required) throw std::runtime_error(std::string("Cannot find: ") + name);
+    return reinterpret_cast<T>(nullptr);
 }
 
 void PIStage::loadDLL(const std::string& dllPath) {
@@ -52,7 +53,7 @@ void PIStage::loadDLL(const std::string& dllPath) {
     pWTR             = loadProc<FP_WTR>             ("PI_WTR");
     pWGO             = loadProc<FP_WGO>             ("PI_WGO");
     pCTO             = loadProc<FP_CTO>             ("PI_CTO");
-    pTRO             = loadProc<FP_TRO>             ("PI_TRO");
+    pTRO             = loadProc<FP_TRO>             ("PI_TRO", false); // optional on some E-7XX DLLs
     pDRC             = loadProc<FP_DRC>             ("PI_DRC");
     pDRT             = loadProc<FP_DRT>             ("PI_DRT");
     pRTR             = loadProc<FP_RTR>             ("PI_RTR");
@@ -164,7 +165,29 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
 
 void PIStage::enableTriggerOutput(int channel, bool enable) {
     BOOL en = enable ? TRUE : FALSE;
-    if (!pTRO(id_, &channel, &en, 1)) checkError();
+
+    // First try CTO param 9 (TriggerOutActive) which some E-7XX firmwares use
+    if (pCTO) {
+        const int lines[] = { channel };
+        const int params[] = { 9 }; // TriggerOutActive
+        double vals[] = { enable ? 1.0 : 0.0 };
+        if (pCTO(id_, lines, params, vals, 1)) return;
+        else {
+            int err = pGetError ? pGetError(id_) : 0;
+            char msg[256] = {};
+            if (pTranslateError) pTranslateError(err, msg, sizeof(msg));
+            AppLogger::instance().error(std::string("PIStage: CTO set active failed: code=") + std::to_string(err) + " msg=" + msg);
+        }
+    }
+
+    // Fall back to TRO if available
+    if (pTRO) {
+        if (!pTRO(id_, &channel, &en, 1)) checkError();
+        return;
+    }
+
+    // Neither method succeeded
+    checkError();
 }
 
 void PIStage::setupDataRecorder(int table, const char* source, int option) {

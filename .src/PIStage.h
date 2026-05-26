@@ -110,5 +110,5 @@ private:
     FP_TranslateError   pTranslateError   = nullptr;
 
     template<typename T>
-    T loadProc(const char* name);
+    T loadProc(const char* name, bool required = true);
 };
