@@ -55,10 +55,14 @@ int main() {
         if (cmd == "help") {
             std::cout << "Commands:\n";
             std::cout << "  stage connect\n";
+            std::cout << "  stage disconnect\n";
             std::cout << "  stage get_pos [axis]\n";
             std::cout << "  stage move_abs [axis] [pos]\n";
             std::cout << "  stage wait [axis]\n";
             std::cout << "  andor connect\n";
+            std::cout << "  andor measure\n";
+            std::cout << "  andor save_test_spectrum\n";
+            std::cout << "  andor disconnect\n";
             std::cout << "  scan\n";
             continue;
         }
@@ -73,6 +77,9 @@ int main() {
                     stage->loadDLL("E7XX_GCS2_DLL.dll");
                     stage->connect("109021162");
                     std::cout << "Stage connected.\n";
+                } else if (action == "disconnect") {
+                    stage->disconnect();
+                    std::cout << "Stage disconnected.\n";
                 } else if (action == "get_pos") {
                     std::string axis;
                     iss >> axis;
@@ -102,7 +109,34 @@ int main() {
                     cam->loadDLL("atmcd64d.dll");
                     cam->initialize("");
                     std::cout << "Andor initialized. X=" << cam->getXPixels() << ", Y=" << cam->getYPixels() << "\n";
-                } else {
+                } else if (action == "disconnect") {
+                    cam->shutdown();
+                    std::cout << "Andor shutdown.\n";
+                } else if (action == "measure") {
+                    cam->configureSpectral(AndorCamera::ReadMode::FVB,
+                                           AndorCamera::TriggerMode::External, 0.1f);
+                    cam->startAcquisition();
+                    cam->waitForAcquisition();
+                    auto data = cam->getAllSpectra(1, cam->getXPixels());
+                    std::cout << "Measured spectrum: ";
+                    for (int i = 0; i < std::min(10, cam->getXPixels()); i++) {
+                        std::cout << data[i] << " ";
+                    }
+                    std::cout << "...\n";
+                } else if (action == "save_test_spectrum") {
+                    cam->testAcquireAndSave(0.1f, "test_spectrum.raw");
+                    std::cout << "Test spectrum acquired and saved to test_spectrum.raw\n";
+                } else if (action == "setTint") {
+                    float tint;
+                    if (iss >> tint) {
+                        cam->configureSpectral(AndorCamera::ReadMode::FVB,
+                                               AndorCamera::TriggerMode::External, tint);
+                        std::cout << "Exposure time set to " << tint << " seconds.\n";
+                    } else {
+                        std::cout << "Usage: andor setTint [seconds]\n";
+                    }
+                }
+                else {
                     std::cout << "Unknown andor action: " << action << "\n";
                 }
             } else if (target == "scan") {
@@ -165,7 +199,8 @@ int main() {
             } else {
                 std::cout << "Unknown target: " << target << "\n";
             }
-        } catch (const std::exception& e) {
+        } 
+       catch (const std::exception& e) {
             std::cout << "Error executing command: " << e.what() << "\n";
         }
     }

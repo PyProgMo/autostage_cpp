@@ -47,9 +47,11 @@ public:
     };
 
     enum class ReadMode {
-        FullImage   = 4,
+        FVB         = 0,     // Full Vertical Binning — fastest, 1D spectrum
+        MultiTrack  = 1,     // Multiple Track — several binned tracks on sensor
+        RandomTrack  = 2,     // Random Track — user-defined rows to bin
         SingleTrack = 3,
-        FVB         = 0     // Full Vertical Binning — fastest, 1D spectrum
+        FullImage   = 4,
     };
 
     AndorCamera();
@@ -80,6 +82,9 @@ public:
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }
 
+    // declare the test functions here so they can be called from ConsoleApp without including private members
+    void testAcquireAndSave(float exposureS, const std::string& filename="test_spectrum.raw");
+
 private:
     HMODULE hDll_ = nullptr;
     int xpix_ = 0, ypix_ = 0;
@@ -106,3 +111,9 @@ private:
     template<typename T>
     T loadProc(const char* name);
 };
+
+
+// dev test functions
+
+// Acquire a single spectrum and save to raw binary file (for testing)
+void testAcquireAndSave(float exposureS, const std::string& filename);

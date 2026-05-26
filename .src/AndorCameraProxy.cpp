@@ -145,6 +145,17 @@ void AndorCameraProxy::waitForAcquisition() {
     sendCommand(req, res);
 }
 
+void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& filename) {
+    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS);
+    startAcquisition();
+    waitForAcquisition();
+    auto data = getAllSpectra(1, xpix_);
+
+    std::ofstream outFile(filename, std::ios::binary);
+    outFile.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(WORD));
+    outFile.close();
+}
+
 std::vector<WORD> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
     IpcMessage req = {};
     req.command = IpcCommand::AndorGetImages16;

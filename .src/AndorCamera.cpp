@@ -2,6 +2,8 @@
 #include "AndorCamera.h"
 #include <stdexcept>
 #include <iostream>
+#include <fstream>
+#include <cstdint>
 
 AndorCamera::AndorCamera() {}
 
@@ -103,4 +105,28 @@ std::vector<WORD> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectr
 
 void AndorCamera::shutdown() {
     if (hDll_) { pShutDown(); }
+}
+
+// dev test functions
+/* old 
+void AndorCamera::testAcquireAndSave(float exposureS, const std::string& filename) {
+    configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureS);
+    startAcquisition();
+    waitForAcquisition();
+    auto data = getAllSpectra(1, xpix_);
+    std::ofstream out(filename, std::ios::binary);
+    out.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(WORD));
+    std::cout << "Saved single spectrum to " << filename << "\n";
+}
+*/
+// new version using proxy command
+// dev test functions
+void AndorCamera::testAcquireAndSave(float exposureS, const std::string& filename) {
+    configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureS);
+    startAcquisition();
+    waitForAcquisition();
+    auto data = getAllSpectra(1, xpix_);
+    std::ofstream out(filename, std::ios::binary);
+    out.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(WORD));
+    std::cout << "Saved single spectrum to " << filename << "\n";
 }
