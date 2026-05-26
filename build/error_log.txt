@@ -369,3 +369,30 @@
 2026-05-26 15:42:48.278 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
 2026-05-26 15:42:49.286 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
 2026-05-26 15:42:50.299 [ERROR] PIStageProxy: could not open pipe. Is StageServer running?
+2026-05-26 16:02:29.205 [ERROR] PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-26 16:02:29.206 [ERROR] StageServer: exception executing command Connect: PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-26 16:02:29.207 [ERROR] PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162'
+2026-05-26 16:34:33.743 [ERROR] PI Error: code=26 message=Parameter missing
+2026-05-26 16:34:33.747 [ERROR] StageServer: exception executing command GetPos: PI Error: code=26 message=Parameter missing
+2026-05-26 16:34:33.749 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=26 message=Parameter missing'
+2026-05-26 18:00:41.998 [ERROR] PI Error: code=26 message=Parameter missing
+2026-05-26 18:00:41.998 [ERROR] StageServer: exception executing command GetPos: PI Error: code=26 message=Parameter missing
+2026-05-26 18:00:41.999 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=26 message=Parameter missing'
+2026-05-26 18:04:24.179 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
+2026-05-26 18:04:25.186 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
+2026-05-26 18:04:26.198 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
+2026-05-26 18:04:27.210 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
+2026-05-26 18:04:28.220 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
+2026-05-26 18:04:29.222 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
+2026-05-26 18:04:30.231 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
+2026-05-26 18:05:23.161 [ERROR] AndorCameraProxy: could not open pipe: 1 second wait timed out
+2026-05-26 18:05:24.162 [ERROR] AndorCameraProxy: could not open pipe: 1 second wait timed out
+2026-05-26 18:05:25.170 [ERROR] AndorCameraProxy: could not open pipe: 1 second wait timed out
+2026-05-26 18:05:26.179 [ERROR] AndorCameraProxy: could not open pipe: 1 second wait timed out
+2026-05-26 18:05:27.192 [ERROR] AndorCameraProxy: could not open pipe: 1 second wait timed out
+2026-05-26 18:05:28.206 [ERROR] AndorCameraProxy: could not open pipe: 1 second wait timed out
+2026-05-26 18:05:28.223 [ERROR] AndorCameraProxy: could not open pipe: 1 second wait timed out
+2026-05-26 18:05:28.223 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
+2026-05-26 18:05:29.228 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
+2026-05-26 18:05:43.114 [ERROR] PIStageProxy: failed to write to pipe, GLE=232 cmd=LoadDLL
+2026-05-26 18:05:47.211 [ERROR] PIStageProxy: failed to write to pipe, GLE=232 cmd=LoadDLL

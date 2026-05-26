@@ -26,7 +26,7 @@ public:
     void startAcquisition();
     void abortAcquisition();
     void waitForAcquisition();
-    void testAcquireAndSave(float exposureS, const std::string& filename="test_spectrum.raw");
+    void testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
     std::vector<WORD> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
 
     int getXPixels() const { return xpix_; }

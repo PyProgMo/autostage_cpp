@@ -83,7 +83,7 @@ public:
     int getYPixels() const { return ypix_; }
 
     // declare the test functions here so they can be called from ConsoleApp without including private members
-    void testAcquireAndSave(float exposureS, const std::string& filename="test_spectrum.raw");
+    void testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
 
 private:
     HMODULE hDll_ = nullptr;

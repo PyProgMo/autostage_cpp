@@ -1,5 +1,6 @@
 // AndorCamera.cpp
 #include "AndorCamera.h"
+#include <opencv2/opencv.hpp>
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
@@ -107,26 +108,27 @@ void AndorCamera::shutdown() {
     if (hDll_) { pShutDown(); }
 }
 
-// dev test functions
-/* old 
-void AndorCamera::testAcquireAndSave(float exposureS, const std::string& filename) {
-    configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureS);
-    startAcquisition();
-    waitForAcquisition();
-    auto data = getAllSpectra(1, xpix_);
-    std::ofstream out(filename, std::ios::binary);
-    out.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(WORD));
-    std::cout << "Saved single spectrum to " << filename << "\n";
-}
-*/
-// new version using proxy command
-// dev test functions
-void AndorCamera::testAcquireAndSave(float exposureS, const std::string& filename) {
-    configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureS);
-    startAcquisition();
-    waitForAcquisition();
-    auto data = getAllSpectra(1, xpix_);
-    std::ofstream out(filename, std::ios::binary);
-    out.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(WORD));
-    std::cout << "Saved single spectrum to " << filename << "\n";
+void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+    // Find max value for scaling
+    WORD maxVal = 0;
+    for (WORD val : spectra) {
+        if (val > maxVal) maxVal = val;
+    }
+    if (maxVal == 0) maxVal = 1; // avoid division by zero
+
+    // Create OpenCV Mat and scale to 8-bit
+    cv::Mat img(numSpectra, pixelsPerSpectrum, CV_8UC1);
+    for (int i = 0; i < numSpectra; i++) {
+        for (int j = 0; j < pixelsPerSpectrum; j++) {
+            WORD val = spectra[i * pixelsPerSpectrum + j];
+            img.at<uchar>(i, j) = static_cast<uchar>((val * 255) / maxVal);
+        }
+    }
+
+    // Save as PNG
+    if (!cv::imwrite(filename, img)) {
+        std::cerr << "Failed to save PNG: " << filename << "\n";
+    } else {
+        std::cout << "Saved spectra image to " << filename << "\n";
+    }
 }

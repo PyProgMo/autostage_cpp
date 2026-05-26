@@ -19,6 +19,8 @@ mkdir -p "$SCRIPT_DIR/build"
 "$SCRIPT_DIR/.src/Logger.cpp" \
 "$SCRIPT_DIR/.src/AndorCamera.cpp" \
 -I"$SCRIPT_DIR/.src" \
+-I"C:/msys64/mingw64/include/opencv4" \
+-L"C:/msys64/mingw64/lib" -lopencv_core -lopencv_imgcodecs -lopencv_imgproc \
 -Wall
 
 echo "Successfully built build/SpectrometerServer.exe"
@@ -31,6 +33,8 @@ echo "Building 64-bit ConsoleApp..."
 "$SCRIPT_DIR/.src/AndorCameraProxy.cpp" \
 "$SCRIPT_DIR/.src/Logger.cpp" \
 -I"$SCRIPT_DIR/.src" \
+-I"C:/msys64/mingw64/include/opencv4" \
+-L"C:/msys64/mingw64/lib" -lopencv_core -lopencv_imgcodecs -lopencv_imgproc \
 -Wall
 
 echo "Successfully built build/ConsoleApp.exe"

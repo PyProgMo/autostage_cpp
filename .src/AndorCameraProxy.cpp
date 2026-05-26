@@ -2,6 +2,7 @@
 #include "AndorCameraProxy.h"
 #include "IpcStructs.h"
 #include "Logger.h"
+#include <opencv2/opencv.hpp>
 
 #include <iostream>
 #include <cstring>
@@ -145,6 +146,8 @@ void AndorCameraProxy::waitForAcquisition() {
     sendCommand(req, res);
 }
 
+// old test function
+/*
 void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& filename) {
     configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS);
     startAcquisition();
@@ -154,7 +157,29 @@ void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& fi
     std::ofstream outFile(filename, std::ios::binary);
     outFile.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(WORD));
     outFile.close();
+}*/
+// new test function: 
+void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+    // Find max value for scaling
+    WORD maxVal = 0;
+    for (WORD val : spectra) {
+        if (val > maxVal) maxVal = val;
+    }
+    if (maxVal == 0) maxVal = 1; // avoid division by zero
+
+    // Create an 8-bit grayscale image from the spectra
+    cv::Mat img(numSpectra, pixelsPerSpectrum, CV_8UC1);
+    for (int i = 0; i < numSpectra; ++i) {
+        for (int j = 0; j < pixelsPerSpectrum; ++j) {
+            WORD val = spectra[i * pixelsPerSpectrum + j];
+            img.at<uchar>(i, j) = static_cast<uchar>((val * 255) / maxVal);
+        }
+    }
+
+    // Save the image as PNG
+    cv::imwrite(filename, img);
 }
+
 
 std::vector<WORD> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
     IpcMessage req = {};

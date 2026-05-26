@@ -61,6 +61,7 @@ int main() {
             std::cout << "  stage wait [axis]\n";
             std::cout << "  andor connect\n";
             std::cout << "  andor measure\n";
+            std::cout << "  andor setTint [milliseconds]\n";
             std::cout << "  andor save_test_spectrum\n";
             std::cout << "  andor disconnect\n";
             std::cout << "  scan\n";
@@ -112,7 +113,11 @@ int main() {
                 } else if (action == "disconnect") {
                     cam->shutdown();
                     std::cout << "Andor shutdown.\n";
-                } else if (action == "measure") {
+                } else if (action == "abort") {
+                    cam->abortAcquisition();
+                    std::cout << "Acquisition aborted.\n";
+                }
+                else if (action == "measure") {
                     cam->configureSpectral(AndorCamera::ReadMode::FVB,
                                            AndorCamera::TriggerMode::External, 0.1f);
                     cam->startAcquisition();
@@ -124,16 +129,20 @@ int main() {
                     }
                     std::cout << "...\n";
                 } else if (action == "save_test_spectrum") {
-                    cam->testAcquireAndSave(0.1f, "test_spectrum.raw");
-                    std::cout << "Test spectrum acquired and saved to test_spectrum.raw\n";
+                    cam->testAcquireAndSave(std::vector<WORD>(), 1, cam->getXPixels(), "test_spectrum.png");
+                    std::cout << "Test spectrum acquired and saved to test_spectrum.png\n";
                 } else if (action == "setTint") {
                     float tint;
                     if (iss >> tint) {
+                        // check if tint is between 1 ms and 10 s
+                        if (tint < 1.0f) tint = 1.0f;
+                        if (tint > 10000.0f) tint = 10000.0f;
+                        else if (tint < 10.0f) tint = 10.0f; // Andor SDK may have issues with very short exposures
                         cam->configureSpectral(AndorCamera::ReadMode::FVB,
                                                AndorCamera::TriggerMode::External, tint);
-                        std::cout << "Exposure time set to " << tint << " seconds.\n";
+                        std::cout << "Exposure time set to " << tint/1000.0f << " seconds.\n";
                     } else {
-                        std::cout << "Usage: andor setTint [seconds]\n";
+                        std::cout << "Usage: andor setTint [milliseconds]\n";
                     }
                 }
                 else {
