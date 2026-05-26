@@ -34,7 +34,7 @@ T PIStage::loadProc(const char* name, bool required) {
     }
 
     if (required) throw std::runtime_error(std::string("Cannot find: ") + name);
-    return reinterpret_cast<T>(nullptr);
+    return reinterpret_cast<T>(0);
 }
 
 void PIStage::loadDLL(const std::string& dllPath) {
