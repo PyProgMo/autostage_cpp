@@ -51,6 +51,17 @@ int main() {
         if (!std::getline(std::cin, cmd)) break;
         if (cmd == "exit" || cmd == "quit") break;
         if (cmd.empty()) continue;
+        // if cmd == "help" print user guidance
+        if (cmd == "help") {
+            std::cout << "Commands:\n";
+            std::cout << "  stage connect\n";
+            std::cout << "  stage get_pos [axis]\n";
+            std::cout << "  stage move_abs [axis] [pos]\n";
+            std::cout << "  stage wait [axis]\n";
+            std::cout << "  andor connect\n";
+            std::cout << "  scan\n";
+            continue;
+        }
 
         std::istringstream iss(cmd);
         std::string target, action;
