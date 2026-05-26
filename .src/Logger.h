@@ -49,6 +49,23 @@ inline const char* ipcCommandName(IpcCommand command) {
     case IpcCommand::ReadRecorder: return "ReadRecorder";
     case IpcCommand::LoadDLL: return "LoadDLL";
     case IpcCommand::ExitServer: return "ExitServer";
+        
+        case IpcCommand::AndorLoadDLL: return "AndorLoadDLL";
+        case IpcCommand::AndorInitialize: return "AndorInitialize";
+        case IpcCommand::AndorSetReadMode: return "AndorSetReadMode";
+        case IpcCommand::AndorSetAcquisitionMode: return "AndorSetAcquisitionMode";
+        case IpcCommand::AndorSetExposureTime: return "AndorSetExposureTime";
+        case IpcCommand::AndorSetTriggerMode: return "AndorSetTriggerMode";
+        case IpcCommand::AndorSetImage: return "AndorSetImage";
+        case IpcCommand::AndorStartAcquisition: return "AndorStartAcquisition";
+        case IpcCommand::AndorAbortAcquisition: return "AndorAbortAcquisition";
+        case IpcCommand::AndorWaitForAcquisition: return "AndorWaitForAcquisition";
+        case IpcCommand::AndorGetAcquiredData16: return "AndorGetAcquiredData16";
+        case IpcCommand::AndorGetStatus: return "AndorGetStatus";
+        case IpcCommand::AndorShutDown: return "AndorShutDown";
+    case IpcCommand::AndorSetKineticCycleTime: return "AndorSetKineticCycleTime";
+    case IpcCommand::AndorSetNumberKinetics: return "AndorSetNumberKinetics";
+    case IpcCommand::AndorGetImages16: return "AndorGetImages16";
     default: return "Unknown";
     }
 }
@@ -56,12 +73,9 @@ inline const char* ipcCommandName(IpcCommand command) {
 inline std::string ipcMessageSummary(const IpcMessage& msg) {
     std::ostringstream oss;
     oss << ipcCommandName(msg.command)
-        << " status=" << msg.status
         << " str='" << msg.strArg << "'"
-        << " i0=" << msg.iArgs[0]
-        << " i1=" << msg.iArgs[1]
-        << " d0=" << msg.dArgs[0]
-        << " d1=" << msg.dArgs[1]
-        << " dataSize=" << msg.dataSize;
+        << " i=[" << msg.iArgs[0] << "," << msg.iArgs[1] << "]"
+        << " d=[" << msg.dArgs[0] << "," << msg.dArgs[1] << "]"
+        << " sz=" << msg.dataSize;
     return oss.str();
 }

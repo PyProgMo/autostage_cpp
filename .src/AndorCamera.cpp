@@ -55,6 +55,19 @@ void AndorCamera::initialize(const std::string& iniDir) {
     std::cout << "Andor: " << xpix_ << " x " << ypix_ << " pixels\n";
 }
 
+void AndorCamera::configureSpectral(ReadMode readMode, TriggerMode trigMode, float exposureSeconds, int numSpectra) {
+    check(pSetReadMode(static_cast<int>(readMode)), "SetReadMode");
+    check(pSetAcquisitionMode(numSpectra > 1 ? 3 : 1), "SetAcquisitionMode"); // 3 = kinetic, 1 = single scan
+    check(pSetExposureTime(exposureSeconds), "SetExposureTime");
+    
+    if (numSpectra > 1) {
+        check(pSetNumberKinetics(numSpectra), "SetNumberKinetics");
+        check(pSetKineticCycleTime(0.0f), "SetKineticCycleTime");
+    }
+    
+    check(pSetTriggerMode(static_cast<int>(trigMode)), "SetTriggerMode");
+}
+
 void AndorCamera::configureFVBKinetic(float exposureSeconds, int numLines) {
     // Full Vertical Binning: collapses all rows → 1D spectrum per exposure
     // Kinetic mode: numLines exposures, each triggered by one TTL pulse

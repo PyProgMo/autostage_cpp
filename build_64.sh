@@ -14,12 +14,23 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p "$SCRIPT_DIR/build"
 
 "$CXX" -O2 -m64 \
--o "$SCRIPT_DIR/build/RasterScan64.exe" \
-"$SCRIPT_DIR/.src/RasterScan.cpp" \
-"$SCRIPT_DIR/.src/PIStageProxy.cpp" \
+-o "$SCRIPT_DIR/build/SpectrometerServer.exe" \
+"$SCRIPT_DIR/.src/SpectrometerServer.cpp" \
 "$SCRIPT_DIR/.src/Logger.cpp" \
 "$SCRIPT_DIR/.src/AndorCamera.cpp" \
 -I"$SCRIPT_DIR/.src" \
 -Wall
 
-echo "Successfully built build/RasterScan64.exe"
+echo "Successfully built build/SpectrometerServer.exe"
+
+echo "Building 64-bit ConsoleApp..."
+"$CXX" -O2 -m64 \
+-o "$SCRIPT_DIR/build/ConsoleApp.exe" \
+"$SCRIPT_DIR/.src/ConsoleApp.cpp" \
+"$SCRIPT_DIR/.src/PIStageProxy.cpp" \
+"$SCRIPT_DIR/.src/AndorCameraProxy.cpp" \
+"$SCRIPT_DIR/.src/Logger.cpp" \
+-I"$SCRIPT_DIR/.src" \
+-Wall
+
+echo "Successfully built build/ConsoleApp.exe"
