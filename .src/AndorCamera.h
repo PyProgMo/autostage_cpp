@@ -66,10 +66,7 @@ public:
                            int        numSpectra = 1);
 
     // FVB: single spectrum per trigger pulse (fastest for raster)
-    // If the requested trigger mode is unsupported, the implementation can
-    // fall back to slower modes to keep the scan runnable.
-    void configureFVBKinetic(float exposureSeconds, int numLines,
-                             TriggerMode trigMode = TriggerMode::FastExternal);
+    void configureFVBKinetic(float exposureSeconds, int numLines);
 
     void startAcquisition();
     void abortAcquisition();

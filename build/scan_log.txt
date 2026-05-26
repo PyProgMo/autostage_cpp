@@ -565,3 +565,991 @@ tatus=0
 2026-05-22 22:51:14.466 [INFO] StageServer: client disconnected
 2026-05-22 22:51:14.513 [INFO] StageServer: client disconnected, restarting loop...
 2026-05-22 22:51:14.514 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-26 10:59:27.081 [INFO] Starting StageServer (32-bit)
+2026-05-26 10:59:27.082 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-26 10:59:30.407 [INFO] RasterScan: starting
+2026-05-26 10:59:30.412 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-26 10:59:30.412 [INFO] PIStageProxy: connected to stage pipe
+2026-05-26 10:59:30.412 [INFO] StageServer: client connected
+2026-05-26 10:59:30.413 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-26 10:59:30.413 [INFO] StageServer: client handler started
+2026-05-26 10:59:30.414 [INFO] PIStageProxy: sending command LoadDLL status=0 str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:30.414 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-26 10:59:30.415 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:30.415 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-26 10:59:31.143 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-26 10:59:31.143 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-26 10:59:31.144 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-26 10:59:31.145 [INFO] PIStageProxy: sending command Connect status=0 str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:31.145 [INFO] PIStageProxy: write complete for command Connect
+2026-05-26 10:59:31.145 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:31.145 [INFO] StageServer: Connect serial='109021162'
+2026-05-26 10:59:31.161 [INFO] StageServer: connected to stage
+2026-05-26 10:59:31.161 [INFO] StageServer: response sent for Connect status=0
+2026-05-26 10:59:31.161 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-26 10:59:36.089 [INFO] Scan: 301 x 301 points, 1024 spectral px
+2026-05-26 10:59:36.089 [INFO] PIStageProxy: configureTriggerOutput channel=1 axis=X startMM=0.000000 stepMM=0.001000 stopMM=0.300000 pulseWidthUs=50
+2026-05-26 10:59:36.090 [INFO] PIStageProxy: sending command ConfigTriggerOut status=0 str='X' i0=1 i1=50 d0=0 d1=0.001 dataSize=0
+2026-05-26 10:59:36.090 [INFO] PIStageProxy: write complete for command ConfigTriggerOut
+2026-05-26 10:59:36.090 [INFO] StageServer: processing command ConfigTriggerOut str='X' i0=1 i1=50 d0=0 d1=0.001 dataSize=0
+2026-05-26 10:59:36.090 [INFO] StageServer: ConfigTriggerOut channel=1 axis=X startMM=0.000000 stepMM=0.001000 stopMM=0.300000 pulseWidthUs=50
+2026-05-26 10:59:36.092 [ERROR] PIStage: CTO paramsA failed: code=1 msg=Parameter syntax error
+2026-05-26 10:59:36.093 [ERROR] PIStage: CTO paramsB failed: code=1 msg=Parameter syntax error
+2026-05-26 10:59:36.094 [ERROR] PIStage: CTO paramsC failed: code=1 msg=Parameter syntax error
+2026-05-26 10:59:36.095 [INFO] StageServer: returned from configureTriggerOutput
+2026-05-26 10:59:36.095 [INFO] StageServer: response sent for ConfigTriggerOut status=0
+2026-05-26 10:59:36.095 [INFO] PIStageProxy: read complete for command ConfigTriggerOut status=0
+2026-05-26 10:59:36.095 [INFO] PIStageProxy: enableTriggerOutput channel=1 enable=true
+2026-05-26 10:59:36.096 [INFO] PIStageProxy: sending command EnableTriggerOut status=0 str='' i0=1 i1=1 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.096 [INFO] PIStageProxy: write complete for command EnableTriggerOut
+2026-05-26 10:59:36.096 [INFO] StageServer: processing command EnableTriggerOut str='' i0=1 i1=1 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.096 [INFO] StageServer: EnableTriggerOut channel=1 enable=true
+2026-05-26 10:59:36.097 [ERROR] PI Error: code=2 message=Unknown command
+2026-05-26 10:59:36.097 [ERROR] StageServer: exception executing command EnableTriggerOut: PI Error: code=2 message=Unknown command
+2026-05-26 10:59:36.097 [ERROR] StageServer: ConfigTriggerOut/EnableTriggerOut failed; continuing without hardware CTO
+2026-05-26 10:59:36.098 [INFO] PIStageProxy: read complete for command EnableTriggerOut status=-1
+2026-05-26 10:59:36.098 [ERROR] PIStageProxy: server returned error status: -1 cmd=EnableTriggerOut detail='PI Error: code=2 message=Unknown command'
+2026-05-26 10:59:36.100 [ERROR] Hardware sync unavailable: PIStageProxy: server returned error status: -1 cmd=EnableTriggerOut detail='PI Error: code=2 message=Unknown command'
+2026-05-26 10:59:36.103 [INFO] RasterScan: move to start requested X=0.000000 Y=0.000000
+2026-05-26 10:59:36.103 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 10:59:36.103 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.103 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.103 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.104 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.104 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.104 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.105 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.105 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 10:59:36.105 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.105 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.105 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.106 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.106 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.107 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.107 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.107 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 10:59:36.107 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.108 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.108 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.109 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.109 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.109 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 10:59:36.109 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.110 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.110 [INFO] RasterScan: pose before start move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 10:59:36.110 [INFO] PIStageProxy: moveAbs axis=X position=0.000000
+2026-05-26 10:59:36.110 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.110 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 10:59:36.110 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.110 [INFO] StageServer: MoveAbs axis=X target=0.000000
+2026-05-26 10:59:36.111 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 10:59:36.111 [INFO] PIStageProxy: moveAbs axis=Y position=0.000000
+2026-05-26 10:59:36.111 [INFO] PIStageProxy: sending command MoveAbs status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.111 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 10:59:36.111 [INFO] StageServer: processing command MoveAbs str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.111 [INFO] StageServer: MoveAbs axis=Y target=0.000000
+2026-05-26 10:59:36.111 [INFO] PIStageProxy: read complete for command MoveAbs status=0
+2026-05-26 10:59:36.111 [INFO] StageServer: response sent for MoveAbs status=0
+2026-05-26 10:59:36.111 [INFO] PIStageProxy: waitOnTarget axis=X timeoutMs=10000
+2026-05-26 10:59:36.111 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.111 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 10:59:36.111 [INFO] StageServer: processing command WaitOnTarget str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.112 [INFO] StageServer: WaitOnTarget axis=X timeoutMs=10000
+2026-05-26 10:59:36.113 [INFO] PIStageProxy: read complete for command WaitOnTarget status=0
+2026-05-26 10:59:36.113 [INFO] StageServer: response sent for WaitOnTarget status=0
+2026-05-26 10:59:36.113 [INFO] PIStageProxy: waitOnTarget axis=Y timeoutMs=10000
+2026-05-26 10:59:36.114 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.114 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 10:59:36.114 [INFO] StageServer: processing command WaitOnTarget str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.114 [INFO] StageServer: WaitOnTarget axis=Y timeoutMs=10000
+2026-05-26 10:59:36.114 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 10:59:36.114 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 10:59:36.115 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.115 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.115 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.116 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.116 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.116 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 10:59:36.116 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.116 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 10:59:36.116 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.116 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.116 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.117 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.117 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.117 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.118 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.118 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 10:59:36.118 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.118 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.118 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.119 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.119 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.119 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 10:59:36.119 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.119 [INFO] RasterScan: pose after start move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 10:59:36.171 [INFO] RasterScan: line 1 target Y=0.000000 target X=0.000000
+2026-05-26 10:59:36.171 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 10:59:36.172 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.172 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.172 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.173 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.174 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.174 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 10:59:36.174 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.174 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 10:59:36.174 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.174 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.174 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.176 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.176 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.176 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 10:59:36.176 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.176 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.176 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 10:59:36.177 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.177 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.177 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.178 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.178 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.178 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 10:59:36.178 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.178 [INFO] RasterScan: pose before line move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 10:59:36.178 [INFO] PIStageProxy: moveAbs axis=Y position=0.000000
+2026-05-26 10:59:36.178 [INFO] PIStageProxy: sending command MoveAbs status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.179 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 10:59:36.179 [INFO] StageServer: processing command MoveAbs str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.179 [INFO] StageServer: MoveAbs axis=Y target=0.000000
+2026-05-26 10:59:36.179 [INFO] PIStageProxy: read complete for command MoveAbs status=0
+2026-05-26 10:59:36.179 [INFO] StageServer: response sent for MoveAbs status=0
+2026-05-26 10:59:36.179 [INFO] PIStageProxy: moveAbs axis=X position=0.000000
+2026-05-26 10:59:36.179 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.179 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 10:59:36.179 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.180 [INFO] StageServer: MoveAbs axis=X target=0.000000
+2026-05-26 10:59:36.180 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 10:59:36.180 [INFO] PIStageProxy: waitOnTarget axis=Y timeoutMs=10000
+2026-05-26 10:59:36.180 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.180 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 10:59:36.180 [INFO] StageServer: processing command WaitOnTarget str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.180 [INFO] StageServer: WaitOnTarget axis=Y timeoutMs=10000
+2026-05-26 10:59:36.181 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 10:59:36.181 [INFO] PIStageProxy: waitOnTarget axis=X timeoutMs=10000
+2026-05-26 10:59:36.181 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.182 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 10:59:36.182 [INFO] StageServer: processing command WaitOnTarget str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.182 [INFO] StageServer: WaitOnTarget axis=X timeoutMs=10000
+2026-05-26 10:59:36.182 [INFO] PIStageProxy: read complete for command WaitOnTarget status=0
+2026-05-26 10:59:36.182 [INFO] StageServer: response sent for WaitOnTarget status=0
+2026-05-26 10:59:36.182 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 10:59:36.182 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.183 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.183 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.183 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.184 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.184 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.184 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.184 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 10:59:36.184 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.184 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.184 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.185 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.185 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.185 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.185 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.185 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 10:59:36.186 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.186 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.186 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.186 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.187 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.187 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.187 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.187 [INFO] RasterScan: pose after line move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 10:59:36.681 [INFO] PIStageProxy: moveAbs axis=X position=0.300000
+2026-05-26 10:59:36.681 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0.3 d1=0 dataSize=0
+2026-05-26 10:59:36.681 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 10:59:36.681 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0.3 d1=0 dataSize=0
+2026-05-26 10:59:36.682 [INFO] StageServer: MoveAbs axis=X target=0.300000
+2026-05-26 10:59:36.682 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 10:59:36.682 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 10:59:36.682 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.683 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.683 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.684 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.684 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.684 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.684 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.685 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 10:59:36.685 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.685 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.685 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.686 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.686 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.687 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 10:59:36.687 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.687 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 10:59:36.687 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.687 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 10:59:36.687 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 10:59:36.688 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.688 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 10:59:36.688 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 10:59:36.688 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 10:59:36.688 [INFO] RasterScan: pose after line X move command X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:00:23.279 [INFO] StageServer: client disconnected
+2026-05-26 11:00:23.335 [INFO] StageServer: client disconnected, restarting loop...
+2026-05-26 11:00:23.335 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-26 11:00:28.767 [INFO] Starting StageServer (32-bit)
+2026-05-26 11:00:28.769 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-26 11:00:33.206 [INFO] RasterScan: starting
+2026-05-26 11:00:33.208 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-26 11:00:33.208 [INFO] PIStageProxy: connected to stage pipe
+2026-05-26 11:00:33.208 [INFO] StageServer: client connected
+2026-05-26 11:00:33.209 [INFO] StageServer: client handler started
+2026-05-26 11:00:33.209 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-26 11:00:33.209 [INFO] PIStageProxy: sending command LoadDLL status=0 str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:33.209 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-26 11:00:33.209 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:33.209 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-26 11:00:33.221 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-26 11:00:33.221 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-26 11:00:33.221 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-26 11:00:33.222 [INFO] PIStageProxy: sending command Connect status=0 str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:33.222 [INFO] PIStageProxy: write complete for command Connect
+2026-05-26 11:00:33.222 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:33.222 [INFO] StageServer: Connect serial='109021162'
+2026-05-26 11:00:33.232 [INFO] StageServer: connected to stage
+2026-05-26 11:00:33.232 [INFO] StageServer: response sent for Connect status=0
+2026-05-26 11:00:33.232 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-26 11:00:36.567 [INFO] Scan: 301 x 301 points, 1392 spectral px
+2026-05-26 11:00:36.567 [INFO] PIStageProxy: configureTriggerOutput channel=1 axis=X startMM=0.000000 stepMM=0.001000 stopMM=0.300000 pulseWidthUs=50
+2026-05-26 11:00:36.568 [INFO] PIStageProxy: sending command ConfigTriggerOut status=0 str='X' i0=1 i1=50 d0=0 d1=0.001 dataSize=0
+2026-05-26 11:00:36.568 [INFO] PIStageProxy: write complete for command ConfigTriggerOut
+2026-05-26 11:00:36.568 [INFO] StageServer: processing command ConfigTriggerOut str='X' i0=1 i1=50 d0=0 d1=0.001 dataSize=0
+2026-05-26 11:00:36.568 [INFO] StageServer: ConfigTriggerOut channel=1 axis=X startMM=0.000000 stepMM=0.001000 stopMM=0.300000 pulseWidthUs=50
+2026-05-26 11:00:36.569 [ERROR] PIStage: CTO paramsA failed: code=1 msg=Parameter syntax error
+2026-05-26 11:00:36.571 [ERROR] PIStage: CTO paramsB failed: code=1 msg=Parameter syntax error
+2026-05-26 11:00:36.572 [ERROR] PIStage: CTO paramsC failed: code=1 msg=Parameter syntax error
+2026-05-26 11:00:36.572 [INFO] StageServer: returned from configureTriggerOutput
+2026-05-26 11:00:36.572 [INFO] StageServer: response sent for ConfigTriggerOut status=0
+2026-05-26 11:00:36.572 [INFO] PIStageProxy: read complete for command ConfigTriggerOut status=0
+2026-05-26 11:00:36.573 [INFO] PIStageProxy: enableTriggerOutput channel=1 enable=true
+2026-05-26 11:00:36.573 [INFO] PIStageProxy: sending command EnableTriggerOut status=0 str='' i0=1 i1=1 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.573 [INFO] PIStageProxy: write complete for command EnableTriggerOut
+2026-05-26 11:00:36.573 [INFO] StageServer: processing command EnableTriggerOut str='' i0=1 i1=1 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.573 [INFO] StageServer: EnableTriggerOut channel=1 enable=true
+2026-05-26 11:00:36.574 [ERROR] PI Error: code=2 message=Unknown command
+2026-05-26 11:00:36.575 [ERROR] StageServer: exception executing command EnableTriggerOut: PI Error: code=2 message=Unknown command
+2026-05-26 11:00:36.575 [ERROR] StageServer: ConfigTriggerOut/EnableTriggerOut failed; continuing without hardware CTO
+2026-05-26 11:00:36.575 [INFO] PIStageProxy: read complete for command EnableTriggerOut status=-1
+2026-05-26 11:00:36.575 [ERROR] PIStageProxy: server returned error status: -1 cmd=EnableTriggerOut detail='PI Error: code=2 message=Unknown command'
+2026-05-26 11:00:36.575 [ERROR] Hardware sync unavailable: PIStageProxy: server returned error status: -1 cmd=EnableTriggerOut detail='PI Error: code=2 message=Unknown command'
+2026-05-26 11:00:36.577 [INFO] RasterScan: move to start requested X=0.000000 Y=0.000000
+2026-05-26 11:00:36.577 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:00:36.577 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.577 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.577 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.579 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.579 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.579 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.579 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.580 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:00:36.580 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.580 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.580 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.581 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.581 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.581 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 11:00:36.581 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.581 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:00:36.581 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.582 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.582 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.583 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.583 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.583 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 11:00:36.583 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.583 [INFO] RasterScan: pose before start move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:00:36.584 [INFO] PIStageProxy: moveAbs axis=X position=0.000000
+2026-05-26 11:00:36.584 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.584 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:00:36.584 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.584 [INFO] StageServer: MoveAbs axis=X target=0.000000
+2026-05-26 11:00:36.585 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 11:00:36.585 [INFO] PIStageProxy: moveAbs axis=Y position=0.000000
+2026-05-26 11:00:36.585 [INFO] PIStageProxy: sending command MoveAbs status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.585 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:00:36.585 [INFO] StageServer: processing command MoveAbs str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.585 [INFO] StageServer: MoveAbs axis=Y target=0.000000
+2026-05-26 11:00:36.586 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 11:00:36.586 [INFO] PIStageProxy: waitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:00:36.586 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.586 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:00:36.586 [INFO] StageServer: processing command WaitOnTarget str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.586 [INFO] StageServer: WaitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:00:36.588 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 11:00:36.588 [INFO] PIStageProxy: waitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:00:36.588 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.588 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:00:36.588 [INFO] StageServer: processing command WaitOnTarget str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.588 [INFO] StageServer: WaitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:00:36.589 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 11:00:36.589 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:00:36.589 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.589 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.589 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.590 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.590 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.591 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 11:00:36.591 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.591 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:00:36.591 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.591 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.591 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.592 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.592 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.592 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.593 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.593 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:00:36.593 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.593 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.593 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.594 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.594 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.594 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.594 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.595 [INFO] RasterScan: pose after start move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:00:36.666 [INFO] RasterScan: line 1 target Y=0.000000 target X=0.000000
+2026-05-26 11:00:36.666 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:00:36.666 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.666 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.666 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.668 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.668 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.668 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:00:36.668 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.668 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.669 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:00:36.669 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.670 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.670 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.671 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.671 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.671 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.671 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.672 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:00:36.672 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.672 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.672 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.673 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.673 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.674 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.674 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.674 [INFO] RasterScan: pose before line move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:00:36.674 [INFO] PIStageProxy: moveAbs axis=Y position=0.000000
+2026-05-26 11:00:36.674 [INFO] PIStageProxy: sending command MoveAbs status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.674 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:00:36.674 [INFO] StageServer: processing command MoveAbs str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.674 [INFO] StageServer: MoveAbs axis=Y target=0.000000
+2026-05-26 11:00:36.674 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 11:00:36.675 [INFO] PIStageProxy: moveAbs axis=X position=0.000000
+2026-05-26 11:00:36.675 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.675 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:00:36.675 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.675 [INFO] StageServer: MoveAbs axis=X target=0.000000
+2026-05-26 11:00:36.675 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 11:00:36.675 [INFO] PIStageProxy: waitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:00:36.676 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.676 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:00:36.676 [INFO] StageServer: processing command WaitOnTarget str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.676 [INFO] StageServer: WaitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:00:36.677 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 11:00:36.677 [INFO] PIStageProxy: waitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:00:36.677 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.677 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:00:36.677 [INFO] StageServer: processing command WaitOnTarget str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.677 [INFO] StageServer: WaitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:00:36.678 [INFO] PIStageProxy: read complete for command WaitOnTarget status=0
+2026-05-26 11:00:36.678 [INFO] StageServer: response sent for WaitOnTarget status=0
+2026-05-26 11:00:36.678 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:00:36.678 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.678 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.678 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.679 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.679 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.679 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.679 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.679 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:00:36.679 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.679 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.679 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.680 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.680 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.681 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:00:36.681 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.681 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.681 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:00:36.681 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.681 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.681 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.682 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.682 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.682 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.682 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.682 [INFO] RasterScan: pose after line move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:00:36.793 [INFO] PIStageProxy: moveAbs axis=X position=0.300000
+2026-05-26 11:00:36.793 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0.3 d1=0 dataSize=0
+2026-05-26 11:00:36.794 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:00:36.794 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0.3 d1=0 dataSize=0
+2026-05-26 11:00:36.794 [INFO] StageServer: MoveAbs axis=X target=0.300000
+2026-05-26 11:00:36.794 [INFO] PIStageProxy: read complete for command MoveAbs status=0
+2026-05-26 11:00:36.795 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:00:36.795 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.795 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.795 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.797 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.797 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.797 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:00:36.797 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.797 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.797 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:00:36.798 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.798 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.798 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.799 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.799 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.799 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:00:36.799 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.799 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.799 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:00:36.799 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.799 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:00:36.799 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:00:36.800 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.800 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:00:36.801 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:00:36.801 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:00:36.801 [INFO] RasterScan: pose after line X move command X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:00:37.297 [ERROR] RasterScan: fatal: Andor error in GetImages16: code 20024
+2026-05-26 11:00:37.297 [INFO] StageServer: client disconnected
+2026-05-26 11:00:37.370 [INFO] StageServer: client disconnected, restarting loop...
+2026-05-26 11:00:37.371 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-26 11:01:51.751 [INFO] Starting StageServer (32-bit)
+2026-05-26 11:01:51.752 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-26 11:01:55.974 [INFO] RasterScan: starting
+2026-05-26 11:01:55.975 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-26 11:01:55.976 [INFO] PIStageProxy: connected to stage pipe
+2026-05-26 11:01:55.976 [INFO] StageServer: client connected
+2026-05-26 11:01:55.976 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-26 11:01:55.976 [INFO] PIStageProxy: sending command LoadDLL status=0 str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:01:55.976 [INFO] StageServer: client handler started
+2026-05-26 11:01:55.976 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-26 11:01:55.977 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:01:55.977 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-26 11:01:55.985 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-26 11:01:55.985 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-26 11:01:55.986 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-26 11:01:55.986 [INFO] PIStageProxy: sending command Connect status=0 str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:01:55.986 [INFO] PIStageProxy: write complete for command Connect
+2026-05-26 11:01:55.986 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:01:55.987 [INFO] StageServer: Connect serial='109021162'
+2026-05-26 11:01:55.995 [INFO] StageServer: connected to stage
+2026-05-26 11:01:55.995 [INFO] StageServer: response sent for Connect status=0
+2026-05-26 11:01:55.995 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-26 11:02:01.413 [INFO] Scan: 301 x 301 points, 1024 spectral px
+2026-05-26 11:02:01.413 [INFO] PIStageProxy: configureTriggerOutput channel=1 axis=X startMM=0.000000 stepMM=0.001000 stopMM=0.300000 pulseWidthUs=50
+2026-05-26 11:02:01.413 [INFO] PIStageProxy: sending command ConfigTriggerOut status=0 str='X' i0=1 i1=50 d0=0 d1=0.001 dataSize=0
+2026-05-26 11:02:01.413 [INFO] PIStageProxy: write complete for command ConfigTriggerOut
+2026-05-26 11:02:01.413 [INFO] StageServer: processing command ConfigTriggerOut str='X' i0=1 i1=50 d0=0 d1=0.001 dataSize=0
+2026-05-26 11:02:01.413 [INFO] StageServer: ConfigTriggerOut channel=1 axis=X startMM=0.000000 stepMM=0.001000 stopMM=0.300000 pulseWidthUs=50
+2026-05-26 11:02:01.415 [ERROR] PIStage: CTO paramsA failed: code=1 msg=Parameter syntax error
+2026-05-26 11:02:01.416 [ERROR] PIStage: CTO paramsB failed: code=1 msg=Parameter syntax error
+2026-05-26 11:02:01.417 [ERROR] PIStage: CTO paramsC failed: code=1 msg=Parameter syntax error
+2026-05-26 11:02:01.417 [INFO] StageServer: returned from configureTriggerOutput
+2026-05-26 11:02:01.417 [INFO] StageServer: response sent for ConfigTriggerOut status=0
+2026-05-26 11:02:01.417 [INFO] PIStageProxy: read complete for command ConfigTriggerOut status=0
+2026-05-26 11:02:01.417 [INFO] PIStageProxy: enableTriggerOutput channel=1 enable=true
+2026-05-26 11:02:01.417 [INFO] PIStageProxy: sending command EnableTriggerOut status=0 str='' i0=1 i1=1 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.418 [INFO] PIStageProxy: write complete for command EnableTriggerOut
+2026-05-26 11:02:01.418 [INFO] StageServer: processing command EnableTriggerOut str='' i0=1 i1=1 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.418 [INFO] StageServer: EnableTriggerOut channel=1 enable=true
+2026-05-26 11:02:01.418 [ERROR] PI Error: code=2 message=Unknown command
+2026-05-26 11:02:01.419 [ERROR] StageServer: exception executing command EnableTriggerOut: PI Error: code=2 message=Unknown command
+2026-05-26 11:02:01.419 [ERROR] StageServer: ConfigTriggerOut/EnableTriggerOut failed; continuing without hardware CTO
+2026-05-26 11:02:01.419 [INFO] StageServer: response sent for EnableTriggerOut status=-1
+2026-05-26 11:02:01.419 [INFO] PIStageProxy: read complete for command EnableTriggerOut status=-1
+2026-05-26 11:02:01.419 [ERROR] PIStageProxy: server returned error status: -1 cmd=EnableTriggerOut detail='PI Error: code=2 message=Unknown command'
+2026-05-26 11:02:01.420 [ERROR] Hardware sync unavailable: PIStageProxy: server returned error status: -1 cmd=EnableTriggerOut detail='PI Error: code=2 message=Unknown command'
+2026-05-26 11:02:01.421 [INFO] RasterScan: move to start requested X=0.000000 Y=0.000000
+2026-05-26 11:02:01.422 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:02:01.422 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.422 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.422 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.424 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.424 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.424 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:01.424 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.424 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.424 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:02:01.424 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.424 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.424 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.425 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.426 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.426 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:01.426 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.426 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.426 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:02:01.426 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.426 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.426 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.427 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.427 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.427 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.428 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.428 [INFO] RasterScan: pose before start move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:02:01.428 [INFO] PIStageProxy: moveAbs axis=X position=0.000000
+2026-05-26 11:02:01.428 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.428 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:02:01.428 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.428 [INFO] StageServer: MoveAbs axis=X target=0.000000
+2026-05-26 11:02:01.428 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 11:02:01.429 [INFO] PIStageProxy: moveAbs axis=Y position=0.000000
+2026-05-26 11:02:01.429 [INFO] PIStageProxy: sending command MoveAbs status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.429 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:02:01.429 [INFO] StageServer: processing command MoveAbs str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.429 [INFO] StageServer: MoveAbs axis=Y target=0.000000
+2026-05-26 11:02:01.429 [INFO] StageServer: response sent for MoveAbs status=0
+2026-05-26 11:02:01.429 [INFO] PIStageProxy: read complete for command MoveAbs status=0
+2026-05-26 11:02:01.429 [INFO] PIStageProxy: waitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:02:01.429 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.430 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:02:01.430 [INFO] StageServer: processing command WaitOnTarget str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.430 [INFO] StageServer: WaitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:02:01.431 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 11:02:01.432 [INFO] PIStageProxy: waitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:02:01.432 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.432 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:02:01.432 [INFO] StageServer: processing command WaitOnTarget str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.432 [INFO] StageServer: WaitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:02:01.433 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 11:02:01.433 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:02:01.433 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.433 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.433 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.434 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.434 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.434 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.434 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.434 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:02:01.434 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.434 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.434 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.435 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.436 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.436 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 11:02:01.436 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.436 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:02:01.436 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.436 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.436 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.437 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.437 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.437 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 11:02:01.437 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.437 [INFO] RasterScan: pose after start move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:02:01.488 [INFO] RasterScan: line 1 target Y=0.000000 target X=0.000000
+2026-05-26 11:02:01.489 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:02:01.489 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.489 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.489 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.491 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.491 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.491 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:01.491 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.492 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.492 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:02:01.492 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.492 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.492 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.494 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.494 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.494 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:01.494 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.494 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.494 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:02:01.495 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.495 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.495 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.496 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.496 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.496 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:01.496 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.496 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.497 [INFO] RasterScan: pose before line move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:02:01.497 [INFO] PIStageProxy: moveAbs axis=Y position=0.000000
+2026-05-26 11:02:01.497 [INFO] PIStageProxy: sending command MoveAbs status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.497 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:02:01.497 [INFO] StageServer: processing command MoveAbs str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.497 [INFO] StageServer: MoveAbs axis=Y target=0.000000
+2026-05-26 11:02:01.498 [INFO] PIStageProxy: read complete for command MoveAbs status=0
+2026-05-26 11:02:01.498 [INFO] StageServer: response sent for MoveAbs status=0
+2026-05-26 11:02:01.498 [INFO] PIStageProxy: moveAbs axis=X position=0.000000
+2026-05-26 11:02:01.498 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.498 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:02:01.498 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.498 [INFO] StageServer: MoveAbs axis=X target=0.000000
+2026-05-26 11:02:01.498 [INFO] PIStageProxy: read complete for command MoveAbs status=0
+2026-05-26 11:02:01.498 [INFO] StageServer: response sent for MoveAbs status=0
+2026-05-26 11:02:01.499 [INFO] PIStageProxy: waitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:02:01.499 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.499 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:02:01.499 [INFO] StageServer: processing command WaitOnTarget str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.499 [INFO] StageServer: WaitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:02:01.500 [INFO] StageServer: response sent for WaitOnTarget status=0
+2026-05-26 11:02:01.500 [INFO] PIStageProxy: read complete for command WaitOnTarget status=0
+2026-05-26 11:02:01.500 [INFO] PIStageProxy: waitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:02:01.500 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.500 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:02:01.500 [INFO] StageServer: processing command WaitOnTarget str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.500 [INFO] StageServer: WaitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:02:01.501 [INFO] StageServer: response sent for WaitOnTarget status=0
+2026-05-26 11:02:01.501 [INFO] PIStageProxy: read complete for command WaitOnTarget status=0
+2026-05-26 11:02:01.501 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:02:01.501 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.501 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.501 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.502 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.502 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.502 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:01.503 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.503 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.503 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:02:01.503 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.503 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.503 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.504 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.504 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.504 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:01.504 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.504 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.505 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:02:01.505 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.505 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:01.505 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:01.506 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.506 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:01.506 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:01.506 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:01.506 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:01.507 [INFO] RasterScan: pose after line move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:02:02.442 [INFO] PIStageProxy: moveAbs axis=X position=0.300000
+2026-05-26 11:02:02.443 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0.3 d1=0 dataSize=0
+2026-05-26 11:02:02.444 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:02:02.444 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0.3 d1=0 dataSize=0
+2026-05-26 11:02:02.444 [INFO] StageServer: MoveAbs axis=X target=0.300000
+2026-05-26 11:02:02.444 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 11:02:02.444 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:02:02.444 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:02.445 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:02.445 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:02.446 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:02.446 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:02.446 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:02.446 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:02.446 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:02.446 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:02:02.447 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:02.447 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:02.447 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:02.448 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:02.448 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:02.448 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:02.448 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:02.448 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:02.448 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:02:02.448 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:02.448 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:02:02.448 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:02:02.449 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:02.450 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:02:02.450 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:02:02.450 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:02:02.450 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:02:02.450 [INFO] RasterScan: pose after line X move command X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:53:00.593 [INFO] Starting StageServer (32-bit)
+2026-05-26 11:53:00.594 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-26 11:53:04.748 [INFO] RasterScan: starting
+2026-05-26 11:53:04.750 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-26 11:53:04.750 [INFO] PIStageProxy: connected to stage pipe
+2026-05-26 11:53:04.750 [INFO] StageServer: client connected
+2026-05-26 11:53:04.751 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-26 11:53:04.751 [INFO] PIStageProxy: sending command LoadDLL status=0 str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:04.751 [INFO] StageServer: client handler started
+2026-05-26 11:53:04.751 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-26 11:53:04.751 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:04.751 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-26 11:53:04.759 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-26 11:53:04.759 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-26 11:53:04.760 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-26 11:53:04.760 [INFO] PIStageProxy: sending command Connect status=0 str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:04.760 [INFO] PIStageProxy: write complete for command Connect
+2026-05-26 11:53:04.761 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:04.761 [INFO] StageServer: Connect serial='109021162'
+2026-05-26 11:53:04.770 [INFO] StageServer: connected to stage
+2026-05-26 11:53:04.770 [INFO] StageServer: response sent for Connect status=0
+2026-05-26 11:53:04.770 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-26 11:53:09.160 [INFO] Scan: 301 x 301 points, 1024 spectral px
+2026-05-26 11:53:09.161 [INFO] PIStageProxy: configureTriggerOutput channel=1 axis=X startMM=0.000000 stepMM=0.001000 stopMM=0.300000 pulseWidthUs=50
+2026-05-26 11:53:09.161 [INFO] PIStageProxy: sending command ConfigTriggerOut status=0 str='X' i0=1 i1=50 d0=0 d1=0.001 dataSize=0
+2026-05-26 11:53:09.161 [INFO] PIStageProxy: write complete for command ConfigTriggerOut
+2026-05-26 11:53:09.161 [INFO] StageServer: processing command ConfigTriggerOut str='X' i0=1 i1=50 d0=0 d1=0.001 dataSize=0
+2026-05-26 11:53:09.162 [INFO] StageServer: ConfigTriggerOut channel=1 axis=X startMM=0.000000 stepMM=0.001000 stopMM=0.300000 pulseWidthUs=50
+2026-05-26 11:53:09.163 [ERROR] PIStage: CTO paramsA failed: code=1 msg=Parameter syntax error
+2026-05-26 11:53:09.164 [ERROR] PIStage: CTO paramsB failed: code=1 msg=Parameter syntax error
+2026-05-26 11:53:09.165 [ERROR] PIStage: CTO paramsC failed: code=1 msg=Parameter syntax error
+2026-05-26 11:53:09.166 [INFO] StageServer: returned from configureTriggerOutput
+2026-05-26 11:53:09.166 [INFO] PIStageProxy: read complete for command ConfigTriggerOut status=0
+2026-05-26 11:53:09.166 [INFO] PIStageProxy: enableTriggerOutput channel=1 enable=true
+2026-05-26 11:53:09.166 [INFO] PIStageProxy: sending command EnableTriggerOut status=0 str='' i0=1 i1=1 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.166 [INFO] PIStageProxy: write complete for command EnableTriggerOut
+2026-05-26 11:53:09.166 [INFO] StageServer: processing command EnableTriggerOut str='' i0=1 i1=1 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.166 [INFO] StageServer: EnableTriggerOut channel=1 enable=true
+2026-05-26 11:53:09.167 [ERROR] PI Error: code=2 message=Unknown command
+2026-05-26 11:53:09.168 [ERROR] StageServer: exception executing command EnableTriggerOut: PI Error: code=2 message=Unknown command
+2026-05-26 11:53:09.168 [ERROR] StageServer: ConfigTriggerOut/EnableTriggerOut failed; continuing without hardware CTO
+2026-05-26 11:53:09.168 [INFO] StageServer: response sent for EnableTriggerOut status=-1
+2026-05-26 11:53:09.168 [INFO] PIStageProxy: read complete for command EnableTriggerOut status=-1
+2026-05-26 11:53:09.168 [ERROR] PIStageProxy: server returned error status: -1 cmd=EnableTriggerOut detail='PI Error: code=2 message=Unknown command'
+2026-05-26 11:53:09.168 [ERROR] Hardware sync unavailable: PIStageProxy: server returned error status: -1 cmd=EnableTriggerOut detail='PI Error: code=2 message=Unknown command'
+2026-05-26 11:53:09.170 [INFO] RasterScan: move to start requested X=0.000000 Y=0.000000
+2026-05-26 11:53:09.170 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:53:09.170 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.170 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.170 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.171 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.172 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.172 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:53:09.172 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.172 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.172 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:53:09.172 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.172 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.172 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.173 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.173 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.174 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:53:09.174 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.174 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.174 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:53:09.174 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.174 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.174 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.175 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.175 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.175 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:53:09.175 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.175 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.176 [INFO] RasterScan: pose before start move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:53:09.176 [INFO] PIStageProxy: moveAbs axis=X position=0.000000
+2026-05-26 11:53:09.176 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.176 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:53:09.176 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.176 [INFO] StageServer: MoveAbs axis=X target=0.000000
+2026-05-26 11:53:09.176 [INFO] StageServer: response sent for MoveAbs status=0
+2026-05-26 11:53:09.176 [INFO] PIStageProxy: read complete for command MoveAbs status=0
+2026-05-26 11:53:09.176 [INFO] PIStageProxy: moveAbs axis=Y position=0.000000
+2026-05-26 11:53:09.177 [INFO] PIStageProxy: sending command MoveAbs status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.177 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:53:09.177 [INFO] StageServer: processing command MoveAbs str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.177 [INFO] StageServer: MoveAbs axis=Y target=0.000000
+2026-05-26 11:53:09.177 [INFO] PIStageProxy: read complete for command MoveAbs status=0
+2026-05-26 11:53:09.177 [INFO] PIStageProxy: waitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:53:09.177 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.178 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:53:09.178 [INFO] StageServer: processing command WaitOnTarget str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.178 [INFO] StageServer: WaitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:53:09.180 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 11:53:09.180 [INFO] PIStageProxy: waitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:53:09.180 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.180 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:53:09.180 [INFO] StageServer: processing command WaitOnTarget str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.180 [INFO] StageServer: WaitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:53:09.181 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 11:53:09.181 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:53:09.181 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.181 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.181 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.182 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.182 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.182 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 11:53:09.182 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.183 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:53:09.183 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.183 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.183 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.184 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.184 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.184 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 11:53:09.184 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.184 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:53:09.184 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.184 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.184 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.185 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.186 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.186 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.186 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.186 [INFO] RasterScan: pose after start move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:53:09.238 [INFO] RasterScan: line 1 target Y=0.000000 target X=0.000000
+2026-05-26 11:53:09.239 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:53:09.239 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.239 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.239 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.241 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.241 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.242 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:53:09.242 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.242 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.242 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:53:09.242 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.242 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.242 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.244 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.244 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.244 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.244 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.245 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:53:09.245 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.245 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.245 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.246 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.246 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.246 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 11:53:09.246 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.246 [INFO] RasterScan: pose before line move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:53:09.247 [INFO] PIStageProxy: moveAbs axis=Y position=0.000000
+2026-05-26 11:53:09.247 [INFO] PIStageProxy: sending command MoveAbs status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.247 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:53:09.247 [INFO] StageServer: processing command MoveAbs str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.247 [INFO] StageServer: MoveAbs axis=Y target=0.000000
+2026-05-26 11:53:09.247 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 11:53:09.247 [INFO] PIStageProxy: moveAbs axis=X position=0.000000
+2026-05-26 11:53:09.247 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.247 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:53:09.247 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.248 [INFO] StageServer: MoveAbs axis=X target=0.000000
+2026-05-26 11:53:09.248 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 11:53:09.248 [INFO] PIStageProxy: waitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:53:09.248 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.248 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:53:09.248 [INFO] StageServer: processing command WaitOnTarget str='Y' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.248 [INFO] StageServer: WaitOnTarget axis=Y timeoutMs=10000
+2026-05-26 11:53:09.249 [INFO] StageServer: response sent for WaitOnTarget status=0
+tatus=0
+2026-05-26 11:53:09.249 [INFO] PIStageProxy: waitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:53:09.249 [INFO] PIStageProxy: sending command WaitOnTarget status=0 str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.249 [INFO] PIStageProxy: write complete for command WaitOnTarget
+2026-05-26 11:53:09.249 [INFO] StageServer: processing command WaitOnTarget str='X' i0=10000 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.249 [INFO] StageServer: WaitOnTarget axis=X timeoutMs=10000
+2026-05-26 11:53:09.250 [INFO] PIStageProxy: read complete for command WaitOnTarget status=0
+2026-05-26 11:53:09.250 [INFO] StageServer: response sent for WaitOnTarget status=0
+2026-05-26 11:53:09.250 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:53:09.250 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.250 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.250 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.251 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.251 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.251 [INFO] StageServer: response sent for GetPos status=-1
+atus=-1
+2026-05-26 11:53:09.251 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.252 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:53:09.252 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.252 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.252 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.253 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.253 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.253 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.253 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.253 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:53:09.253 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.253 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.253 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.254 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.254 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.255 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:53:09.255 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.255 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.255 [INFO] RasterScan: pose after line move X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:53:09.741 [INFO] PIStageProxy: moveAbs axis=X position=0.300000
+2026-05-26 11:53:09.741 [INFO] PIStageProxy: sending command MoveAbs status=0 str='X' i0=0 i1=0 d0=0.3 d1=0 dataSize=0
+2026-05-26 11:53:09.742 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-26 11:53:09.742 [INFO] StageServer: processing command MoveAbs str='X' i0=0 i1=0 d0=0.3 d1=0 dataSize=0
+2026-05-26 11:53:09.742 [INFO] StageServer: MoveAbs axis=X target=0.300000
+2026-05-26 11:53:09.742 [INFO] StageServer: response sent for MoveAbs status=0
+tatus=0
+2026-05-26 11:53:09.742 [INFO] PIStageProxy: getPos axis=X
+2026-05-26 11:53:09.742 [INFO] PIStageProxy: sending command GetPos status=0 str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.743 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.743 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.744 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.744 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.744 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:53:09.744 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.744 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.744 [INFO] PIStageProxy: getPos axis=Y
+2026-05-26 11:53:09.745 [INFO] PIStageProxy: sending command GetPos status=0 str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.745 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.745 [INFO] StageServer: processing command GetPos str='Y' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.746 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.746 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.746 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:53:09.746 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.746 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.746 [INFO] PIStageProxy: getPos axis=Z
+2026-05-26 11:53:09.746 [INFO] PIStageProxy: sending command GetPos status=0 str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.746 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-26 11:53:09.746 [INFO] StageServer: processing command GetPos str='Z' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-26 11:53:09.747 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.748 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-26 11:53:09.748 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-26 11:53:09.748 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-26 11:53:09.748 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-26 11:53:09.748 [INFO] RasterScan: pose after line X move command X=X=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Y=Y=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error') Z=Z=ERR(PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error')
+2026-05-26 11:58:19.877 [INFO] StageServer: client disconnected
+2026-05-26 11:58:19.929 [INFO] StageServer: client disconnected, restarting loop...
+2026-05-26 11:58:19.929 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...

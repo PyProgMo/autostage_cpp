@@ -55,8 +55,7 @@ void AndorCamera::initialize(const std::string& iniDir) {
     std::cout << "Andor: " << xpix_ << " x " << ypix_ << " pixels\n";
 }
 
-void AndorCamera::configureFVBKinetic(float exposureSeconds, int numLines,
-                                      TriggerMode trigMode) {
+void AndorCamera::configureFVBKinetic(float exposureSeconds, int numLines) {
     // Full Vertical Binning: collapses all rows → 1D spectrum per exposure
     // Kinetic mode: numLines exposures, each triggered by one TTL pulse
     check(pSetReadMode(0),              "SetReadMode FVB");
@@ -64,27 +63,8 @@ void AndorCamera::configureFVBKinetic(float exposureSeconds, int numLines,
     check(pSetExposureTime(exposureSeconds), "SetExposureTime");
     check(pSetKineticCycleTime(0.0f),   "SetKineticCycleTime 0=min");
     check(pSetNumberKinetics(numLines), "SetNumberKinetics");
-
-    const TriggerMode fallbackModes[] = {
-        trigMode,
-        TriggerMode::External,
-        TriggerMode::Internal
-    };
-
-    for (TriggerMode mode : fallbackModes) {
-        try {
-            check(pSetTriggerMode(static_cast<int>(mode)),
-                  mode == TriggerMode::FastExternal ? "SetTriggerMode FastExternal"
-                  : mode == TriggerMode::External   ? "SetTriggerMode External"
-                                                    : "SetTriggerMode Internal");
-            return;
-        } catch (const std::exception&) {
-            std::cout << "Andor: trigger mode " << static_cast<int>(mode)
-                      << " not accepted, trying next fallback.\n";
-        }
-    }
-
-    throw std::runtime_error("Andor: no supported trigger mode available for FVB kinetic mode");
+    // Fast External: one TTL rising edge = one acquisition
+    check(pSetTriggerMode(7),           "SetTriggerMode FastExternal");
 }
 
 void AndorCamera::startAcquisition() {
