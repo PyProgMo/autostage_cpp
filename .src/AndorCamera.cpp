@@ -116,6 +116,9 @@ void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSp
         throw std::runtime_error("Andor: testAcquireAndSave requires non-empty spectrum data");
     }
 
+    // debug 1: print cv::getBuildInformation()
+    std::cout << "OpenCV Build Information:\n" << cv::getBuildInformation() << "\n";
+
     // Find max value for scaling
     WORD maxVal = 0;
     for (WORD val : spectra) {
@@ -131,7 +134,8 @@ void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSp
             img.at<uchar>(i, j) = static_cast<uchar>((val * 255) / maxVal);
         }
     }
-
+    // debug 1: print cv::getBuildInformation()
+    std::cout << "OpenCV Build Information:\n" << cv::getBuildInformation() << "\n";
     // Save as PNG
     if (!cv::imwrite(filename + ".png", img)) {
         std::cerr << "Failed to save PNG: " << filename << "\n";

@@ -2292,3 +2292,52 @@ tatus=0
 2026-05-27 13:57:34.916 [INFO] StageServer: disconnected from stage
 2026-05-27 13:57:34.916 [INFO] StageServer: response sent for Disconnect status=0
 2026-05-27 13:57:34.916 [INFO] PIStageProxy: read complete for command Disconnect status=0
+2026-05-27 13:59:16.821 [INFO] Starting StageServer (32-bit)
+2026-05-27 13:59:16.822 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 13:59:21.384 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-27 13:59:21.387 [INFO] PIStageProxy: connected to stage pipe
+2026-05-27 13:59:21.387 [INFO] StageServer: client connected
+2026-05-27 13:59:21.388 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
+2026-05-27 13:59:21.389 [INFO] StageServer: client handler started
+2026-05-27 13:59:21.389 [INFO] AndorCameraProxy: connected to andor pipe
+2026-05-27 13:59:34.618 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 13:59:34.619 [INFO] PIStageProxy: sending command LoadDLL str='E7XX_GCS2_DLL.dll' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:59:34.619 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-27 13:59:34.620 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:59:34.621 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 13:59:35.292 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-27 13:59:35.292 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-27 13:59:35.293 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-27 13:59:35.293 [INFO] PIStageProxy: sending command Connect str='109021162' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:59:35.293 [INFO] PIStageProxy: write complete for command Connect
+2026-05-27 13:59:35.293 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:59:35.294 [INFO] StageServer: Connect serial='109021162'
+2026-05-27 13:59:35.303 [INFO] StageServer: connected to stage
+2026-05-27 13:59:35.303 [INFO] StageServer: response sent for Connect status=0
+2026-05-27 13:59:35.303 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-27 14:12:09.214 [INFO] PIStageProxy: disconnect request
+2026-05-27 14:12:09.215 [INFO] PIStageProxy: sending command Disconnect str='' i=[0,0] d=[0,0] sz=0
+2026-05-27 14:12:09.216 [INFO] PIStageProxy: write complete for command Disconnect
+2026-05-27 14:12:09.216 [INFO] StageServer: processing command Disconnect str='' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 14:12:09.272 [INFO] StageServer: disconnected from stage
+2026-05-27 14:12:09.273 [INFO] StageServer: response sent for Disconnect status=0
+2026-05-27 14:12:09.273 [INFO] PIStageProxy: read complete for command Disconnect status=0
+2026-05-27 14:12:55.631 [INFO] Starting StageServer (32-bit)
+2026-05-27 14:12:55.632 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 14:13:01.428 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-27 14:13:01.432 [INFO] PIStageProxy: connected to stage pipe
+2026-05-27 14:13:01.432 [INFO] StageServer: client connected
+2026-05-27 14:13:01.432 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
+2026-05-27 14:13:01.433 [INFO] StageServer: client handler started
+2026-05-27 14:13:01.433 [INFO] AndorCameraProxy: connected to andor pipe
+2026-05-27 14:15:42.253 [INFO] StageServer: client disconnected
+2026-05-27 14:15:42.254 [INFO] StageServer: client disconnected, restarting loop...
+2026-05-27 14:15:42.255 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 14:15:59.907 [INFO] Starting StageServer (32-bit)
+2026-05-27 14:15:59.908 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 14:16:10.017 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-27 14:16:10.020 [INFO] PIStageProxy: connected to stage pipe
+2026-05-27 14:16:10.020 [INFO] StageServer: client connected
+2026-05-27 14:16:10.021 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
+2026-05-27 14:16:10.022 [INFO] StageServer: client handler started
+2026-05-27 14:16:10.022 [INFO] AndorCameraProxy: connected to andor pipe

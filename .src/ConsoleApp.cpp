@@ -63,7 +63,7 @@ int main() {
             std::cout << "  andor connect\n";
             std::cout << "  andor measure\n";
             std::cout << "  andor setTint [milliseconds]\n";
-            std::cout << "  andor save_test_spectrum\n";
+            std::cout << "  andor test\n";
             std::cout << "  andor disconnect\n";
             std::cout << "  scan\n";
             continue;
@@ -129,7 +129,7 @@ int main() {
                         std::cout << data[i] << " ";
                     }
                     std::cout << "...\n";
-                } else if (action == "save_test_spectrum") {
+                } else if (action == "test") {
                     cam->testAcquireAndSave(0.1f, "test_spectrum");
                     std::cout << "Measured spectrum saved to test_spectrum as .png and .txt\n";
                 } else if (action == "setTint") {

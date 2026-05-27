@@ -146,18 +146,6 @@ void AndorCameraProxy::waitForAcquisition() {
     sendCommand(req, res);
 }
 
-// old test function
-/*
-void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& filename) {
-    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS);
-    startAcquisition();
-    waitForAcquisition();
-    auto data = getAllSpectra(1, xpix_);
-
-    std::ofstream outFile(filename, std::ios::binary);
-    outFile.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(WORD));
-    outFile.close();
-}*/
 // new test function: 
 void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
     if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
@@ -184,8 +172,21 @@ void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int 
     }
 
     // Save the image as PNG
-    if (!cv::imwrite(filename, img)) {
+    if (!cv::imwrite(filename + ".png", img)) {
         throw std::runtime_error(std::string("AndorCameraProxy: failed to write PNG: ") + filename);
+    }
+    
+    // Save to .txt file
+    std::ofstream outFile(filename + ".txt");
+    if (!outFile) {
+        throw std::runtime_error(std::string("AndorCameraProxy: failed to write TXT: ") + filename);
+    } else {
+        for (int i = 0; i < numSpectra; i++) {
+            for (int j = 0; j < pixelsPerSpectrum; j++) {
+                outFile << spectra[i * pixelsPerSpectrum + j] << " ";
+            }
+            outFile << "\n";
+        }
     }
 }
 
