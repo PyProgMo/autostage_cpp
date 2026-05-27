@@ -2023,3 +2023,272 @@ tatus=0
 2026-05-26 18:24:34.647 [INFO] StageServer: client disconnected
 2026-05-26 18:24:34.647 [INFO] StageServer: client disconnected, restarting loop...
 2026-05-26 18:24:34.648 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 08:59:10.284 [INFO] Starting StageServer (32-bit)
+2026-05-27 08:59:10.285 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 08:59:16.617 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-27 08:59:16.620 [INFO] PIStageProxy: connected to stage pipe
+2026-05-27 08:59:16.620 [INFO] StageServer: client connected
+2026-05-27 08:59:16.621 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
+2026-05-27 08:59:16.622 [INFO] StageServer: client handler started
+2026-05-27 08:59:16.622 [INFO] AndorCameraProxy: connected to andor pipe
+2026-05-27 08:59:22.358 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 08:59:22.358 [INFO] PIStageProxy: sending command LoadDLL str='E7XX_GCS2_DLL.dll' i=[0,0] d=[0,0] sz=0
+2026-05-27 08:59:22.358 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-27 08:59:22.359 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 08:59:22.359 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 08:59:23.051 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-27 08:59:23.051 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-27 08:59:23.051 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-27 08:59:23.051 [INFO] PIStageProxy: sending command Connect str='109021162' i=[0,0] d=[0,0] sz=0
+2026-05-27 08:59:23.051 [INFO] PIStageProxy: write complete for command Connect
+2026-05-27 08:59:23.051 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 08:59:23.051 [INFO] StageServer: Connect serial='109021162'
+2026-05-27 08:59:23.619 [ERROR] PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-27 08:59:23.623 [ERROR] StageServer: exception executing command Connect: PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-27 08:59:23.624 [INFO] StageServer: response sent for Connect status=-1
+2026-05-27 08:59:23.624 [INFO] PIStageProxy: read complete for command Connect status=-1
+2026-05-27 08:59:23.625 [ERROR] PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162'
+2026-05-27 08:59:34.566 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 08:59:34.567 [INFO] PIStageProxy: sending command LoadDLL str='E7XX_GCS2_DLL.dll' i=[0,0] d=[0,0] sz=0
+2026-05-27 08:59:34.568 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-27 08:59:34.568 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 08:59:34.569 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 08:59:34.569 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-27 08:59:34.569 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-27 08:59:34.570 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-27 08:59:34.570 [INFO] PIStageProxy: sending command Connect str='109021162' i=[0,0] d=[0,0] sz=0
+2026-05-27 08:59:34.570 [INFO] PIStageProxy: write complete for command Connect
+2026-05-27 08:59:34.570 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 08:59:34.570 [INFO] StageServer: Connect serial='109021162'
+2026-05-27 08:59:35.122 [ERROR] PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-27 08:59:35.123 [ERROR] StageServer: exception executing command Connect: PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-27 08:59:35.125 [INFO] StageServer: response sent for Connect status=-1
+2026-05-27 08:59:35.125 [INFO] PIStageProxy: read complete for command Connect status=-1
+2026-05-27 08:59:35.126 [ERROR] PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162'
+2026-05-27 09:00:03.606 [INFO] PIStageProxy: disconnect request
+2026-05-27 09:00:03.607 [INFO] PIStageProxy: sending command Disconnect str='' i=[0,0] d=[0,0] sz=0
+2026-05-27 09:00:03.608 [INFO] PIStageProxy: write complete for command Disconnect
+2026-05-27 09:00:03.608 [INFO] StageServer: processing command Disconnect str='' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 09:00:03.609 [INFO] StageServer: disconnected from stage
+2026-05-27 09:00:03.610 [INFO] StageServer: response sent for Disconnect status=0
+2026-05-27 09:00:03.611 [INFO] PIStageProxy: read complete for command Disconnect status=0
+2026-05-27 09:00:08.388 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 09:00:08.389 [INFO] PIStageProxy: sending command LoadDLL str='E7XX_GCS2_DLL.dll' i=[0,0] d=[0,0] sz=0
+2026-05-27 09:00:08.389 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-27 09:00:08.389 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 09:00:08.390 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 09:00:08.390 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-27 09:00:08.390 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-27 09:00:08.390 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-27 09:00:08.390 [INFO] PIStageProxy: sending command Connect str='109021162' i=[0,0] d=[0,0] sz=0
+2026-05-27 09:00:08.390 [INFO] PIStageProxy: write complete for command Connect
+2026-05-27 09:00:08.390 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 09:00:08.391 [INFO] StageServer: Connect serial='109021162'
+2026-05-27 09:00:08.395 [INFO] StageServer: connected to stage
+2026-05-27 09:00:08.396 [INFO] StageServer: response sent for Connect status=0
+2026-05-27 09:00:08.396 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-27 10:32:18.586 [INFO] Starting StageServer (32-bit)
+2026-05-27 10:32:18.588 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 10:32:23.933 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-27 10:32:23.936 [INFO] PIStageProxy: connected to stage pipe
+2026-05-27 10:32:23.936 [INFO] StageServer: client connected
+2026-05-27 10:32:23.937 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
+2026-05-27 10:32:23.938 [INFO] StageServer: client handler started
+2026-05-27 10:32:23.938 [INFO] AndorCameraProxy: connected to andor pipe
+2026-05-27 10:32:30.075 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 10:32:30.076 [INFO] PIStageProxy: sending command LoadDLL str='E7XX_GCS2_DLL.dll' i=[0,0] d=[0,0] sz=0
+2026-05-27 10:32:30.076 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-27 10:32:30.076 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 10:32:30.077 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 10:32:30.753 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-27 10:32:30.753 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-27 10:32:30.754 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-27 10:32:30.754 [INFO] PIStageProxy: sending command Connect str='109021162' i=[0,0] d=[0,0] sz=0
+2026-05-27 10:32:30.754 [INFO] PIStageProxy: write complete for command Connect
+2026-05-27 10:32:30.754 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 10:32:30.755 [INFO] StageServer: Connect serial='109021162'
+2026-05-27 10:32:30.764 [INFO] StageServer: connected to stage
+2026-05-27 10:32:30.764 [INFO] StageServer: response sent for Connect status=0
+2026-05-27 10:32:30.764 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-27 10:32:44.235 [INFO] PIStageProxy: getPos axis=1
+2026-05-27 10:32:44.235 [INFO] PIStageProxy: sending command GetPos str='1' i=[0,0] d=[0,0] sz=0
+2026-05-27 10:32:44.236 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 10:32:44.236 [INFO] StageServer: processing command GetPos str='1' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 10:32:44.238 [ERROR] PI Error: code=26 message=Parameter missing
+2026-05-27 10:32:44.239 [ERROR] StageServer: exception executing command GetPos: PI Error: code=26 message=Parameter missing
+2026-05-27 10:32:44.239 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-27 10:32:44.239 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-27 10:32:44.239 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=26 message=Parameter missing'
+2026-05-27 10:32:45.835 [INFO] PIStageProxy: getPos axis=1
+2026-05-27 10:32:45.836 [INFO] PIStageProxy: sending command GetPos str='1' i=[0,0] d=[0,0] sz=0
+2026-05-27 10:32:45.836 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 10:32:45.836 [INFO] StageServer: processing command GetPos str='1' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 10:32:45.838 [INFO] StageServer: GetPos axis=1 value=20.004974
+2026-05-27 10:32:45.838 [INFO] StageServer: response sent for GetPos status=0
+2026-05-27 10:32:45.838 [INFO] PIStageProxy: read complete for command GetPos status=0
+2026-05-27 10:32:45.838 [INFO] PIStageProxy: getPos axis=1 value=20.004974
+2026-05-27 10:32:48.268 [INFO] PIStageProxy: getPos axis=X
+2026-05-27 10:32:48.268 [INFO] PIStageProxy: sending command GetPos str='X' i=[0,0] d=[0,0] sz=0
+2026-05-27 10:32:48.268 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 10:32:48.268 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 10:32:48.270 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-27 10:32:48.270 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-27 10:32:48.270 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-27 10:32:48.270 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-27 10:32:48.271 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-27 10:32:50.059 [INFO] PIStageProxy: getPos axis=2
+2026-05-27 10:32:50.059 [INFO] PIStageProxy: sending command GetPos str='2' i=[0,0] d=[0,0] sz=0
+2026-05-27 10:32:50.060 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 10:32:50.060 [INFO] StageServer: processing command GetPos str='2' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 10:32:50.061 [INFO] StageServer: GetPos axis=2 value=9.996368
+2026-05-27 10:32:50.061 [INFO] StageServer: response sent for GetPos status=0
+2026-05-27 10:32:50.061 [INFO] PIStageProxy: read complete for command GetPos status=0
+2026-05-27 10:32:50.062 [INFO] PIStageProxy: getPos axis=2 value=9.996368
+2026-05-27 10:32:51.980 [INFO] PIStageProxy: getPos axis=3
+2026-05-27 10:32:51.980 [INFO] PIStageProxy: sending command GetPos str='3' i=[0,0] d=[0,0] sz=0
+2026-05-27 10:32:51.981 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 10:32:51.981 [INFO] StageServer: processing command GetPos str='3' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 10:32:51.982 [INFO] StageServer: GetPos axis=3 value=9.978958
+2026-05-27 10:32:51.982 [INFO] StageServer: response sent for GetPos status=0
+2026-05-27 10:32:51.982 [INFO] PIStageProxy: read complete for command GetPos status=0
+2026-05-27 10:32:51.982 [INFO] PIStageProxy: getPos axis=3 value=9.978958
+2026-05-27 10:33:05.259 [INFO] PIStageProxy: disconnect request
+2026-05-27 10:33:05.260 [INFO] PIStageProxy: sending command Disconnect str='' i=[0,0] d=[0,0] sz=0
+2026-05-27 10:33:05.260 [INFO] PIStageProxy: write complete for command Disconnect
+2026-05-27 10:33:05.260 [INFO] StageServer: processing command Disconnect str='' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 10:33:05.320 [INFO] StageServer: disconnected from stage
+2026-05-27 10:33:05.321 [INFO] PIStageProxy: read complete for command Disconnect status=0
+2026-05-27 10:33:16.412 [INFO] StageServer: client disconnected
+2026-05-27 10:33:16.416 [INFO] StageServer: client disconnected, restarting loop...
+2026-05-27 10:33:16.417 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 13:32:27.737 [INFO] Starting StageServer (32-bit)
+2026-05-27 13:32:27.738 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 13:32:31.361 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-27 13:32:31.363 [INFO] PIStageProxy: connected to stage pipe
+2026-05-27 13:32:31.363 [INFO] StageServer: client connected
+2026-05-27 13:32:31.363 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
+2026-05-27 13:32:31.364 [INFO] AndorCameraProxy: connected to andor pipe
+2026-05-27 13:32:31.364 [INFO] StageServer: client handler started
+2026-05-27 13:33:27.277 [INFO] StageServer: client disconnected
+2026-05-27 13:33:27.278 [INFO] StageServer: client disconnected, restarting loop...
+2026-05-27 13:33:27.278 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 13:38:57.324 [INFO] Starting StageServer (32-bit)
+2026-05-27 13:38:57.325 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 13:39:06.042 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-27 13:39:06.043 [INFO] PIStageProxy: connected to stage pipe
+2026-05-27 13:39:06.043 [INFO] StageServer: client connected
+2026-05-27 13:39:06.043 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
+2026-05-27 13:39:06.043 [INFO] AndorCameraProxy: connected to andor pipe
+2026-05-27 13:39:06.043 [INFO] StageServer: client handler started
+2026-05-27 13:39:33.257 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 13:39:33.258 [INFO] PIStageProxy: sending command LoadDLL str='E7XX_GCS2_DLL.dll' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:39:33.258 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-27 13:39:33.258 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:39:33.259 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 13:39:33.930 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-27 13:39:33.930 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-27 13:39:33.931 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-27 13:39:33.931 [INFO] PIStageProxy: sending command Connect str='109021162' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:39:33.931 [INFO] PIStageProxy: write complete for command Connect
+2026-05-27 13:39:33.931 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:39:33.932 [INFO] StageServer: Connect serial='109021162'
+2026-05-27 13:39:33.942 [INFO] StageServer: connected to stage
+2026-05-27 13:39:33.942 [INFO] StageServer: response sent for Connect status=0
+2026-05-27 13:39:33.942 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-27 13:39:42.955 [INFO] PIStageProxy: disconnect request
+2026-05-27 13:39:42.956 [INFO] PIStageProxy: sending command Disconnect str='' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:39:42.956 [INFO] PIStageProxy: write complete for command Disconnect
+2026-05-27 13:39:42.956 [INFO] StageServer: processing command Disconnect str='' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:39:42.999 [INFO] StageServer: disconnected from stage
+2026-05-27 13:39:43.000 [INFO] StageServer: response sent for Disconnect status=0
+2026-05-27 13:39:43.000 [INFO] PIStageProxy: read complete for command Disconnect status=0
+2026-05-27 13:39:46.172 [INFO] StageServer: client disconnected
+2026-05-27 13:39:46.176 [INFO] StageServer: client disconnected, restarting loop...
+2026-05-27 13:39:46.177 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 13:46:09.852 [INFO] Starting StageServer (32-bit)
+2026-05-27 13:46:09.853 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 13:46:16.908 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-27 13:46:16.909 [INFO] PIStageProxy: connected to stage pipe
+2026-05-27 13:46:16.909 [INFO] StageServer: client connected
+2026-05-27 13:46:16.910 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
+2026-05-27 13:46:16.910 [INFO] StageServer: client handler started
+2026-05-27 13:46:16.910 [INFO] AndorCameraProxy: connected to andor pipe
+2026-05-27 13:46:30.320 [INFO] PIStageProxy: loadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 13:46:30.320 [INFO] PIStageProxy: sending command LoadDLL str='E7XX_GCS2_DLL.dll' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:46:30.321 [INFO] PIStageProxy: write complete for command LoadDLL
+2026-05-27 13:46:30.321 [INFO] StageServer: processing command LoadDLL str='E7XX_GCS2_DLL.dll' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:46:30.322 [INFO] StageServer: LoadDLL path='E7XX_GCS2_DLL.dll'
+2026-05-27 13:46:30.995 [INFO] StageServer: response sent for LoadDLL status=0
+2026-05-27 13:46:30.995 [INFO] PIStageProxy: read complete for command LoadDLL status=0
+2026-05-27 13:46:30.996 [INFO] PIStageProxy: connect serial='109021162'
+2026-05-27 13:46:30.996 [INFO] PIStageProxy: sending command Connect str='109021162' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:46:30.996 [INFO] PIStageProxy: write complete for command Connect
+2026-05-27 13:46:30.996 [INFO] StageServer: processing command Connect str='109021162' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:46:30.997 [INFO] StageServer: Connect serial='109021162'
+2026-05-27 13:46:31.011 [INFO] StageServer: connected to stage
+2026-05-27 13:46:31.011 [INFO] StageServer: response sent for Connect status=0
+2026-05-27 13:46:31.011 [INFO] PIStageProxy: read complete for command Connect status=0
+2026-05-27 13:46:50.481 [INFO] PIStageProxy: getPos axis=1
+2026-05-27 13:46:50.481 [INFO] PIStageProxy: sending command GetPos str='1' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:46:50.481 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 13:46:50.482 [INFO] StageServer: processing command GetPos str='1' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:46:50.484 [ERROR] PI Error: code=26 message=Parameter missing
+2026-05-27 13:46:50.489 [ERROR] StageServer: exception executing command GetPos: PI Error: code=26 message=Parameter missing
+2026-05-27 13:46:50.490 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-27 13:46:50.490 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-27 13:46:50.490 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=26 message=Parameter missing'
+2026-05-27 13:46:54.336 [INFO] PIStageProxy: getPos axis=1
+2026-05-27 13:46:54.336 [INFO] PIStageProxy: sending command GetPos str='1' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:46:54.337 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 13:46:54.337 [INFO] StageServer: processing command GetPos str='1' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:46:54.338 [INFO] StageServer: GetPos axis=1 value=29.999634
+2026-05-27 13:46:54.339 [INFO] StageServer: response sent for GetPos status=0
+2026-05-27 13:46:54.339 [INFO] PIStageProxy: read complete for command GetPos status=0
+2026-05-27 13:46:54.339 [INFO] PIStageProxy: getPos axis=1 value=29.999634
+2026-05-27 13:46:56.224 [INFO] PIStageProxy: getPos axis=2
+2026-05-27 13:46:56.224 [INFO] PIStageProxy: sending command GetPos str='2' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:46:56.225 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 13:46:56.225 [INFO] StageServer: processing command GetPos str='2' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:46:56.226 [INFO] StageServer: GetPos axis=2 value=24.055588
+2026-05-27 13:46:56.226 [INFO] StageServer: response sent for GetPos status=0
+2026-05-27 13:46:56.226 [INFO] PIStageProxy: read complete for command GetPos status=0
+2026-05-27 13:46:56.227 [INFO] PIStageProxy: getPos axis=2 value=24.055588
+2026-05-27 13:46:57.536 [INFO] PIStageProxy: getPos axis=3
+2026-05-27 13:46:57.536 [INFO] PIStageProxy: sending command GetPos str='3' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:46:57.537 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 13:46:57.537 [INFO] StageServer: processing command GetPos str='3' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:46:57.538 [INFO] StageServer: GetPos axis=3 value=24.454636
+2026-05-27 13:46:57.539 [INFO] StageServer: response sent for GetPos status=0
+2026-05-27 13:46:57.539 [INFO] PIStageProxy: read complete for command GetPos status=0
+2026-05-27 13:46:57.539 [INFO] PIStageProxy: getPos axis=3 value=24.454636
+2026-05-27 13:47:20.112 [INFO] PIStageProxy: moveAbs axis=1 position=40.000000
+2026-05-27 13:47:20.112 [INFO] PIStageProxy: sending command MoveAbs str='1' i=[0,0] d=[40,0] sz=0
+2026-05-27 13:47:20.113 [INFO] PIStageProxy: write complete for command MoveAbs
+2026-05-27 13:47:20.113 [INFO] StageServer: processing command MoveAbs str='1' i0=0 i1=0 d0=40 d1=0 dataSize=0
+2026-05-27 13:47:20.113 [INFO] StageServer: MoveAbs axis=1 target=40.000000
+2026-05-27 13:47:20.114 [INFO] StageServer: response sent for MoveAbs status=0
+2026-05-27 13:47:20.114 [INFO] PIStageProxy: read complete for command MoveAbs status=0
+2026-05-27 13:47:25.440 [INFO] PIStageProxy: getPos axis=X
+2026-05-27 13:47:25.440 [INFO] PIStageProxy: sending command GetPos str='X' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:47:25.441 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 13:47:25.441 [INFO] StageServer: processing command GetPos str='X' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:47:25.443 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-27 13:47:25.443 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-27 13:47:25.443 [INFO] StageServer: response sent for GetPos status=-1
+2026-05-27 13:47:25.443 [INFO] PIStageProxy: read complete for command GetPos status=-1
+2026-05-27 13:47:25.443 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-27 13:47:29.568 [INFO] PIStageProxy: getPos axis=1
+2026-05-27 13:47:29.568 [INFO] PIStageProxy: sending command GetPos str='1' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:47:29.569 [INFO] PIStageProxy: write complete for command GetPos
+2026-05-27 13:47:29.569 [INFO] StageServer: processing command GetPos str='1' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:47:29.570 [INFO] StageServer: GetPos axis=1 value=40.006470
+2026-05-27 13:47:29.570 [INFO] StageServer: response sent for GetPos status=0
+2026-05-27 13:47:29.570 [INFO] PIStageProxy: read complete for command GetPos status=0
+2026-05-27 13:47:29.571 [INFO] PIStageProxy: getPos axis=1 value=40.006470
+2026-05-27 13:57:34.857 [INFO] PIStageProxy: disconnect request
+2026-05-27 13:57:34.857 [INFO] PIStageProxy: sending command Disconnect str='' i=[0,0] d=[0,0] sz=0
+2026-05-27 13:57:34.858 [INFO] PIStageProxy: write complete for command Disconnect
+2026-05-27 13:57:34.858 [INFO] StageServer: processing command Disconnect str='' i0=0 i1=0 d0=0 d1=0 dataSize=0
+2026-05-27 13:57:34.916 [INFO] StageServer: disconnected from stage
+2026-05-27 13:57:34.916 [INFO] StageServer: response sent for Disconnect status=0
+2026-05-27 13:57:34.916 [INFO] PIStageProxy: read complete for command Disconnect status=0

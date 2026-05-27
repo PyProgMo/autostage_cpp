@@ -130,8 +130,8 @@ int main() {
                     }
                     std::cout << "...\n";
                 } else if (action == "save_test_spectrum") {
-                    cam->testAcquireAndSave(0.1f, "test_spectrum.png");
-                    std::cout << "Measured spectrum saved to test_spectrum.png\n";
+                    cam->testAcquireAndSave(0.1f, "test_spectrum");
+                    std::cout << "Measured spectrum saved to test_spectrum as .png and .txt\n";
                 } else if (action == "setTint") {
                     float tint;
                     if (iss >> tint) {

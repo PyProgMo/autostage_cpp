@@ -133,13 +133,28 @@ void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSp
     }
 
     // Save as PNG
-    if (!cv::imwrite(filename, img)) {
+    if (!cv::imwrite(filename + ".png", img)) {
         std::cerr << "Failed to save PNG: " << filename << "\n";
     } else {
         std::cout << "Saved spectra image to " << filename << "\n";
     }
+    // Save to .txt file
+    std::ofstream outFile(filename + ".txt");
+    if (!outFile) {
+        std::cerr << "Failed to save TXT: " << filename << "\n";
+    } else {
+        for (int i = 0; i < numSpectra; i++) {
+            for (int j = 0; j < pixelsPerSpectrum; j++) {
+                outFile << spectra[i * pixelsPerSpectrum + j] << " ";
+            }
+            outFile << "\n";
+        }
+        std::cout << "Saved spectra data to " << filename << ".txt\n";
+    }
+
 }
 
+/* this founction exists twice in the script
 void AndorCamera::testAcquireAndSave(float exposureSeconds, const std::string& filename) {
     configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureSeconds);
     startAcquisition();
@@ -147,4 +162,4 @@ void AndorCamera::testAcquireAndSave(float exposureSeconds, const std::string& f
 
     std::vector<WORD> spectra = getAllSpectra(1, getXPixels());
     testAcquireAndSave(spectra, 1, getXPixels(), filename);
-}
+}*/

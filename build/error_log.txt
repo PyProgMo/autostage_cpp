@@ -396,3 +396,21 @@
 2026-05-26 18:05:29.228 [ERROR] AndorCameraProxy: could not open pipe. Is SpectrometerServer running?
 2026-05-26 18:05:43.114 [ERROR] PIStageProxy: failed to write to pipe, GLE=232 cmd=LoadDLL
 2026-05-26 18:05:47.211 [ERROR] PIStageProxy: failed to write to pipe, GLE=232 cmd=LoadDLL
+2026-05-27 08:59:23.620 [ERROR] PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-27 08:59:23.623 [ERROR] StageServer: exception executing command Connect: PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-27 08:59:23.625 [ERROR] PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162'
+2026-05-27 08:59:35.122 [ERROR] PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-27 08:59:35.124 [ERROR] StageServer: exception executing command Connect: PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162
+2026-05-27 08:59:35.126 [ERROR] PIStageProxy: server returned error status: -1 cmd=Connect detail='PI stage connection failed: code=-9 msg=There is no interface or DLL handle with the given ID serial=109021162'
+2026-05-27 10:32:44.238 [ERROR] PI Error: code=26 message=Parameter missing
+2026-05-27 10:32:44.239 [ERROR] StageServer: exception executing command GetPos: PI Error: code=26 message=Parameter missing
+2026-05-27 10:32:44.240 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=26 message=Parameter missing'
+2026-05-27 10:32:48.270 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-27 10:32:48.270 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-27 10:32:48.271 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
+2026-05-27 13:46:50.484 [ERROR] PI Error: code=26 message=Parameter missing
+2026-05-27 13:46:50.489 [ERROR] StageServer: exception executing command GetPos: PI Error: code=26 message=Parameter missing
+2026-05-27 13:46:50.490 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=26 message=Parameter missing'
+2026-05-27 13:47:25.443 [ERROR] PI Error: code=1 message=Parameter syntax error
+2026-05-27 13:47:25.443 [ERROR] StageServer: exception executing command GetPos: PI Error: code=1 message=Parameter syntax error
+2026-05-27 13:47:25.444 [ERROR] PIStageProxy: server returned error status: -1 cmd=GetPos detail='PI Error: code=1 message=Parameter syntax error'
