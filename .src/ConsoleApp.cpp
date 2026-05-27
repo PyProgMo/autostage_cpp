@@ -8,6 +8,7 @@
 #include <fstream>
 #include <chrono>
 #include <cmath>
+#include <algorithm>
 #include <sstream>
 #include <memory>
 
@@ -129,8 +130,8 @@ int main() {
                     }
                     std::cout << "...\n";
                 } else if (action == "save_test_spectrum") {
-                    cam->testAcquireAndSave(std::vector<WORD>(), 1, cam->getXPixels(), "test_spectrum.png");
-                    std::cout << "Test spectrum acquired and saved to test_spectrum.png\n";
+                    cam->testAcquireAndSave(0.1f, "test_spectrum.png");
+                    std::cout << "Measured spectrum saved to test_spectrum.png\n";
                 } else if (action == "setTint") {
                     float tint;
                     if (iss >> tint) {

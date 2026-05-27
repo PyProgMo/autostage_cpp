@@ -83,6 +83,7 @@ public:
     int getYPixels() const { return ypix_; }
 
     // declare the test functions here so they can be called from ConsoleApp without including private members
+    void testAcquireAndSave(float exposureSeconds, const std::string& filename);
     void testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
 
 private:
@@ -111,9 +112,3 @@ private:
     template<typename T>
     T loadProc(const char* name);
 };
-
-
-// dev test functions
-
-// Acquire a single spectrum and save to raw binary file (for testing)
-void testAcquireAndSave(float exposureS, const std::string& filename);

@@ -109,6 +109,13 @@ void AndorCamera::shutdown() {
 }
 
 void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+    if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
+        throw std::runtime_error("Andor: invalid spectrum image dimensions");
+    }
+    if (spectra.empty() || spectra.size() < static_cast<size_t>(numSpectra) * static_cast<size_t>(pixelsPerSpectrum)) {
+        throw std::runtime_error("Andor: testAcquireAndSave requires non-empty spectrum data");
+    }
+
     // Find max value for scaling
     WORD maxVal = 0;
     for (WORD val : spectra) {
@@ -131,4 +138,13 @@ void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSp
     } else {
         std::cout << "Saved spectra image to " << filename << "\n";
     }
+}
+
+void AndorCamera::testAcquireAndSave(float exposureSeconds, const std::string& filename) {
+    configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureSeconds);
+    startAcquisition();
+    waitForAcquisition();
+
+    std::vector<WORD> spectra = getAllSpectra(1, getXPixels());
+    testAcquireAndSave(spectra, 1, getXPixels(), filename);
 }

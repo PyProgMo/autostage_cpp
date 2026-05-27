@@ -160,6 +160,13 @@ void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& fi
 }*/
 // new test function: 
 void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+    if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
+        throw std::runtime_error("AndorCameraProxy: invalid spectrum image dimensions");
+    }
+    if (spectra.empty() || spectra.size() < static_cast<size_t>(numSpectra) * static_cast<size_t>(pixelsPerSpectrum)) {
+        throw std::runtime_error("AndorCameraProxy: testAcquireAndSave requires non-empty spectrum data");
+    }
+
     // Find max value for scaling
     WORD maxVal = 0;
     for (WORD val : spectra) {
@@ -177,7 +184,18 @@ void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int 
     }
 
     // Save the image as PNG
-    cv::imwrite(filename, img);
+    if (!cv::imwrite(filename, img)) {
+        throw std::runtime_error(std::string("AndorCameraProxy: failed to write PNG: ") + filename);
+    }
+}
+
+void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& filename) {
+    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, 1);
+    startAcquisition();
+    waitForAcquisition();
+
+    std::vector<WORD> spectra = getAllSpectra(1, getXPixels());
+    testAcquireAndSave(spectra, 1, getXPixels(), filename);
 }
 
 
