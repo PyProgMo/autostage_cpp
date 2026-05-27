@@ -66,6 +66,8 @@ inline const char* ipcCommandName(IpcCommand command) {
     case IpcCommand::AndorSetKineticCycleTime: return "AndorSetKineticCycleTime";
     case IpcCommand::AndorSetNumberKinetics: return "AndorSetNumberKinetics";
     case IpcCommand::AndorGetImages16: return "AndorGetImages16";
+    case IpcCommand::AndorConfigureSpectral: return "AndorConfigureSpectral";
+    case IpcCommand::AndorConfigureFVBKinetic: return "AndorConfigureFVBKinetic";
     default: return "Unknown";
     }
 }

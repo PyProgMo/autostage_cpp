@@ -61,6 +61,15 @@ public:
     void initialize(const std::string& iniDir = "");
     void shutdown();
 
+    void setReadMode(int mode);
+    void setAcquisitionMode(int mode);
+    void setExposureTime(float time);
+    void setTriggerMode(int mode);
+    void setImage(int hbin, int vbin, int hstart, int hend, int vstart, int vend);
+    int getStatus();
+    void setKineticCycleTime(float time);
+    void setNumberKinetics(int number);
+
     // Configure for triggered spectral acquisition
     void configureSpectral(ReadMode   readMode,
                            TriggerMode trigMode,

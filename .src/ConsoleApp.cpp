@@ -63,6 +63,14 @@ int main() {
             std::cout << "  andor connect\n";
             std::cout << "  andor measure\n";
             std::cout << "  andor setTint [milliseconds]\n";
+            std::cout << "  andor setReadMode [mode]\n";
+            std::cout << "  andor setAcquisitionMode [mode]\n";
+            std::cout << "  andor setExposureTime [seconds]\n";
+            std::cout << "  andor setTriggerMode [mode]\n";
+            std::cout << "  andor setImage [h] [v] [hs] [he] [vs] [ve]\n";
+            std::cout << "  andor getStatus\n";
+            std::cout << "  andor setKineticCycleTime [s]\n";
+            std::cout << "  andor setNumberKinetics [num]\n";
             std::cout << "  andor test\n";
             std::cout << "  andor disconnect\n";
             std::cout << "  scan\n";
@@ -144,6 +152,67 @@ int main() {
                         std::cout << "Exposure time set to " << tint/1000.0f << " seconds.\n";
                     } else {
                         std::cout << "Usage: andor setTint [milliseconds]\n";
+                    }
+                } else if (action == "setReadMode") {
+                    int mode;
+                    if (iss >> mode) {
+                        cam->setReadMode(mode);
+                        std::cout << "Read Mode set to " << mode << ".\n";
+                    } else {
+                        std::cout << "Usage: andor setReadMode [mode]\n";
+                    }
+                } else if (action == "setAcquisitionMode") {
+                    int mode;
+                    if (iss >> mode) {
+                        cam->setAcquisitionMode(mode);
+                        std::cout << "Acquisition Mode set to " << mode << ".\n";
+                    } else {
+                        std::cout << "Usage: andor setAcquisitionMode [mode]\n";
+                    }
+                } else if (action == "setExposureTime") {
+                    float seconds;
+                    if (iss >> seconds) {
+                        cam->setExposureTime(seconds);
+                        std::cout << "Exposure Time set to " << seconds << " seconds.\n";
+                    } else {
+                        std::cout << "Usage: andor setExposureTime [seconds]\n";
+                    }
+                } else if (action == "setTriggerMode") {
+                    int mode;
+                    if (iss >> mode) {
+                        cam->setTriggerMode(mode);
+                        std::cout << "Trigger Mode set to " << mode << ".\n";
+                    } else {
+                        std::cout << "Usage: andor setTriggerMode [mode]\n";
+                    }
+                } else if (action == "setImage") {
+                    int hbin, vbin, hstart, hend, vstart, vend;
+                    if (iss >> hbin >> vbin >> hstart >> hend >> vstart >> vend) {
+                        cam->setImage(hbin, vbin, hstart, hend, vstart, vend);
+                        std::cout << "Image Region set: Binning(" << hbin << "x" << vbin 
+                                  << "), H(" << hstart << "-" << hend 
+                                  << "), V(" << vstart << "-" << vend << ").\n";
+                    } else {
+                        std::cout << "Usage: andor setImage [h] [v] [hs] [he] [vs] [ve]\n";
+                    }
+                } else if (action == "getStatus") {
+                    int status = cam->getStatus();
+                    std::cout << "Andor Status: " << status << "\n";
+                } else if (action == "setKineticCycleTime") {
+                    float seconds;
+                    if (iss >> seconds) {
+                        cam->setKineticCycleTime(seconds);
+                        std::cout << "Kinetic Cycle Time set to " << seconds << " seconds.\n";
+                    } else {
+                        std::cout << "Usage: andor setKineticCycleTime [s]\n";
+                    }
+                } else if (action == "setNumberKinetics") {
+                    int num;
+                    if (iss >> num) {
+                        cam->setNumberKinetics(num);
+                        std::cout << "Number of Kinetics set to " << num << ".\n";
+                    } else {
+                        std::cout << "Usage: andor setNumberKinetics [num]\n";
                     }
                 }
                 else {

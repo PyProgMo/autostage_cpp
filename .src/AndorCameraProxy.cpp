@@ -103,9 +103,60 @@ void AndorCameraProxy::shutdown() {
     } catch (...) {}
 }
 
+void AndorCameraProxy::setReadMode(int mode) {
+    IpcMessage req = {}, res = {};
+    req.command = IpcCommand::AndorSetReadMode; req.iArgs[0] = mode;
+    sendCommand(req, res);
+}
+
+void AndorCameraProxy::setAcquisitionMode(int mode) {
+    IpcMessage req = {}, res = {};
+    req.command = IpcCommand::AndorSetAcquisitionMode; req.iArgs[0] = mode;
+    sendCommand(req, res);
+}
+
+void AndorCameraProxy::setExposureTime(float seconds) {
+    IpcMessage req = {}, res = {};
+    req.command = IpcCommand::AndorSetExposureTime; req.dArgs[0] = seconds;
+    sendCommand(req, res);
+}
+
+void AndorCameraProxy::setTriggerMode(int mode) {
+    IpcMessage req = {}, res = {};
+    req.command = IpcCommand::AndorSetTriggerMode; req.iArgs[0] = mode;
+    sendCommand(req, res);
+}
+
+void AndorCameraProxy::setImage(int hbin, int vbin, int hstart, int hend, int vstart, int vend) {
+    IpcMessage req = {}, res = {};
+    req.command = IpcCommand::AndorSetImage;
+    req.iArgs[0] = hbin; req.iArgs[1] = vbin; req.iArgs[2] = hstart;
+    req.iArgs[3] = hend; req.iArgs[4] = vstart; req.iArgs[5] = vend;
+    sendCommand(req, res);
+}
+
+int AndorCameraProxy::getStatus() {
+    IpcMessage req = {}, res = {};
+    req.command = IpcCommand::AndorGetStatus;
+    sendCommand(req, res);
+    return res.iArgs[0];
+}
+
+void AndorCameraProxy::setKineticCycleTime(float seconds) {
+    IpcMessage req = {}, res = {};
+    req.command = IpcCommand::AndorSetKineticCycleTime; req.dArgs[0] = seconds;
+    sendCommand(req, res);
+}
+
+void AndorCameraProxy::setNumberKinetics(int numKin) {
+    IpcMessage req = {}, res = {};
+    req.command = IpcCommand::AndorSetNumberKinetics; req.iArgs[0] = numKin;
+    sendCommand(req, res);
+}
+
 void AndorCameraProxy::configureSpectral(AndorCamera::ReadMode readMode, AndorCamera::TriggerMode trigMode, float exposureSeconds, int numSpectra) {
     IpcMessage req = {};
-    req.command = IpcCommand::AndorSetAcquisitionMode; // Custom proxy mapping
+    req.command = IpcCommand::AndorConfigureSpectral;
     req.iArgs[0] = static_cast<int>(readMode);
     req.iArgs[1] = static_cast<int>(trigMode);
     req.iArgs[2] = numSpectra;
@@ -117,7 +168,7 @@ void AndorCameraProxy::configureSpectral(AndorCamera::ReadMode readMode, AndorCa
 
 void AndorCameraProxy::configureFVBKinetic(float exposureSeconds, int numLines) {
     IpcMessage req = {};
-    req.command = IpcCommand::AndorSetKineticCycleTime; // custom proxy mapping
+    req.command = IpcCommand::AndorConfigureFVBKinetic;
     req.dArgs[0] = exposureSeconds;
     req.iArgs[0] = numLines;
     

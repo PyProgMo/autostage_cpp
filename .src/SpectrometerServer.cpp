@@ -51,14 +51,48 @@ void ProcessClient(HANDLE hPipe) {
                 cam.shutdown();
                 AppLogger::instance().info("SpectrometerServer: shutdown");
                 break;
+            case IpcCommand::AndorSetReadMode:
+                AppLogger::instance().info("SpectrometerServer: setReadMode");
+                cam.setReadMode(req.iArgs[0]);
+                break;
             case IpcCommand::AndorSetAcquisitionMode:
+                AppLogger::instance().info("SpectrometerServer: setAcquisitionMode");
+                cam.setAcquisitionMode(req.iArgs[0]);
+                break;
+            case IpcCommand::AndorSetExposureTime:
+                AppLogger::instance().info("SpectrometerServer: setExposureTime");
+                cam.setExposureTime(static_cast<float>(req.dArgs[0]));
+                break;
+            case IpcCommand::AndorSetTriggerMode:
+                AppLogger::instance().info("SpectrometerServer: setTriggerMode");
+                cam.setTriggerMode(req.iArgs[0]);
+                break;
+            case IpcCommand::AndorSetImage:
+                AppLogger::instance().info("SpectrometerServer: setImage");
+                cam.setImage(req.iArgs[0], req.iArgs[1], req.iArgs[2], req.iArgs[3], req.iArgs[4], req.iArgs[5]);
+                break;
+            case IpcCommand::AndorGetStatus: {
+                AppLogger::instance().info("SpectrometerServer: getStatus");
+                int status = cam.getStatus();
+                res.iArgs[0] = status;
+                break;
+            }
+            case IpcCommand::AndorSetKineticCycleTime:
+                AppLogger::instance().info("SpectrometerServer: setKineticCycleTime");
+                cam.setKineticCycleTime(static_cast<float>(req.dArgs[0]));
+                break;
+            case IpcCommand::AndorSetNumberKinetics:
+                AppLogger::instance().info("SpectrometerServer: setNumberKinetics");
+                cam.setNumberKinetics(req.iArgs[0]);
+                break;
+            case IpcCommand::AndorConfigureSpectral:
                 AppLogger::instance().info("SpectrometerServer: configureSpectral");
                 cam.configureSpectral(static_cast<AndorCamera::ReadMode>(req.iArgs[0]),
                                       static_cast<AndorCamera::TriggerMode>(req.iArgs[1]),
                                       static_cast<float>(req.dArgs[0]),
                                       req.iArgs[2]);
                 break;
-            case IpcCommand::AndorSetKineticCycleTime:
+            case IpcCommand::AndorConfigureFVBKinetic:
                 AppLogger::instance().info("SpectrometerServer: configureFVBKinetic");
                 cam.configureFVBKinetic(static_cast<float>(req.dArgs[0]), req.iArgs[0]);
                 break;

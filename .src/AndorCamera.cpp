@@ -58,6 +58,40 @@ void AndorCamera::initialize(const std::string& iniDir) {
     std::cout << "Andor: " << xpix_ << " x " << ypix_ << " pixels\n";
 }
 
+void AndorCamera::setReadMode(int mode) {
+    check(pSetReadMode(mode), "SetReadMode");
+}
+
+void AndorCamera::setAcquisitionMode(int mode) {
+    check(pSetAcquisitionMode(mode), "SetAcquisitionMode");
+}
+
+void AndorCamera::setExposureTime(float time) {
+    check(pSetExposureTime(time), "SetExposureTime");
+}
+
+void AndorCamera::setTriggerMode(int mode) {
+    check(pSetTriggerMode(mode), "SetTriggerMode");
+}
+
+void AndorCamera::setImage(int hbin, int vbin, int hstart, int hend, int vstart, int vend) {
+    check(pSetImage(hbin, vbin, hstart, hend, vstart, vend), "SetImage");
+}
+
+int AndorCamera::getStatus() {
+    int status = 0;
+    check(pGetStatus(&status), "GetStatus");
+    return status;
+}
+
+void AndorCamera::setKineticCycleTime(float time) {
+    check(pSetKineticCycleTime(time), "SetKineticCycleTime");
+}
+
+void AndorCamera::setNumberKinetics(int number) {
+    check(pSetNumberKinetics(number), "SetNumberKinetics");
+}
+
 void AndorCamera::configureSpectral(ReadMode readMode, TriggerMode trigMode, float exposureSeconds, int numSpectra) {
     check(pSetReadMode(static_cast<int>(readMode)), "SetReadMode");
     check(pSetAcquisitionMode(numSpectra > 1 ? 3 : 1), "SetAcquisitionMode"); // 3 = kinetic, 1 = single scan
