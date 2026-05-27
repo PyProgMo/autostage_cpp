@@ -190,6 +190,7 @@ void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int 
     }
 }
 
+// overload that acquires data and calls the above test function
 void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& filename) {
     configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, 1);
     startAcquisition();

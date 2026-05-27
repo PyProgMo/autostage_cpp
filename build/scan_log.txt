@@ -2341,3 +2341,11 @@ tatus=0
 2026-05-27 14:16:10.021 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
 2026-05-27 14:16:10.022 [INFO] StageServer: client handler started
 2026-05-27 14:16:10.022 [INFO] AndorCameraProxy: connected to andor pipe
+2026-05-27 14:29:11.408 [INFO] Starting StageServer (32-bit)
+2026-05-27 14:29:11.409 [INFO] StageServer: listening on pipe \\.\pipe\PIStageIpcPipe...
+2026-05-27 14:29:15.506 [INFO] PIStageProxy: connecting to pipe \\.\pipe\PIStageIpcPipe
+2026-05-27 14:29:15.510 [INFO] PIStageProxy: connected to stage pipe
+2026-05-27 14:29:15.510 [INFO] StageServer: client connected
+2026-05-27 14:29:15.511 [INFO] AndorCameraProxy: connecting to pipe \\.\pipe\AndorIpcPipe
+2026-05-27 14:29:15.511 [INFO] StageServer: client handler started
+2026-05-27 14:29:15.512 [INFO] AndorCameraProxy: connected to andor pipe
