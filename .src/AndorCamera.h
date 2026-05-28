@@ -11,11 +11,19 @@
 
 // ── SDK2 function pointer typedefs ────────────────────────────────────────
 typedef unsigned int (__stdcall *FP_Initialize)         (char* dir);
+typedef unsigned int (__stdcall *FP_GetAvailableCameras)(long* totalCameras);
+typedef unsigned int (__stdcall *FP_GetCameraHandle)    (long cameraIndex, long* cameraHandle);
+typedef unsigned int (__stdcall *FP_SetCurrentCamera)   (long cameraHandle);
 typedef unsigned int (__stdcall *FP_GetDetector)        (int* xpix, int* ypix);
 typedef unsigned int (__stdcall *FP_SetReadMode)        (int mode);
 typedef unsigned int (__stdcall *FP_SetAcquisitionMode) (int mode);
 typedef unsigned int (__stdcall *FP_SetExposureTime)    (float seconds);
 typedef unsigned int (__stdcall *FP_SetTriggerMode)     (int mode);
+typedef unsigned int (__stdcall *FP_CoolerON)           ();
+typedef unsigned int (__stdcall *FP_CoolerOFF)          ();
+typedef unsigned int (__stdcall *FP_SetTemperature)     (int temperature);
+typedef unsigned int (__stdcall *FP_GetTemperature)     (int* temperature);
+typedef unsigned int (__stdcall *FP_IsCoolerOn)         (int* coolerOn);
 typedef unsigned int (__stdcall *FP_SetAccumulationCycleTime)(float seconds);
 typedef unsigned int (__stdcall *FP_SetImage)           (int hbin, int vbin,
                                                           int hstart, int hend,
@@ -60,6 +68,12 @@ public:
     void loadDLL(const std::string& dllPath);
     void initialize(const std::string& iniDir = "");
     void shutdown();
+    int getAvailableCameras();
+    void selectCamera(int cameraIndex);
+    void enableCooling(bool enable);
+    void setCoolingTemperature(int temperatureC);
+    int getCoolingTemperature();
+    bool isCoolingEnabled();
 
     void setReadMode(int mode);
     void setAcquisitionMode(int mode);
@@ -98,13 +112,24 @@ public:
 private:
     HMODULE hDll_ = nullptr;
     int xpix_ = 0, ypix_ = 0;
+    int selectedCameraIndex_ = 0;
+    long selectedCameraHandle_ = 0;
+    long availableCameras_ = 0;
 
     FP_Initialize              pInitialize              = nullptr;
+    FP_GetAvailableCameras      pGetAvailableCameras     = nullptr;
+    FP_GetCameraHandle          pGetCameraHandle         = nullptr;
+    FP_SetCurrentCamera         pSetCurrentCamera        = nullptr;
     FP_GetDetector             pGetDetector             = nullptr;
     FP_SetReadMode             pSetReadMode             = nullptr;
     FP_SetAcquisitionMode      pSetAcquisitionMode      = nullptr;
     FP_SetExposureTime         pSetExposureTime         = nullptr;
     FP_SetTriggerMode          pSetTriggerMode          = nullptr;
+    FP_CoolerON                pCoolerON                = nullptr;
+    FP_CoolerOFF               pCoolerOFF               = nullptr;
+    FP_SetTemperature          pSetTemperature          = nullptr;
+    FP_GetTemperature          pGetTemperature          = nullptr;
+    FP_IsCoolerOn              pIsCoolerOn              = nullptr;
     FP_SetImage                pSetImage                = nullptr;
     FP_StartAcquisition        pStartAcquisition        = nullptr;
     FP_AbortAcquisition        pAbortAcquisition        = nullptr;
@@ -116,6 +141,7 @@ private:
     FP_SetNumberKinetics       pSetNumberKinetics       = nullptr;
     FP_GetImages16             pGetImages16             = nullptr;
 
+    void ensureLoaded();
     void check(unsigned int ret, const char* context);
 
     template<typename T>

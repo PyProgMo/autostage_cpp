@@ -29,6 +29,12 @@ enum class IpcCommand : int32_t {
     // Andor commands
     AndorLoadDLL,
     AndorInitialize,
+    AndorGetAvailableCameras,
+    AndorSelectCamera,
+    AndorEnableCooling,
+    AndorSetCoolingTemperature,
+    AndorGetCoolingTemperature,
+    AndorIsCoolingEnabled,
     AndorSetReadMode,
     AndorSetAcquisitionMode,
     AndorSetExposureTime,

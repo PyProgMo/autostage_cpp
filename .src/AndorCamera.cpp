@@ -149,11 +149,19 @@ void AndorCamera::loadDLL(const std::string& dllPath) {
     if (!hDll_) throw std::runtime_error("Cannot load Andor DLL");
 
     pInitialize          = loadProc<FP_Initialize>         ("Initialize");
+    pGetAvailableCameras = loadProc<FP_GetAvailableCameras>("GetAvailableCameras");
+    pGetCameraHandle     = loadProc<FP_GetCameraHandle>    ("GetCameraHandle");
+    pSetCurrentCamera    = loadProc<FP_SetCurrentCamera>   ("SetCurrentCamera");
     pGetDetector         = loadProc<FP_GetDetector>        ("GetDetector");
     pSetReadMode         = loadProc<FP_SetReadMode>        ("SetReadMode");
     pSetAcquisitionMode  = loadProc<FP_SetAcquisitionMode> ("SetAcquisitionMode");
     pSetExposureTime     = loadProc<FP_SetExposureTime>    ("SetExposureTime");
     pSetTriggerMode      = loadProc<FP_SetTriggerMode>     ("SetTriggerMode");
+    pCoolerON            = loadProc<FP_CoolerON>           ("CoolerON");
+    pCoolerOFF           = loadProc<FP_CoolerOFF>          ("CoolerOFF");
+    pSetTemperature      = loadProc<FP_SetTemperature>     ("SetTemperature");
+    pGetTemperature      = loadProc<FP_GetTemperature>     ("GetTemperature");
+    pIsCoolerOn          = loadProc<FP_IsCoolerOn>         ("IsCoolerOn");
     pSetImage            = loadProc<FP_SetImage>           ("SetImage");
     pStartAcquisition    = loadProc<FP_StartAcquisition>   ("StartAcquisition");
     pAbortAcquisition    = loadProc<FP_AbortAcquisition>   ("AbortAcquisition");
@@ -167,6 +175,7 @@ void AndorCamera::loadDLL(const std::string& dllPath) {
 }
 
 void AndorCamera::initialize(const std::string& iniDir) {
+    ensureLoaded();
     char dir[512] = {};
     strncpy_s(dir, iniDir.empty() ? "." : iniDir.c_str(), 511);
     check(pInitialize(dir), "Initialize");
@@ -174,41 +183,108 @@ void AndorCamera::initialize(const std::string& iniDir) {
     std::cout << "Andor: " << xpix_ << " x " << ypix_ << " pixels\n";
 }
 
+int AndorCamera::getAvailableCameras() {
+    ensureLoaded();
+    long total = 0;
+    check(pGetAvailableCameras(&total), "GetAvailableCameras");
+    availableCameras_ = total;
+    return static_cast<int>(total);
+}
+
+void AndorCamera::selectCamera(int cameraIndex) {
+    ensureLoaded();
+    if (cameraIndex < 0) {
+        throw std::runtime_error("Andor: camera index must be non-negative");
+    }
+
+    long total = availableCameras_;
+    if (total <= 0) {
+        total = getAvailableCameras();
+    }
+    if (cameraIndex >= total) {
+        throw std::runtime_error(std::string("Andor: camera index out of range: ") + std::to_string(cameraIndex));
+    }
+
+    long handle = 0;
+    check(pGetCameraHandle(cameraIndex, &handle), "GetCameraHandle");
+    check(pSetCurrentCamera(handle), "SetCurrentCamera");
+
+    selectedCameraIndex_ = cameraIndex;
+    selectedCameraHandle_ = handle;
+}
+
+void AndorCamera::enableCooling(bool enable) {
+    ensureLoaded();
+    if (enable) {
+        check(pCoolerON(), "CoolerON");
+    } else {
+        check(pCoolerOFF(), "CoolerOFF");
+    }
+}
+
+void AndorCamera::setCoolingTemperature(int temperatureC) {
+    ensureLoaded();
+    check(pSetTemperature(temperatureC), "SetTemperature");
+}
+
+int AndorCamera::getCoolingTemperature() {
+    ensureLoaded();
+    int temperature = 0;
+    check(pGetTemperature(&temperature), "GetTemperature");
+    return temperature;
+}
+
+bool AndorCamera::isCoolingEnabled() {
+    ensureLoaded();
+    int coolerOn = 0;
+    check(pIsCoolerOn(&coolerOn), "IsCoolerOn");
+    return coolerOn != 0;
+}
+
 void AndorCamera::setReadMode(int mode) {
+    ensureLoaded();
     check(pSetReadMode(mode), "SetReadMode");
 }
 
 void AndorCamera::setAcquisitionMode(int mode) {
+    ensureLoaded();
     check(pSetAcquisitionMode(mode), "SetAcquisitionMode");
 }
 
 void AndorCamera::setExposureTime(float time) {
+    ensureLoaded();
     check(pSetExposureTime(time), "SetExposureTime");
 }
 
 void AndorCamera::setTriggerMode(int mode) {
+    ensureLoaded();
     check(pSetTriggerMode(mode), "SetTriggerMode");
 }
 
 void AndorCamera::setImage(int hbin, int vbin, int hstart, int hend, int vstart, int vend) {
+    ensureLoaded();
     check(pSetImage(hbin, vbin, hstart, hend, vstart, vend), "SetImage");
 }
 
 int AndorCamera::getStatus() {
+    ensureLoaded();
     int status = 0;
     check(pGetStatus(&status), "GetStatus");
     return status;
 }
 
 void AndorCamera::setKineticCycleTime(float time) {
+    ensureLoaded();
     check(pSetKineticCycleTime(time), "SetKineticCycleTime");
 }
 
 void AndorCamera::setNumberKinetics(int number) {
+    ensureLoaded();
     check(pSetNumberKinetics(number), "SetNumberKinetics");
 }
 
 void AndorCamera::configureSpectral(ReadMode readMode, TriggerMode trigMode, float exposureSeconds, int numSpectra) {
+    ensureLoaded();
     check(pSetReadMode(static_cast<int>(readMode)), "SetReadMode");
     check(pSetAcquisitionMode(numSpectra > 1 ? 3 : 1), "SetAcquisitionMode"); // 3 = kinetic, 1 = single scan
     check(pSetExposureTime(exposureSeconds), "SetExposureTime");
@@ -222,6 +298,7 @@ void AndorCamera::configureSpectral(ReadMode readMode, TriggerMode trigMode, flo
 }
 
 void AndorCamera::configureFVBKinetic(float exposureSeconds, int numLines) {
+    ensureLoaded();
     // Full Vertical Binning: collapses all rows → 1D spectrum per exposure
     // Kinetic mode: numLines exposures, each triggered by one TTL pulse
     check(pSetReadMode(0),              "SetReadMode FVB");
@@ -234,18 +311,22 @@ void AndorCamera::configureFVBKinetic(float exposureSeconds, int numLines) {
 }
 
 void AndorCamera::startAcquisition() {
+    ensureLoaded();
     check(pStartAcquisition(), "StartAcquisition");
 }
 
 void AndorCamera::abortAcquisition() {
+    ensureLoaded();
     pAbortAcquisition();    // ignore error on abort
 }
 
 void AndorCamera::waitForAcquisition() {
+    ensureLoaded();
     check(pWaitForAcquisition(), "WaitForAcquisition");
 }
 
 std::vector<WORD> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
+    ensureLoaded();
     std::vector<WORD> buf(numSpectra * pixelsPerSpectrum);
     long vf, vl;
     check(pGetImages16(1, numSpectra, buf.data(),
@@ -256,6 +337,14 @@ std::vector<WORD> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectr
 
 void AndorCamera::shutdown() {
     if (hDll_) { pShutDown(); }
+}
+
+void AndorCamera::ensureLoaded() {
+    if (hDll_) {
+        return;
+    }
+
+    loadDLL("atmcd64d.dll");
 }
 
 void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {

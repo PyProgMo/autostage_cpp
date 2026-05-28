@@ -47,6 +47,30 @@ void ProcessClient(HANDLE hPipe) {
                 res.iArgs[0] = cam.getXPixels();
                 res.iArgs[1] = cam.getYPixels();
                 break;
+            case IpcCommand::AndorGetAvailableCameras:
+                AppLogger::instance().info("SpectrometerServer: getAvailableCameras");
+                res.iArgs[0] = cam.getAvailableCameras();
+                break;
+            case IpcCommand::AndorSelectCamera:
+                AppLogger::instance().info(std::string("SpectrometerServer: selectCamera index=") + std::to_string(req.iArgs[0]));
+                cam.selectCamera(req.iArgs[0]);
+                break;
+            case IpcCommand::AndorEnableCooling:
+                AppLogger::instance().info(std::string("SpectrometerServer: enableCooling enable=") + (req.iArgs[0] != 0 ? "true" : "false"));
+                cam.enableCooling(req.iArgs[0] != 0);
+                break;
+            case IpcCommand::AndorSetCoolingTemperature:
+                AppLogger::instance().info(std::string("SpectrometerServer: setCoolingTemperature tempC=") + std::to_string(req.iArgs[0]));
+                cam.setCoolingTemperature(req.iArgs[0]);
+                break;
+            case IpcCommand::AndorGetCoolingTemperature:
+                AppLogger::instance().info("SpectrometerServer: getCoolingTemperature");
+                res.iArgs[0] = cam.getCoolingTemperature();
+                break;
+            case IpcCommand::AndorIsCoolingEnabled:
+                AppLogger::instance().info("SpectrometerServer: isCoolingEnabled");
+                res.iArgs[0] = cam.isCoolingEnabled() ? 1 : 0;
+                break;
             case IpcCommand::AndorShutDown:
                 cam.shutdown();
                 AppLogger::instance().info("SpectrometerServer: shutdown");

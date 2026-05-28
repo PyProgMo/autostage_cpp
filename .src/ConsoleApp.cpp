@@ -33,7 +33,7 @@ int main() {
     std::cout << "Starting 64-bit SpectrometerServer...\n";
     startProcess("build\\SpectrometerServer.exe");
 
-    Sleep(2000); // Give servers time to bind to pipes
+    Sleep(1000); // Give servers time to bind to pipes
 
     std::unique_ptr<PIStageProxy> stage;
     std::unique_ptr<AndorCameraProxy> cam;
@@ -60,7 +60,12 @@ int main() {
             std::cout << "  stage get_pos [axis] \n";
             std::cout << "  stage move_abs [axis] [pos]\n";
             std::cout << "  stage wait [axis]\n";
-            std::cout << "  andor connect\n";
+            std::cout << "  andor connect [cameraIndex]\n";
+            std::cout << "  andor cameras\n";
+            std::cout << "  andor selectCamera [cameraIndex]\n";
+            std::cout << "  andor cooling on|off\n";
+            std::cout << "  andor setTemp [celsius]\n";
+            std::cout << "  andor getTemp\n";
             std::cout << "  andor measure\n";
             std::cout << "  andor setTint [milliseconds]\n";
             std::cout << "  andor setReadMode [mode] (FVB, MultiTrack, RandomTrack, SingleTrack, FullImage)\n";
@@ -116,9 +121,51 @@ int main() {
                 }
             } else if (target == "andor") {
                 if (action == "connect") {
+                    int cameraIndex = 0;
+                    if (!(iss >> cameraIndex)) {
+                        cameraIndex = 0;
+                    }
                     cam->loadDLL("atmcd64d.dll");
+                    cam->selectCamera(cameraIndex);
                     cam->initialize("");
-                    std::cout << "Andor initialized. X=" << cam->getXPixels() << ", Y=" << cam->getYPixels() << "\n";
+                    std::cout << "Andor initialized using camera " << cameraIndex << ". X=" << cam->getXPixels() << ", Y=" << cam->getYPixels() << "\n";
+                } else if (action == "cameras") {
+                    int count = cam->getAvailableCameras();
+                    std::cout << "Andor cameras available: " << count << "\n";
+                } else if (action == "selectCamera") {
+                    int cameraIndex;
+                    if (iss >> cameraIndex) {
+                        cam->selectCamera(cameraIndex);
+                        cam->initialize("");
+                        std::cout << "Selected Andor camera " << cameraIndex << ". X=" << cam->getXPixels() << ", Y=" << cam->getYPixels() << "\n";
+                    } else {
+                        std::cout << "Usage: andor selectCamera [cameraIndex]\n";
+                    }
+                } else if (action == "cooling") {
+                    std::string mode;
+                    if (iss >> mode) {
+                        if (mode == "on") {
+                            cam->enableCooling(true);
+                            std::cout << "Andor cooling enabled.\n";
+                        } else if (mode == "off") {
+                            cam->enableCooling(false);
+                            std::cout << "Andor cooling disabled.\n";
+                        } else {
+                            std::cout << "Usage: andor cooling on|off\n";
+                        }
+                    } else {
+                        std::cout << "Usage: andor cooling on|off\n";
+                    }
+                } else if (action == "setTemp") {
+                    int tempC;
+                    if (iss >> tempC) {
+                        cam->setCoolingTemperature(tempC);
+                        std::cout << "Andor cooling target set to " << tempC << " C.\n";
+                    } else {
+                        std::cout << "Usage: andor setTemp [celsius]\n";
+                    }
+                } else if (action == "getTemp") {
+                    std::cout << "Andor cooling temperature: " << cam->getCoolingTemperature() << " C\n";
                 } else if (action == "disconnect") {
                     cam->shutdown();
                     std::cout << "Andor shutdown.\n";

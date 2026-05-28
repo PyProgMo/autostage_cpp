@@ -15,6 +15,12 @@ public:
     void loadDLL(const std::string& dllPath);
     void initialize(const std::string& iniDir = "");
     void shutdown();
+    int getAvailableCameras();
+    void selectCamera(int cameraIndex);
+    void enableCooling(bool enable);
+    void setCoolingTemperature(int temperatureC);
+    int getCoolingTemperature();
+    bool isCoolingEnabled();
 
     void setReadMode(int mode);
     void setAcquisitionMode(int mode);

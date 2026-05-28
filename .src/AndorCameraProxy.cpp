@@ -211,6 +211,60 @@ void AndorCameraProxy::initialize(const std::string& iniDir) {
     ypix_ = res.iArgs[1];
 }
 
+int AndorCameraProxy::getAvailableCameras() {
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorGetAvailableCameras;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+    return res.iArgs[0];
+}
+
+void AndorCameraProxy::selectCamera(int cameraIndex) {
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorSelectCamera;
+    req.iArgs[0] = cameraIndex;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+}
+
+void AndorCameraProxy::enableCooling(bool enable) {
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorEnableCooling;
+    req.iArgs[0] = enable ? 1 : 0;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+}
+
+void AndorCameraProxy::setCoolingTemperature(int temperatureC) {
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorSetCoolingTemperature;
+    req.iArgs[0] = temperatureC;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+}
+
+int AndorCameraProxy::getCoolingTemperature() {
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorGetCoolingTemperature;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+    return res.iArgs[0];
+}
+
+bool AndorCameraProxy::isCoolingEnabled() {
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorIsCoolingEnabled;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+    return res.iArgs[0] != 0;
+}
+
 void AndorCameraProxy::shutdown() {
     IpcMessage req = {};
     req.command = IpcCommand::AndorShutDown;
