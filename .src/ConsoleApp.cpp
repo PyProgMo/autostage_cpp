@@ -57,16 +57,16 @@ int main() {
             std::cout << "Commands:\n";
             std::cout << "  stage connect\n";
             std::cout << "  stage disconnect\n";
-            std::cout << "  stage get_pos [axis]\n";
+            std::cout << "  stage get_pos [axis] \n";
             std::cout << "  stage move_abs [axis] [pos]\n";
             std::cout << "  stage wait [axis]\n";
             std::cout << "  andor connect\n";
             std::cout << "  andor measure\n";
             std::cout << "  andor setTint [milliseconds]\n";
-            std::cout << "  andor setReadMode [mode]\n";
-            std::cout << "  andor setAcquisitionMode [mode]\n";
+            std::cout << "  andor setReadMode [mode] (FVB, MultiTrack, RandomTrack, SingleTrack, FullImage)\n";
+            std::cout << "  andor setAcquisitionMode [mode] (Single, Continuous, Kinetic)\n";
             std::cout << "  andor setExposureTime [seconds]\n";
-            std::cout << "  andor setTriggerMode [mode]\n";
+            std::cout << "  andor setTriggerMode [mode] (Internal, External, ExternalStart, FastExternal, Software)\n";
             std::cout << "  andor setImage [h] [v] [hs] [he] [vs] [ve]\n";
             std::cout << "  andor getStatus\n";
             std::cout << "  andor setKineticCycleTime [s]\n";
@@ -139,7 +139,7 @@ int main() {
                     std::cout << "...\n";
                 } else if (action == "test") {
                     cam->testAcquireAndSave(0.1f, "test_spectrum");
-                    std::cout << "Measured spectrum saved to test_spectrum as .png and .txt\n";
+                    std::cout << "Measured spectrum saved under the timestamped measurements folder.\n";
                 } else if (action == "setTint") {
                     float tint;
                     if (iss >> tint) {
@@ -147,9 +147,11 @@ int main() {
                         if (tint < 1.0f) tint = 1.0f;
                         if (tint > 10000.0f) tint = 10000.0f;
                         else if (tint < 10.0f) tint = 10.0f; // Andor SDK may have issues with very short exposures
+                        // convert tint from ms to seconds for the SDK
+                        tint /= 1000.0f;
                         cam->configureSpectral(AndorCamera::ReadMode::FVB,
                                                AndorCamera::TriggerMode::External, tint);
-                        std::cout << "Exposure time set to " << tint/1000.0f << " seconds.\n";
+                        std::cout << "Exposure time set to " << tint << " seconds.\n";
                     } else {
                         std::cout << "Usage: andor setTint [milliseconds]\n";
                     }

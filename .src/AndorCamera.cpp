@@ -5,6 +5,122 @@
 #include <iostream>
 #include <fstream>
 #include <cstdint>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+
+namespace {
+
+std::string joinPath(const std::string& left, const std::string& right) {
+    if (left.empty()) return right;
+    if (right.empty()) return left;
+    const char last = left.back();
+    if (last == '\\' || last == '/') {
+        return left + right;
+    }
+    return left + "\\" + right;
+}
+
+std::string executableDirectory() {
+    char buffer[MAX_PATH] = {};
+    DWORD length = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
+    if (length == 0 || length >= MAX_PATH) {
+        throw std::runtime_error("Andor: failed to resolve executable directory");
+    }
+
+    std::string fullPath(buffer, length);
+    size_t slash = fullPath.find_last_of("\\/");
+    if (slash == std::string::npos) {
+        return ".";
+    }
+    return fullPath.substr(0, slash);
+}
+
+void ensureDirectoryExists(const std::string& path) {
+    if (path.empty()) {
+        return;
+    }
+
+    DWORD attrs = GetFileAttributesA(path.c_str());
+    if (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY)) {
+        return;
+    }
+
+    size_t slash = path.find_last_of("\\/");
+    if (slash != std::string::npos) {
+        std::string parent = path.substr(0, slash);
+        if (!(parent.size() == 2 && parent[1] == ':')) {
+            ensureDirectoryExists(parent);
+        }
+    }
+
+    CreateDirectoryA(path.c_str(), nullptr);
+}
+
+std::string timestampString() {
+    using clock = std::chrono::system_clock;
+    const auto now = clock::now();
+    const auto nowTime = clock::to_time_t(now);
+
+    std::tm tm = {};
+#if defined(_WIN32)
+    localtime_s(&tm, &nowTime);
+#else
+    localtime_r(&nowTime, &tm);
+#endif
+
+    const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%Y%m%d_%H%M%S")
+        << '_' << std::setw(3) << std::setfill('0') << millis.count();
+    return oss.str();
+}
+
+std::string createMeasurementFolder() {
+    const std::string baseDir = joinPath(executableDirectory(), "measurements");
+    ensureDirectoryExists(baseDir);
+
+    std::string folder = joinPath(baseDir, timestampString());
+    ensureDirectoryExists(folder);
+    return folder;
+}
+
+cv::Mat buildSpectrumImage(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, WORD& maxVal) {
+    maxVal = 0;
+    for (WORD val : spectra) {
+        if (val > maxVal) {
+            maxVal = val;
+        }
+    }
+    if (maxVal == 0) {
+        maxVal = 1;
+    }
+
+    cv::Mat img(numSpectra, pixelsPerSpectrum, CV_8UC1);
+    for (int i = 0; i < numSpectra; ++i) {
+        for (int j = 0; j < pixelsPerSpectrum; ++j) {
+            const WORD val = spectra[i * pixelsPerSpectrum + j];
+            img.at<uchar>(i, j) = static_cast<uchar>((val * 255) / maxVal);
+        }
+    }
+    return img;
+}
+
+void writeSpectrumTxt(const std::string& filePath, const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum) {
+    std::ofstream outFile(filePath.c_str());
+    if (!outFile) {
+        throw std::runtime_error(std::string("Andor: failed to write TXT: ") + filePath);
+    }
+
+    for (int i = 0; i < numSpectra; ++i) {
+        for (int j = 0; j < pixelsPerSpectrum; ++j) {
+            outFile << spectra[i * pixelsPerSpectrum + j] << ' ';
+        }
+        outFile << '\n';
+    }
+}
+
+} // namespace
 
 AndorCamera::AndorCamera() {}
 
@@ -150,45 +266,42 @@ void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSp
         throw std::runtime_error("Andor: testAcquireAndSave requires non-empty spectrum data");
     }
 
-    // debug 1: print cv::getBuildInformation()
+    const std::string measurementFolder = createMeasurementFolder();
+
     std::cout << "OpenCV Build Information:\n" << cv::getBuildInformation() << "\n";
 
-    // Find max value for scaling
-    WORD maxVal = 0;
-    for (WORD val : spectra) {
-        if (val > maxVal) maxVal = val;
-    }
-    if (maxVal == 0) maxVal = 1; // avoid division by zero
+    if (numSpectra == 1) {
+        WORD maxVal = 0;
+        cv::Mat img = buildSpectrumImage(spectra, numSpectra, pixelsPerSpectrum, maxVal);
+        const std::string stem = joinPath(measurementFolder, filename.empty() ? "spectrum" : filename);
 
-    // Create OpenCV Mat and scale to 8-bit
-    cv::Mat img(numSpectra, pixelsPerSpectrum, CV_8UC1);
-    for (int i = 0; i < numSpectra; i++) {
-        for (int j = 0; j < pixelsPerSpectrum; j++) {
-            WORD val = spectra[i * pixelsPerSpectrum + j];
-            img.at<uchar>(i, j) = static_cast<uchar>((val * 255) / maxVal);
+        if (!cv::imwrite(stem + ".png", img)) {
+            throw std::runtime_error(std::string("Andor: failed to write PNG: ") + stem);
         }
+
+        writeSpectrumTxt(stem + ".txt", spectra, numSpectra, pixelsPerSpectrum);
+        std::cout << "Saved spectrum to " << measurementFolder << "\n";
+        return;
     }
-    // debug 1: print cv::getBuildInformation()
-    std::cout << "OpenCV Build Information:\n" << cv::getBuildInformation() << "\n";
-    // Save as PNG
-    if (!cv::imwrite(filename + ".png", img)) {
-        std::cerr << "Failed to save PNG: " << filename << "\n";
-    } else {
-        std::cout << "Saved spectra image to " << filename << "\n";
-    }
-    // Save to .txt file
-    std::ofstream outFile(filename + ".txt");
-    if (!outFile) {
-        std::cerr << "Failed to save TXT: " << filename << "\n";
-    } else {
-        for (int i = 0; i < numSpectra; i++) {
-            for (int j = 0; j < pixelsPerSpectrum; j++) {
-                outFile << spectra[i * pixelsPerSpectrum + j] << " ";
-            }
-            outFile << "\n";
+
+    for (int frame = 0; frame < numSpectra; ++frame) {
+        std::vector<WORD> frameData(spectra.begin() + (frame * pixelsPerSpectrum),
+                                    spectra.begin() + ((frame + 1) * pixelsPerSpectrum));
+        WORD maxVal = 0;
+        cv::Mat img = buildSpectrumImage(frameData, 1, pixelsPerSpectrum, maxVal);
+
+        std::ostringstream name;
+        name << (filename.empty() ? "frame" : filename) << '_' << std::setw(3) << std::setfill('0') << frame;
+        const std::string stem = joinPath(measurementFolder, name.str());
+
+        if (!cv::imwrite(stem + ".png", img)) {
+            throw std::runtime_error(std::string("Andor: failed to write PNG: ") + stem);
         }
-        std::cout << "Saved spectra data to " << filename << ".txt\n";
+
+        writeSpectrumTxt(stem + ".txt", frameData, 1, pixelsPerSpectrum);
     }
+
+    std::cout << "Saved kinetic spectra to " << measurementFolder << "\n";
 
 }
 

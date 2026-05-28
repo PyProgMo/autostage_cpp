@@ -50,8 +50,8 @@ public:
         FVB         = 0,     // Full Vertical Binning — fastest, 1D spectrum
         MultiTrack  = 1,     // Multiple Track — several binned tracks on sensor
         RandomTrack  = 2,     // Random Track — user-defined rows to bin
-        SingleTrack = 3,
-        FullImage   = 4,
+        SingleTrack = 3,      // Single Track — like Multi but only one track (for spectroscopy)
+        FullImage   = 4,       // Full Image — no binning, 2D image readout
     };
 
     AndorCamera();
