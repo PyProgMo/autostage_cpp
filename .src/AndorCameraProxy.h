@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <string>
 #include <vector>
+#include <map>
 
 struct IpcMessage;
 
@@ -21,6 +22,10 @@ public:
     void setCoolingTemperature(int temperatureC);
     int getCoolingTemperature();
     bool isCoolingEnabled();
+    void setBackground(const std::vector<WORD>& spectra);
+    bool hasBackground() const;
+    std::vector<WORD> getBackground() const;
+    void measureBackground(float exposureSeconds, const std::string& filename = "background");
 
     void setReadMode(int mode);
     void setAcquisitionMode(int mode);
@@ -51,6 +56,8 @@ public:
 private:
     HANDLE hPipe_ = INVALID_HANDLE_VALUE;
     int xpix_ = 0, ypix_ = 0;
+    int selectedCameraIndex_ = 0;
+    std::map<int, std::vector<WORD>> backgrounds_;
 
     void sendCommand(const IpcMessage& msg, IpcMessage& response);
 };

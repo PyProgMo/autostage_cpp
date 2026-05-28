@@ -66,6 +66,7 @@ int main() {
             std::cout << "  andor cooling on|off\n";
             std::cout << "  andor setTemp [celsius]\n";
             std::cout << "  andor getTemp\n";
+            std::cout << "  andor measurebg\n";
             std::cout << "  andor measure\n";
             std::cout << "  andor setTint [milliseconds]\n";
             std::cout << "  andor setReadMode [mode] (FVB, MultiTrack, RandomTrack, SingleTrack, FullImage)\n";
@@ -166,6 +167,9 @@ int main() {
                     }
                 } else if (action == "getTemp") {
                     std::cout << "Andor cooling temperature: " << cam->getCoolingTemperature() << " C\n";
+                } else if (action == "measurebg") {
+                    cam->measureBackground(0.1f);
+                    std::cout << "Background captured for the current camera.\n";
                 } else if (action == "disconnect") {
                     cam->shutdown();
                     std::cout << "Andor shutdown.\n";
@@ -175,7 +179,7 @@ int main() {
                 }
                 else if (action == "measure") {
                     cam->configureSpectral(AndorCamera::ReadMode::FVB,
-                                           AndorCamera::TriggerMode::External, 0.1f);
+                                           AndorCamera::TriggerMode::Internal, 0.1f);
                     cam->startAcquisition();
                     cam->waitForAcquisition();
                     auto data = cam->getAllSpectra(1, cam->getXPixels());
@@ -184,9 +188,10 @@ int main() {
                         std::cout << data[i] << " ";
                     }
                     std::cout << "...\n";
+                    cam->testAcquireAndSave(data, 1, cam->getXPixels(), "measured_spectrum");
                 } else if (action == "test") {
                     cam->testAcquireAndSave(0.1f, "test_spectrum");
-                    std::cout << "Measured spectrum saved under the timestamped measurements folder.\n";
+                    std::cout << "Measured spectrum and sig-bg saved under the timestamped measurements folder when a background is available.\n";
                 } else if (action == "setTint") {
                     float tint;
                     if (iss >> tint) {

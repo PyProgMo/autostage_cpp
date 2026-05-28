@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <vector>
 #include <string>
+#include <map>
 
 // Andor SDK2 error codes
 #define DRV_SUCCESS          20002
@@ -74,6 +75,10 @@ public:
     void setCoolingTemperature(int temperatureC);
     int getCoolingTemperature();
     bool isCoolingEnabled();
+    void setBackground(const std::vector<WORD>& spectra);
+    bool hasBackground() const;
+    std::vector<WORD> getBackground() const;
+    void measureBackground(float exposureSeconds, const std::string& filename = "background");
 
     void setReadMode(int mode);
     void setAcquisitionMode(int mode);
@@ -140,6 +145,8 @@ private:
     FP_SetKineticCycleTime     pSetKineticCycleTime     = nullptr;
     FP_SetNumberKinetics       pSetNumberKinetics       = nullptr;
     FP_GetImages16             pGetImages16             = nullptr;
+
+    std::map<int, std::vector<WORD>> backgrounds_;
 
     void ensureLoaded();
     void check(unsigned int ret, const char* context);

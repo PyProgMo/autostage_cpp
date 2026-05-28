@@ -122,6 +122,27 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<WORD>& spec
     }
 }
 
+std::vector<WORD> subtractBackground(const std::vector<WORD>& spectra, const std::vector<WORD>& background) {
+    std::vector<WORD> sigBg = spectra;
+    const size_t count = std::min(sigBg.size(), background.size());
+    for (size_t i = 0; i < count; ++i) {
+        sigBg[i] = static_cast<WORD>(sigBg[i] > background[i] ? sigBg[i] - background[i] : 0);
+    }
+    return sigBg;
+}
+
+void saveSpectrumSet(const std::string& measurementFolder,
+                     const std::string& stem,
+                     const std::vector<WORD>& spectra,
+                     int numSpectra,
+                     int pixelsPerSpectrum) {
+    cv::Mat img = buildSpectrumImage(spectra, numSpectra, pixelsPerSpectrum);
+    if (!cv::imwrite(joinPath(measurementFolder, stem) + ".png", img)) {
+        throw std::runtime_error(std::string("AndorCameraProxy: failed to write PNG: ") + stem);
+    }
+    writeSpectrumTxt(joinPath(measurementFolder, stem) + ".txt", spectra, numSpectra, pixelsPerSpectrum);
+}
+
 } // namespace
 
 AndorCameraProxy::AndorCameraProxy() {
@@ -227,6 +248,7 @@ void AndorCameraProxy::selectCamera(int cameraIndex) {
 
     IpcMessage res = {};
     sendCommand(req, res);
+    selectedCameraIndex_ = cameraIndex;
 }
 
 void AndorCameraProxy::enableCooling(bool enable) {
@@ -263,6 +285,36 @@ bool AndorCameraProxy::isCoolingEnabled() {
     IpcMessage res = {};
     sendCommand(req, res);
     return res.iArgs[0] != 0;
+}
+
+void AndorCameraProxy::setBackground(const std::vector<WORD>& spectra) {
+    backgrounds_[selectedCameraIndex_] = spectra;
+}
+
+bool AndorCameraProxy::hasBackground() const {
+    auto it = backgrounds_.find(selectedCameraIndex_);
+    return it != backgrounds_.end() && !it->second.empty();
+}
+
+std::vector<WORD> AndorCameraProxy::getBackground() const {
+    auto it = backgrounds_.find(selectedCameraIndex_);
+    if (it == backgrounds_.end()) {
+        return {};
+    }
+    return it->second;
+}
+
+void AndorCameraProxy::measureBackground(float exposureSeconds, const std::string& filename) {
+    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureSeconds, 1);
+    startAcquisition();
+    waitForAcquisition();
+
+    const std::vector<WORD> spectra = getAllSpectra(1, getXPixels());
+    setBackground(spectra);
+
+    const std::string measurementFolder = createMeasurementFolder();
+    const std::string stem = filename.empty() ? "background" : filename;
+    saveSpectrumSet(measurementFolder, stem, spectra, 1, getXPixels());
 }
 
 void AndorCameraProxy::shutdown() {
@@ -378,16 +430,16 @@ void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int 
     }
 
     const std::string measurementFolder = createMeasurementFolder();
+    const std::vector<WORD> background = getBackground();
 
     if (numSpectra == 1) {
-        const std::string stem = joinPath(measurementFolder, filename.empty() ? "spectrum" : filename);
-        cv::Mat img = buildSpectrumImage(spectra, numSpectra, pixelsPerSpectrum);
+        const std::string stem = filename.empty() ? "spectrum" : filename;
+        saveSpectrumSet(measurementFolder, stem, spectra, numSpectra, pixelsPerSpectrum);
 
-        if (!cv::imwrite(stem + ".png", img)) {
-            throw std::runtime_error(std::string("AndorCameraProxy: failed to write PNG: ") + stem);
+        if (!background.empty()) {
+            const std::vector<WORD> sigBg = subtractBackground(spectra, background);
+            saveSpectrumSet(measurementFolder, "sig-bg", sigBg, numSpectra, pixelsPerSpectrum);
         }
-
-        writeSpectrumTxt(stem + ".txt", spectra, numSpectra, pixelsPerSpectrum);
         return;
     }
 
@@ -396,14 +448,14 @@ void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int 
                                     spectra.begin() + ((frame + 1) * pixelsPerSpectrum));
         std::ostringstream name;
         name << (filename.empty() ? "frame" : filename) << '_' << std::setw(3) << std::setfill('0') << frame;
-        const std::string stem = joinPath(measurementFolder, name.str());
-        cv::Mat img = buildSpectrumImage(frameData, 1, pixelsPerSpectrum);
+        saveSpectrumSet(measurementFolder, name.str(), frameData, 1, pixelsPerSpectrum);
 
-        if (!cv::imwrite(stem + ".png", img)) {
-            throw std::runtime_error(std::string("AndorCameraProxy: failed to write PNG: ") + stem);
+        if (!background.empty()) {
+            std::vector<WORD> bgFrame(background.begin() + (frame * pixelsPerSpectrum),
+                                      background.begin() + ((frame + 1) * pixelsPerSpectrum));
+            const std::vector<WORD> sigBg = subtractBackground(frameData, bgFrame);
+            saveSpectrumSet(measurementFolder, std::string("sig-bg_") + name.str().substr(name.str().find_last_of('_') + 1), sigBg, 1, pixelsPerSpectrum);
         }
-
-        writeSpectrumTxt(stem + ".txt", frameData, 1, pixelsPerSpectrum);
     }
 }
 
