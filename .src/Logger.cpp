@@ -28,6 +28,13 @@ void AppLogger::info(const std::string& message) {
     std::cout << message << "\n";
 }
 
+void AppLogger::warn(const std::string& message) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    ensureOpenLocked();
+    writeLocked(generalFile_, "WARN", message);
+    std::cout << message << "\n";
+}
+
 void AppLogger::error(const std::string& message) {
     std::lock_guard<std::mutex> lock(mutex_);
     ensureOpenLocked();

@@ -15,6 +15,7 @@ public:
 
     void setPaths(const std::string& generalPath, const std::string& errorPath);
     void info(const std::string& message);
+    void warn(const std::string& message);
     void error(const std::string& message);
 
 private:

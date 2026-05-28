@@ -47,6 +47,7 @@ void PIStage::loadDLL(const std::string& dllPath) {
     pCloseConnection = loadProc<FP_CloseConnection> ("PI_CloseConnection");
     pMOV             = loadProc<FP_MOV>             ("PI_MOV");
     pSVO             = loadProc<FP_SVO>             ("PI_SVO");
+    pVEL             = loadProc<FP_VEL>             ("PI_VEL");
     pGcsCommandset   = loadProc<FP_GcsCommandset>   ("PI_GcsCommandset");
     pqPOS            = loadProc<FP_qPOS>            ("PI_qPOS");
     pIsMoving        = loadProc<FP_IsMoving>        ("PI_IsMoving");
@@ -91,6 +92,86 @@ double PIStage::getPos(const char* axis) {
     double pos = 0.0;
     if (!pqPOS(id_, axis, &pos)) checkError();
     return pos;
+}
+
+void PIStage::getPosMult(const char* axes, double* positions) {
+    if (!pqPOS(id_, axes, positions)) checkError();
+}
+
+void PIStage::setVelocity(const char* axes, const double* velocities) {
+    if (!pVEL(id_, axes, velocities)) checkError();
+}
+
+void PIStage::runVelocitySweep(double vNominal, double xStop, double yHold, const std::vector<double>& zProfile, double xStart, double xStep) {
+    // Basic boundaries check
+    if (xStop > 0.300 || xStart < 0.0) throw std::runtime_error("X boundaries out of limits (0-300 um)");
+
+    // Sweep Loop logic over ~5ms periods
+    double Kp = 1.0, Ka = 0.0, Ki = 0.1;
+    double C0 = 0.0;
+    double C0_cap = vNominal * 0.2; // 20% cap
+    
+    double positions[3] = {0.0, 0.0, 0.0};
+    double prev_vX = vNominal;
+    double prev_X = xStart;
+    DWORD prev_t = GetTickCount();
+
+    // Make sure we are up to date before looping
+    getPosMult("X Y Z", positions);
+
+    while (positions[0] < xStop) {
+        // Sleep to target ~5ms
+        Sleep(5);
+
+        DWORD current_t = GetTickCount();
+        double dt = (current_t - prev_t) * 0.001;
+        if (dt <= 0.0) dt = 0.005;
+
+        // Query new positions
+        getPosMult("X Y Z", positions);
+        double X_k = positions[0];
+        double Y_k = positions[1];
+
+        // Velocity calc
+        double vX = (X_k - prev_X) / dt;
+        double aX = (vX - prev_vX) / dt;
+        
+        // --- X correction ---
+        // 0th Order - C0 integrator
+        C0 += Ki * (vNominal - vX);
+        if (C0 > C0_cap) C0 = C0_cap;
+        if (C0 < -C0_cap) C0 = -C0_cap;
+
+        // 1st and 2nd
+        double C1 = Kp * (vNominal - vX);
+        double C2 = Ka * (0.0 - aX);
+
+        double vCmdX = vNominal + C0 + C1 + C2;
+
+        // --- Y hold ---
+        double vCmdY = 2.0 * (yHold - Y_k); // simple P term hold
+        
+        // --- Z tracker ---
+        double vCmdZ = 0.0;
+        if (!zProfile.empty()) {
+             // simplified lookup based on index
+             int idx = (int)((X_k - xStart) / xStep);
+             size_t profileIndex = static_cast<size_t>(idx);
+             if (idx >= 0 && profileIndex + 1 < zProfile.size()) {
+                 double grad = (zProfile[profileIndex + 1] - zProfile[profileIndex]) / xStep;
+                 vCmdZ = grad * vX; 
+             }
+        }
+
+        // Issue new commanded velocities
+        double cmds[3] = {vCmdX, vCmdY, vCmdZ};
+        setVelocity("X Y Z", cmds);
+
+        // Update prevs
+        prev_t = current_t;
+        prev_X = X_k;
+        prev_vX = vX;
+    }
 }
 
 void PIStage::waitOnTarget(const char* axis, int timeoutMs) {

@@ -25,6 +25,8 @@ std::string requestSummary(const IpcMessage& req) {
 void ProcessClient(HANDLE hPipe) {
     PIStage stage;
     bool running = true;
+    
+    std::vector<double> zProfileBuffer;
 
     AppLogger::instance().info("StageServer: client handler started");
 
@@ -97,6 +99,31 @@ void ProcessClient(HANDLE hPipe) {
                 AppLogger::instance().info(std::string("StageServer: EnableTriggerOut channel=") + std::to_string(req.iArgs[0]) +
                                            " enable=" + (req.iArgs[1] != 0 ? "true" : "false"));
                 stage.enableTriggerOutput(req.iArgs[0], req.iArgs[1] != 0);
+                break;
+            case IpcCommand::UploadZProfile:
+                AppLogger::instance().info("StageServer: UploadZProfile");
+                if (req.dataSize > 0) {
+                    zProfileBuffer.resize(req.dataSize / sizeof(double));
+                    DWORD extraRead = 0;
+                    DWORD expectedBytes = static_cast<DWORD>(req.dataSize);
+                    if (!ReadFile(hPipe, zProfileBuffer.data(), expectedBytes, &extraRead, NULL) || extraRead != expectedBytes) {
+                        throw std::runtime_error("Failed to read ZProfile payload");
+                    }
+                } else {
+                    zProfileBuffer.clear();
+                }
+                break;
+            case IpcCommand::RunVelocitySweep:
+                AppLogger::instance().info("StageServer: RunVelocitySweep vNominal=" + std::to_string(req.dArgs[0]) + " xStop=" + std::to_string(req.dArgs[1]));
+                // dArgs[0]=vNominal, dArgs[1]=xStop, dArgs[2]=yHold, dArgs[3]=xStart, strArg contains xStep as well maybe? No, let's pack xStep into strArg or something.
+                // We'll use iArgs[0] as pointer cast, wait, we can just pass xStep via IpcMessage 
+                // Let's assume parameters are packed properly. For RasterScan, we need vNominal, xStop, yHold, xStart, xStep
+                // We can use iArgs, but we have 4 dArgs. We need 5. So we can put xStep into an array?
+                // Or dArgs[3] = xStart, and req.strArg can carry std::to_string(xStep), it's a string anyway.
+                {
+                    double xStep = std::stod(req.strArg);
+                    stage.runVelocitySweep(req.dArgs[0], req.dArgs[1], req.dArgs[2], zProfileBuffer, req.dArgs[3], xStep);
+                }
                 break;
             case IpcCommand::WaitTriggerIn:
                 AppLogger::instance().info(std::string("StageServer: WaitTriggerIn channel=") + std::to_string(req.iArgs[0]) +

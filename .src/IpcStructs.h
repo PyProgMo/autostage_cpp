@@ -22,6 +22,10 @@ enum class IpcCommand : int32_t {
     LoadDLL,
     ExitServer,
     
+    // Scan Commands
+    RunVelocitySweep,
+    UploadZProfile,
+    
     // Andor commands
     AndorLoadDLL,
     AndorInitialize,

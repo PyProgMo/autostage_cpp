@@ -14,6 +14,7 @@ typedef BOOL (__stdcall *FP_CloseConnection)  (int id);
 
 typedef BOOL (__stdcall *FP_MOV)  (int id, const char* axes, const double* values);
 typedef BOOL (__stdcall *FP_SVO)  (int id, const char* axes, const BOOL* enabled);
+typedef BOOL (__stdcall *FP_VEL)  (int id, const char* axes, const double* velocities);
 typedef BOOL (__stdcall *FP_GcsCommandset) (int id, const char* command);
 typedef BOOL (__stdcall *FP_qPOS) (int id, const char* axes, double* values);
 typedef BOOL (__stdcall *FP_IsMoving)(int id, const char* axes, BOOL* moving);
@@ -61,8 +62,13 @@ public:
 
     void enableServo(const char* axis, bool enable);
     void moveAbs(const char* axis, double position);
+    void setVelocity(const char* axes, const double* velocities);
     double getPos(const char* axis);
+    void getPosMult(const char* axes, double* positions);
     void waitOnTarget(const char* axis, int timeoutMs = 10000);
+    
+    // Velocity loop execution
+    void runVelocitySweep(double vNominal, double xStop, double yHold, const std::vector<double>& zProfile, double xStart, double xStep);
 
     // Trigger output
     void configureTriggerOutput(int channel, const char* axis,
@@ -95,6 +101,7 @@ private:
     FP_CloseConnection  pCloseConnection  = nullptr;
     FP_MOV              pMOV              = nullptr;
     FP_SVO              pSVO              = nullptr;
+    FP_VEL              pVEL              = nullptr;
     FP_GcsCommandset    pGcsCommandset    = nullptr;
     FP_qPOS             pqPOS             = nullptr;
     FP_IsMoving         pIsMoving         = nullptr;

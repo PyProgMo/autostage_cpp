@@ -155,6 +155,54 @@ double PIStageProxy::getPos(const char* axis) {
     return res.dArgs[0];
 }
 
+void PIStageProxy::runVelocitySweep(double vNominal, double xStop, double yHold, double xStart, double xStep) {
+    AppLogger::instance().info("PIStageProxy: runVelocitySweep");
+    IpcMessage req = {};
+    req.command = IpcCommand::RunVelocitySweep;
+    req.dArgs[0] = vNominal;
+    req.dArgs[1] = xStop;
+    req.dArgs[2] = yHold;
+    req.dArgs[3] = xStart;
+    
+    std::string stepStr = std::to_string(xStep);
+    strncpy(req.strArg, stepStr.c_str(), sizeof(req.strArg) - 1);
+
+    IpcMessage res;
+    sendCommand(req, res);
+}
+
+void PIStageProxy::uploadZProfile(const std::vector<double>& zProfile) {
+    AppLogger::instance().info("PIStageProxy: uploadZProfile");
+    IpcMessage req = {};
+    req.command = IpcCommand::UploadZProfile;
+    req.dataSize = (int32_t)(zProfile.size() * sizeof(double));
+
+    // Send header first
+    DWORD bytesWritten = 0;
+    if (!WriteFile(hPipe_, &req, sizeof(req), &bytesWritten, NULL)) {
+        throw std::runtime_error("PIStageProxy IPC write cmd failed");
+    }
+
+    // Send payload if any
+    if (req.dataSize > 0) {
+        DWORD expectedBytes = static_cast<DWORD>(req.dataSize);
+        if (!WriteFile(hPipe_, zProfile.data(), expectedBytes, &bytesWritten, NULL) || bytesWritten != expectedBytes) {
+            throw std::runtime_error("PIStageProxy IPC write payload failed");
+        }
+    }
+
+    // Wait for response header
+    IpcMessage res = {};
+    DWORD bytesRead = 0;
+    if (!ReadFile(hPipe_, &res, sizeof(res), &bytesRead, NULL)) {
+        throw std::runtime_error("PIStageProxy IPC read response failed");
+    }
+
+    if (res.status != 0) {
+        throw std::runtime_error(std::string("Stage Server returned error code ") + std::to_string(res.status));
+    }
+}
+
 void PIStageProxy::waitOnTarget(const char* axis, int timeoutMs) {
     AppLogger::instance().info(std::string("PIStageProxy: waitOnTarget axis=") + axis + " timeoutMs=" + std::to_string(timeoutMs));
     IpcMessage req = {};

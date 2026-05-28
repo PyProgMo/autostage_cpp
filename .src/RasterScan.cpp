@@ -22,6 +22,9 @@ struct ScanConfig {
 
     // Andor
     float  exposureS =  0.001f;// 1 ms per spectrum
+    
+    // Z Profile array (optional)
+    std::vector<double> zProfile;
 };
 
 void runRasterScan(PIStageProxy& stage, AndorCamera& cam, const ScanConfig& cfg)
@@ -63,34 +66,32 @@ void runRasterScan(PIStageProxy& stage, AndorCamera& cam, const ScanConfig& cfg)
         nY, std::vector<std::vector<WORD>>(nX, std::vector<WORD>(nPix, 0)));
 
     // ── 5. Scan loop ───────────────────────────────────────────────────────
+    // Pre-load Z-profile if present
+    stage.uploadZProfile(cfg.zProfile);
+
+    // Compute required nominal velocity: v = dx / dt, minus some overhead
+    // For safety, say dt is exposure time + 1ms readout. 
+    double dt_pixel = cfg.exposureS + 0.001;
+    double vNominal = cfg.xStep / dt_pixel;
+
     for (int iy = 0; iy < nY; iy++) {
         double yPos = cfg.yStart + iy * cfg.yStep;
 
         // 5a. Move to line start & wait settled
         stage.moveAbs("Y", yPos);
         stage.moveAbs("X", cfg.xStart);
+        if (!cfg.zProfile.empty()) stage.moveAbs("Z", cfg.zProfile[0]); // match start altitude
         stage.waitOnTarget("Y");
         stage.waitOnTarget("X");
+        if (!cfg.zProfile.empty()) stage.waitOnTarget("Z");
 
         // 5b. Arm Andor — waiting for nX trigger pulses
         cam.startAcquisition();
 
-        // 5c. Arm stage: WGO — gate X move on external trigger input
-        //     so stage + Andor start simultaneously
-        //     conditionMask 0x1 = wait for trigger input line 1
-        stage.setWaitOnGo("X", 0x1);
-
-        // 5d. Issue X move — stage waits for WGO condition
-        stage.moveAbs("X", cfg.xStop);
-        // (stage is now armed but not yet moving)
-
-        // 5e. At this point you would send a SW trigger or wait for HW start.
-        //     If using a physical start pulse, the stage releases automatically.
-        //     For a pure SW start, send a software trigger here:
-        //     stage.SWT(id_, "X", 1);  // if using software WGO trigger
+        // 5c. Run velocity correction sweep (blocks until X >= xStop)
+        stage.runVelocitySweep(vNominal, cfg.xStop, yPos, cfg.xStart, cfg.xStep);
 
         // 5f. Wait for Andor to finish collecting all nX spectra
-        //     WaitForAcquisition blocks until the kinetic series is done
         cam.waitForAcquisition();
 
         // 5g. Read the completed line of spectra
@@ -139,10 +140,10 @@ int main() {
 
         ScanConfig cfg;
         cfg.xStart   = 0.0;
-        cfg.xStop    = 2.0;
+        cfg.xStop    = 0.300;   // 300 um window
         cfg.xStep    = 0.002;   // 2 µm steps
         cfg.yStart   = 0.0;
-        cfg.yStop    = 2.0;
+        cfg.yStop    = 0.300;
         cfg.yStep    = 0.002;
         cfg.exposureS = 0.002f; // 2 ms
 

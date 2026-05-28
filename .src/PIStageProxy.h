@@ -20,6 +20,10 @@ public:
     double getPos(const char* axis);
     void waitOnTarget(const char* axis, int timeoutMs = 10000);
 
+    // Advanced motion
+    void runVelocitySweep(double vNominal, double xStop, double yHold, double xStart, double xStep);
+    void uploadZProfile(const std::vector<double>& zProfile);
+
     // Trigger output
     void configureTriggerOutput(int channel, const char* axis,
                                 double startMM, double stepMM,

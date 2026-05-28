@@ -36,6 +36,9 @@ struct ScanConfig {
 
     // Output
     std::string outputPath = "scan_cube.raw";
+    
+    // Z Profile array (optional)
+    std::vector<double> zProfile;
 };
 
 // ── Result container ───────────────────────────────────────────────────────
