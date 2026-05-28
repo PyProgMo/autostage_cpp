@@ -124,6 +124,18 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
 
     const int lines[] = { channel, channel, channel, channel, channel, channel };
 
+    // Enforce soft limits for our piezo nanostage: 0..0.3 mm (0..300 um)
+    const double SOFT_MIN = 0.0;
+    const double SOFT_MAX = 0.3;
+    if (startMM < SOFT_MIN) {
+        AppLogger::instance().warn(std::string("PIStage: startMM below soft min, clamping: ") + std::to_string(startMM));
+        startMM = SOFT_MIN;
+    }
+    if (stopMM > SOFT_MAX) {
+        AppLogger::instance().warn(std::string("PIStage: stopMM above soft max, clamping: ") + std::to_string(stopMM));
+        stopMM = SOFT_MAX;
+    }
+
     // Try multiple parameter orderings — some firmware expects different layouts.
     const int paramsA[] = { 2, 1, 3, 4, 5, 6 };
     double valsA[] = { axisCode, 1.0, stepMM, startMM, stopMM, (double)pulseWidthUs };
@@ -157,6 +169,23 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
         char msg[256] = {};
         if (pTranslateError) pTranslateError(err, msg, sizeof(msg));
         AppLogger::instance().error(std::string("PIStage: CTO paramsC failed: code=") + std::to_string(err) + " msg=" + msg);
+    }
+
+    // E712-specific mapping: param order with axis label (2), mode (1=8 Position Distance), step (3), min (5), max (6), polarity (7)
+    const int paramsE[] = { 2, 1, 3, 5, 6, 7 };
+    // compute thresholds — make sure they are within soft limits
+    double minThresh = startMM;
+    double maxThresh = stopMM;
+    if (minThresh < SOFT_MIN) minThresh = SOFT_MIN;
+    if (maxThresh > SOFT_MAX) maxThresh = SOFT_MAX;
+    double valsE[] = { axisCode, 8.0, stepMM, minThresh, maxThresh, 1.0 };
+
+    if (pCTO(id_, lines, paramsE, valsE, 6)) return;
+    else {
+        int err = pGetError ? pGetError(id_) : 0;
+        char msg[256] = {};
+        if (pTranslateError) pTranslateError(err, msg, sizeof(msg));
+        AppLogger::instance().error(std::string("PIStage: CTO E712 mapping failed: code=") + std::to_string(err) + " msg=" + msg);
     }
 
     // None succeeded — throw with PI error info
