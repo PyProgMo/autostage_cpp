@@ -86,9 +86,9 @@ void ProcessClient(HANDLE hPipe) {
             case IpcCommand::ConfigTriggerOut:
                 AppLogger::instance().info(std::string("StageServer: ConfigTriggerOut channel=") + std::to_string(req.iArgs[0]) +
                                            " axis=" + req.strArg +
-                                           " startMM=" + std::to_string(req.dArgs[0]) +
-                                           " stepMM=" + std::to_string(req.dArgs[1]) +
-                                           " stopMM=" + std::to_string(req.dArgs[2]) +
+                                           " start_um=" + std::to_string(req.dArgs[0]) +
+                                           " step_um=" + std::to_string(req.dArgs[1]) +
+                                           " stop_um=" + std::to_string(req.dArgs[2]) +
                                            " pulseWidthUs=" + std::to_string(req.iArgs[1]));
                 stage.configureTriggerOutput(req.iArgs[0], req.strArg,
                                         req.dArgs[0], req.dArgs[1],
@@ -143,7 +143,7 @@ void ProcessClient(HANDLE hPipe) {
             case IpcCommand::SetRecordTrigger:
                 AppLogger::instance().info(std::string("StageServer: SetRecordTrigger triggerSource=") + std::to_string(req.iArgs[0]) +
                                            " axis=" + std::to_string(req.iArgs[1]) +
-                                           " thresholdMM=" + std::to_string(req.dArgs[0]));
+                                           " threshold_um=" + std::to_string(req.dArgs[0]));
                 stage.setRecordTrigger(req.iArgs[0], req.iArgs[1], req.dArgs[0]);
                 break;
             case IpcCommand::SetRecordRate:

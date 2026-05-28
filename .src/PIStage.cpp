@@ -103,8 +103,8 @@ void PIStage::setVelocity(const char* axes, const double* velocities) {
 }
 
 void PIStage::runVelocitySweep(double vNominal, double xStop, double yHold, const std::vector<double>& zProfile, double xStart, double xStep) {
-    // Basic boundaries check
-    if (xStop > 0.300 || xStart < 0.0) throw std::runtime_error("X boundaries out of limits (0-300 um)");
+    // Basic boundaries check (units: micrometers)
+    if (xStop > 300.0 || xStart < 0.0) throw std::runtime_error("X boundaries out of limits (0-300 um)");
 
     // Sweep Loop logic over ~5ms periods
     double Kp = 1.0, Ka = 0.0, Ki = 0.1;
@@ -196,8 +196,8 @@ void PIStage::setWaitOnGo(const char* axis, int conditionMask) {
 }
 
 void PIStage::configureTriggerOutput(int channel, const char* axis,
-                                     double startMM, double stepMM,
-                                     double stopMM, int pulseWidthUs)
+                                     double startUM, double stepUM,
+                                     double stopUM, int pulseWidthUs)
 {
     // Prepare axis code (X=1, Y=2, Z=3)
     double axisCode = (axis[0] == 'X') ? 1.0 :
@@ -205,28 +205,28 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
 
     const int lines[] = { channel, channel, channel, channel, channel, channel };
 
-    // Enforce soft limits for our piezo nanostage: 0..0.3 mm (0..300 um)
+    // Enforce soft limits for our piezo nanostage: 0..300 µm
     const double SOFT_MIN = 0.0;
-    const double SOFT_MAX = 0.3;
-    if (startMM < SOFT_MIN) {
-        AppLogger::instance().warn(std::string("PIStage: startMM below soft min, clamping: ") + std::to_string(startMM));
-        startMM = SOFT_MIN;
+    const double SOFT_MAX = 300.0;
+    if (startUM < SOFT_MIN) {
+        AppLogger::instance().warn(std::string("PIStage: startUM below soft min, clamping: ") + std::to_string(startUM));
+        startUM = SOFT_MIN;
     }
-    if (stopMM > SOFT_MAX) {
-        AppLogger::instance().warn(std::string("PIStage: stopMM above soft max, clamping: ") + std::to_string(stopMM));
-        stopMM = SOFT_MAX;
+    if (stopUM > SOFT_MAX) {
+        AppLogger::instance().warn(std::string("PIStage: stopUM above soft max, clamping: ") + std::to_string(stopUM));
+        stopUM = SOFT_MAX;
     }
 
     // Try multiple parameter orderings — some firmware expects different layouts.
     const int paramsA[] = { 2, 1, 3, 4, 5, 6 };
-    double valsA[] = { axisCode, 1.0, stepMM, startMM, stopMM, (double)pulseWidthUs };
+    double valsA[] = { axisCode, 1.0, stepUM, startUM, stopUM, (double)pulseWidthUs };
 
     const int paramsB[] = { 1, 2, 3, 4, 5, 6 };
-    double valsB[] = { 1.0, axisCode, stepMM, startMM, stopMM, (double)pulseWidthUs };
+    double valsB[] = { 1.0, axisCode, stepUM, startUM, stopUM, (double)pulseWidthUs };
 
     // Candidate C: use axis as integer placed later
     const int paramsC[] = { 1, 3, 4, 5, 6, 2 };
-    double valsC[] = { 1.0, stepMM, startMM, stopMM, (double)pulseWidthUs, axisCode };
+    double valsC[] = { 1.0, stepUM, startUM, stopUM, (double)pulseWidthUs, axisCode };
 
     if (pCTO(id_, lines, paramsA, valsA, 6)) return;
     else {
@@ -255,11 +255,11 @@ void PIStage::configureTriggerOutput(int channel, const char* axis,
     // E712-specific mapping: param order with axis label (2), mode (1=8 Position Distance), step (3), min (5), max (6), polarity (7)
     const int paramsE[] = { 2, 1, 3, 5, 6, 7 };
     // compute thresholds — make sure they are within soft limits
-    double minThresh = startMM;
-    double maxThresh = stopMM;
+    double minThresh = startUM;
+    double maxThresh = stopUM;
     if (minThresh < SOFT_MIN) minThresh = SOFT_MIN;
     if (maxThresh > SOFT_MAX) maxThresh = SOFT_MAX;
-    double valsE[] = { axisCode, 8.0, stepMM, minThresh, maxThresh, 1.0 };
+    double valsE[] = { axisCode, 8.0, stepUM, minThresh, maxThresh, 1.0 };
 
     if (pCTO(id_, lines, paramsE, valsE, 6)) return;
     else {
@@ -305,8 +305,8 @@ void PIStage::setupDataRecorder(int table, const char* source, int option) {
     if (!pDRC(id_, &table, sources, &option, 1)) checkError();
 }
 
-void PIStage::setRecordTrigger(int triggerSource, int axis, double thresholdMM) {
-    if (!pDRT(id_, triggerSource, axis, thresholdMM)) checkError();
+void PIStage::setRecordTrigger(int triggerSource, int axis, double thresholdUM) {
+    if (!pDRT(id_, triggerSource, axis, thresholdUM)) checkError();
 }
 
 void PIStage::setRecordRate(int cycleDiv) {

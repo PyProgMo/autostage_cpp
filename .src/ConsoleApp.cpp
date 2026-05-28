@@ -57,8 +57,8 @@ int main() {
             std::cout << "Commands:\n";
             std::cout << "  stage connect\n";
             std::cout << "  stage disconnect\n";
-            std::cout << "  stage get_pos [axis] \n";
-            std::cout << "  stage move_abs [axis] [pos]\n";
+            std::cout << "  stage pos [axis] \n";
+            std::cout << "  stage m [axis] [pos] (in nm)\n";
             std::cout << "  stage wait [axis]\n";
             std::cout << "  andor connect [cameraIndex]\n";
             std::cout << "  andor cameras\n";
@@ -96,20 +96,25 @@ int main() {
                 } else if (action == "disconnect") {
                     stage->disconnect();
                     std::cout << "Stage disconnected.\n";
-                } else if (action == "get_pos") {
+                } else if (action == "pos") {
                     std::string axis;
                     iss >> axis;
                     if (axis.empty()) axis = "X";
-                    double pos = stage->getPos(axis.c_str());
+                    double pos = stage->getPos(axis.c_str())*1e3; // convert µm to nm for user
                     std::cout << axis << " Position: " << pos << "\n";
-                } else if (action == "move_abs") {
+                } else if (action == "qpos") { // print x y z positions
+                    double x = stage->getPos("X")*1e3; // convert µm to nm for user
+                    double y = stage->getPos("Y")*1e3; // convert µm to nm for user
+                    double z = stage->getPos("Z")*1e3; // convert µm to nm for user
+                    std::cout << "X: " << x << " Y: " << y << " Z: " << z << "\n";
+                } else if (action == "m") {
                     std::string axis;
                     double pos;
                     if (iss >> axis >> pos) {
                         stage->moveAbs(axis.c_str(), pos);
                         std::cout << "Moving " << axis << " to " << pos << "\n";
                     } else {
-                        std::cout << "Usage: stage move_abs [axis] [pos]\n";
+                        std::cout << "Usage: stage m [axis] [pos] (in nm)\n";
                     }
                 } else if (action == "wait") {
                     std::string axis;
@@ -274,8 +279,9 @@ int main() {
                 }
             } else if (target == "scan") {
                 // Here we replicate runRasterScan using proxies!
-                double xStart = 0.0, xStop = 2.0, xStep = 0.002;
-                double yStart = 0.0, yStop = 2.0, yStep = 0.002;
+                // defaults are in nanometres (nm)
+                double xStart = 0.0, xStop = 2000000.0, xStep = 2000.0; // 2.0 mm -> 2000000 nm, 0.002 mm -> 2000 nm
+                double yStart = 0.0, yStop = 2000000.0, yStep = 2000.0;
                 float exposureS = 0.002f;
                 int trigCh = 1, pulseUs = 50;
 

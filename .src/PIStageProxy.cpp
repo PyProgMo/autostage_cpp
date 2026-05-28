@@ -133,11 +133,13 @@ void PIStageProxy::disconnect() {
 }
 
 void PIStageProxy::moveAbs(const char* axis, double position) {
-    AppLogger::instance().info(std::string("PIStageProxy: moveAbs axis=") + axis + " position=" + std::to_string(position));
+    AppLogger::instance().info(std::string("PIStageProxy: moveAbs axis=") + axis + " position_nm=" + std::to_string(position));
+    // Convert from nm -> µm for stage API
+    double position_um = position / 1e3;
     IpcMessage req = {};
     req.command = IpcCommand::MoveAbs;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
-    req.dArgs[0] = position;
+    req.dArgs[0] = position_um;
     
     IpcMessage res = {};
     sendCommand(req, res);
@@ -159,12 +161,19 @@ void PIStageProxy::runVelocitySweep(double vNominal, double xStop, double yHold,
     AppLogger::instance().info("PIStageProxy: runVelocitySweep");
     IpcMessage req = {};
     req.command = IpcCommand::RunVelocitySweep;
-    req.dArgs[0] = vNominal;
-    req.dArgs[1] = xStop;
-    req.dArgs[2] = yHold;
-    req.dArgs[3] = xStart;
+    // Convert inputs from nm (and nm/s) to µm (and µm/s)
+    double vNominal_um_s = vNominal / 1e3;
+    double xStop_um = xStop / 1e3;
+    double yHold_um = yHold / 1e3;
+    double xStart_um = xStart / 1e3;
+    double xStep_um = xStep / 1e3;
+
+    req.dArgs[0] = vNominal_um_s;
+    req.dArgs[1] = xStop_um;
+    req.dArgs[2] = yHold_um;
+    req.dArgs[3] = xStart_um;
     
-    std::string stepStr = std::to_string(xStep);
+    std::string stepStr = std::to_string(xStep_um);
     strncpy(req.strArg, stepStr.c_str(), sizeof(req.strArg) - 1);
 
     IpcMessage res;
@@ -175,7 +184,11 @@ void PIStageProxy::uploadZProfile(const std::vector<double>& zProfile) {
     AppLogger::instance().info("PIStageProxy: uploadZProfile");
     IpcMessage req = {};
     req.command = IpcCommand::UploadZProfile;
-    req.dataSize = (int32_t)(zProfile.size() * sizeof(double));
+    // Convert zProfile from nm -> µm for stage API
+    std::vector<double> z_um;
+    z_um.reserve(zProfile.size());
+    for (double v : zProfile) z_um.push_back(v / 1e3);
+    req.dataSize = (int32_t)(z_um.size() * sizeof(double));
 
     // Send header first
     DWORD bytesWritten = 0;
@@ -186,7 +199,7 @@ void PIStageProxy::uploadZProfile(const std::vector<double>& zProfile) {
     // Send payload if any
     if (req.dataSize > 0) {
         DWORD expectedBytes = static_cast<DWORD>(req.dataSize);
-        if (!WriteFile(hPipe_, zProfile.data(), expectedBytes, &bytesWritten, NULL) || bytesWritten != expectedBytes) {
+        if (!WriteFile(hPipe_, z_um.data(), expectedBytes, &bytesWritten, NULL) || bytesWritten != expectedBytes) {
             throw std::runtime_error("PIStageProxy IPC write payload failed");
         }
     }
@@ -215,21 +228,25 @@ void PIStageProxy::waitOnTarget(const char* axis, int timeoutMs) {
 }
 
 void PIStageProxy::configureTriggerOutput(int channel, const char* axis,
-                            double startMM, double stepMM,
-                            double stopMM,  int pulseWidthUs) {
+                            double start_nm, double step_nm,
+                            double stop_nm,  int pulseWidthUs) {
     AppLogger::instance().info(std::string("PIStageProxy: configureTriggerOutput channel=") + std::to_string(channel) +
                                " axis=" + axis +
-                               " startMM=" + std::to_string(startMM) +
-                               " stepMM=" + std::to_string(stepMM) +
-                               " stopMM=" + std::to_string(stopMM) +
+                               " start_nm=" + std::to_string(start_nm) +
+                               " step_nm=" + std::to_string(step_nm) +
+                               " stop_nm=" + std::to_string(stop_nm) +
                                " pulseWidthUs=" + std::to_string(pulseWidthUs));
+    // convert nm -> µm
+    double start_um = start_nm / 1e3;
+    double step_um = step_nm / 1e3;
+    double stop_um = stop_nm / 1e3;
     IpcMessage req = {};
     req.command = IpcCommand::ConfigTriggerOut;
     req.iArgs[0] = channel;
     strncpy(req.strArg, axis, sizeof(req.strArg) - 1);
-    req.dArgs[0] = startMM;
-    req.dArgs[1] = stepMM;
-    req.dArgs[2] = stopMM;
+    req.dArgs[0] = start_um;
+    req.dArgs[1] = step_um;
+    req.dArgs[2] = stop_um;
     req.iArgs[1] = pulseWidthUs;
     
     IpcMessage res = {};
@@ -285,15 +302,16 @@ void PIStageProxy::setupDataRecorder(int table, const char* source, int option) 
     sendCommand(req, res);
 }
 
-void PIStageProxy::setRecordTrigger(int triggerSource, int axis, double thresholdMM) {
+void PIStageProxy::setRecordTrigger(int triggerSource, int axis, double threshold_nm) {
     AppLogger::instance().info(std::string("PIStageProxy: setRecordTrigger triggerSource=") + std::to_string(triggerSource) +
                                " axis=" + std::to_string(axis) +
-                               " thresholdMM=" + std::to_string(thresholdMM));
+                               " threshold_nm=" + std::to_string(threshold_nm));
     IpcMessage req = {};
     req.command = IpcCommand::SetRecordTrigger;
     req.iArgs[0] = triggerSource;
     req.iArgs[1] = axis;
-    req.dArgs[0] = thresholdMM;
+    // convert nm -> µm
+    req.dArgs[0] = threshold_nm / 1e3;
     
     IpcMessage res = {};
     sendCommand(req, res);

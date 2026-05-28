@@ -68,12 +68,13 @@ public:
     void waitOnTarget(const char* axis, int timeoutMs = 10000);
     
     // Velocity loop execution
+    // runVelocitySweep: expects distances in micrometers (µm) and velocity in µm/s
     void runVelocitySweep(double vNominal, double xStop, double yHold, const std::vector<double>& zProfile, double xStart, double xStep);
 
-    // Trigger output
+    // Trigger output (distance parameters in micrometers)
     void configureTriggerOutput(int channel, const char* axis,
-                                double startMM, double stepMM,
-                                double stopMM,  int pulseWidthUs);
+                                double startUM, double stepUM,
+                                double stopUM,  int pulseWidthUs);
     void enableTriggerOutput (int channel, bool enable);
 
     // Trigger input wait
@@ -84,7 +85,7 @@ public:
 
     // Data recorder
     void setupDataRecorder(int table, const char* source, int option);
-    void setRecordTrigger(int triggerSource, int axis = 0, double thresholdMM = 0.0);
+    void setRecordTrigger(int triggerSource, int axis = 0, double thresholdUM = 0.0);
     void setRecordRate(int cycleDiv);
     std::vector<double> readRecorder(int startOffset, int numValues,
                                      const int* tables, int nTables);
