@@ -91,8 +91,47 @@ void PIStage::moveAbs(const char* axis, double position) {
 
 std::array<double, 3> PIStage::qpos() {
     std::array<double, 3> positions = {0.0, 0.0, 0.0};
-    // This controller accepts qPOS with numeric axis IDs for tuple queries.
-    if (pqPOS(id_, "1 2 3", positions.data())) return positions;
+
+    const char* primary = "1 2 3"; // numeric axis IDs (known-working form)
+    const char* alt = "X Y Z";     // letter axis names fallback
+
+    // Attempt 1: primary form
+    AppLogger::instance().info("PIStage: qpos attempt 1 using '1 2 3'");
+    if (pqPOS(id_, primary, positions.data())) return positions;
+
+    // Capture error info for diagnostics
+    int err = pGetError ? pGetError(id_) : 0;
+    char errMsg[256] = {};
+    if (pTranslateError) pTranslateError(err, errMsg, sizeof(errMsg));
+    AppLogger::instance().error(std::string("PIStage: qpos primary failed: code=") + std::to_string(err) + " msg=" + errMsg);
+
+    // Attempt 2: short delay then retry primary once (handles controller warm-up timing)
+    Sleep(50);
+    AppLogger::instance().info("PIStage: qpos retrying primary '1 2 3' after 50ms");
+    if (pqPOS(id_, primary, positions.data())) return positions;
+
+    // Attempt 3: fallback to alternate axis naming
+    AppLogger::instance().info("PIStage: qpos fallback attempt using 'X Y Z'");
+    if (pqPOS(id_, alt, positions.data())) return positions;
+
+    // Attempt 4: query axes individually (try numeric then letter names)
+    double p0 = 0.0, p1 = 0.0, p2 = 0.0;
+    AppLogger::instance().info("PIStage: qpos trying individual numeric axes '1','2','3'");
+    if (pqPOS(id_, "1", &p0) && pqPOS(id_, "2", &p1) && pqPOS(id_, "3", &p2)) {
+        positions = {p0, p1, p2};
+        return positions;
+    }
+
+    AppLogger::instance().info("PIStage: qpos trying individual letter axes 'X','Y','Z'");
+    if (pqPOS(id_, "X", &p0) && pqPOS(id_, "Y", &p1) && pqPOS(id_, "Z", &p2)) {
+        positions = {p0, p1, p2};
+        return positions;
+    }
+
+    // All attempts failed — report the last error and raise
+    err = pGetError ? pGetError(id_) : err;
+    if (pTranslateError) pTranslateError(err, errMsg, sizeof(errMsg));
+    AppLogger::instance().error(std::string("PIStage: qpos all attempts failed: code=") + std::to_string(err) + " msg=" + errMsg);
     checkError();
     return positions;
 }

@@ -68,6 +68,9 @@ class RasterScan {
 public:
     RasterScan(PIStageProxy& stage, AndorCamera& cam);
 
+    // Diagnostic one-row test scan used by the console velocitytest command.
+    static void runOneRowTest(PIStageProxy& stage, double velocityNmPerS, double xDistanceNm);
+
     // Validate config and pre-calculate nX / nY
     void configure(const ScanConfig& cfg);
 

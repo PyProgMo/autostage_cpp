@@ -62,6 +62,8 @@ void ProcessClient(HANDLE hPipe) {
                 stage.connect(req.strArg);
                 try {
                     stage.enableServo("X", true);
+                    stage.enableServo("Y", true);
+                    stage.enableServo("Z", true);
                 } catch (const std::exception& e) {
                     AppLogger::instance().error(std::string("StageServer: servo enable failed: ") + e.what());
                 }
@@ -80,11 +82,31 @@ void ProcessClient(HANDLE hPipe) {
                 AppLogger::instance().info(std::string("StageServer: GetPos axis=") + req.strArg + " value=" + std::to_string(res.dArgs[0]));
                 break;
             case IpcCommand::QueryPosTuple: {
-                auto positions = stage.qpos();
-                res.dArgs[0] = positions[0];
-                res.dArgs[1] = positions[1];
-                res.dArgs[2] = positions[2];
-                AppLogger::instance().info("StageServer: QueryPosTuple completed");
+                // Wrap the qpos call with a one-time retry in case the controller
+                // is not fully ready immediately after Connect (fixes PI error=26)
+                std::array<double,3> positions = {0.0,0.0,0.0};
+                bool ok = false;
+                for (int attempt = 1; attempt <= 2 && !ok; ++attempt) {
+                    try {
+                        AppLogger::instance().info(std::string("StageServer: QueryPosTuple attempt ") + std::to_string(attempt));
+                        positions = stage.qpos();
+                        ok = true;
+                    } catch (const std::exception& e) {
+                        AppLogger::instance().error(std::string("StageServer: QueryPosTuple attempt ") + std::to_string(attempt) + " failed: " + e.what());
+                        if (attempt == 1) {
+                            Sleep(50); // give controller a brief moment to settle
+                        } else {
+                            throw; // let outer handler convert to response error
+                        }
+                    }
+                }
+
+                if (ok) {
+                    res.dArgs[0] = positions[0];
+                    res.dArgs[1] = positions[1];
+                    res.dArgs[2] = positions[2];
+                    AppLogger::instance().info("StageServer: QueryPosTuple completed");
+                }
                 break;
             }
             case IpcCommand::MoveTuple:
