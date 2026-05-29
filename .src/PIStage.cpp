@@ -91,8 +91,9 @@ void PIStage::moveAbs(const char* axis, double position) {
 
 std::array<double, 3> PIStage::qpos() {
     std::array<double, 3> positions = {0.0, 0.0, 0.0};
-    // This controller accepts qPOS with axis letters, not numeric axis IDs.
-    if (!pqPOS(id_, "X Y Z", positions.data())) checkError();
+    // This controller accepts qPOS with numeric axis IDs for tuple queries.
+    if (pqPOS(id_, "1 2 3", positions.data())) return positions;
+    checkError();
     return positions;
 }
 

@@ -97,7 +97,7 @@ void runVelocityTest(PIStageProxy& stage, double velocityNmPerS, double xDistanc
         const double workMs = std::chrono::duration<double, std::milli>(queryEnd - loopStart).count();
 
         const double deltaNm = pos[0] - previousPos[0];
-        const double measuredVelocityNmPerS = (queryLatencyMs > 0.0) ? (deltaNm * 1000.0 / queryLatencyMs) : 0.0;
+        const double measuredVelocityNmPerS = (iterationMs > 0.0) ? (deltaNm * 1000.0 / iterationMs) : 0.0;
 
         const bool boundaryHit =
             pos[0] < kStageTestMinNm || pos[0] > kStageTestMaxNm ||
