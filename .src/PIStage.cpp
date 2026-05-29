@@ -91,7 +91,7 @@ void PIStage::moveAbs(const char* axis, double position) {
 
 std::array<double, 3> PIStage::qpos() {
     std::array<double, 3> positions = {0.0, 0.0, 0.0};
-    if (!pqPOS(id_, "X Y Z", positions.data())) checkError();
+    if (!pqPOS(id_, "1 2 3", positions.data())) checkError();
     return positions;
 }
 
@@ -117,7 +117,7 @@ void PIStage::setVelocity(const char* axes, const double* velocities) {
 
 void PIStage::adda(double vx, double vy, double vz) {
     const double velocities[3] = {vx, vy, vz};
-    if (!pVEL(id_, "X Y Z", velocities)) checkError();
+    if (!pVEL(id_, "1 2 3", velocities)) checkError();
 }
 
 void PIStage::runVelocitySweep(double vNominal, double xStop, double yHold, const std::vector<double>& zProfile, double xStart, double xStep) {
