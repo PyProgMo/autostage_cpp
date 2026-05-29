@@ -22,6 +22,7 @@ public:
     std::array<double, 3> qpos();
     void moveto(double x, double y, double z);
     void adda(double vx, double vy, double vz);
+    void halt();
     void waitOnTarget(const char* axis, int timeoutMs = 10000);
 
     // Advanced motion

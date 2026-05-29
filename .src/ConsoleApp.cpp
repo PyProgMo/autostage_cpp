@@ -61,6 +61,7 @@ int main() {
             std::cout << "  stage qpos\n";
             std::cout << "  stage moveto [x] [y] [z] (in nm)\n";
             std::cout << "  stage adda [vx] [vy] [vz] (in nm/s)\n";
+            std::cout << "  stage halt\n";
             std::cout << "  stage m [axis] [pos] (in nm)\n";
             std::cout << "  stage wait [axis]\n";
             std::cout << "  andor connect [cameraIndex]\n";
@@ -108,6 +109,9 @@ int main() {
                 } else if (action == "qpos") { // print x y z positions
                     auto pos = stage->qpos();
                     std::cout << "X: " << pos[0] << " Y: " << pos[1] << " Z: " << pos[2] << "\n";
+                } else if (action == "halt") {
+                    stage->halt();
+                    std::cout << "Stage halt requested.\n";
                 } else if (action == "moveto") {
                     double x, y, z;
                     if (iss >> x >> y >> z) {

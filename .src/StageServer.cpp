@@ -93,6 +93,11 @@ void ProcessClient(HANDLE hPipe) {
                                            " z=" + std::to_string(req.dArgs[2]));
                 stage.moveto(req.dArgs[0], req.dArgs[1], req.dArgs[2]);
                 break;
+            case IpcCommand::Halt:
+                AppLogger::instance().info("StageServer: Halt requested");
+                stage.halt();
+                AppLogger::instance().info("StageServer: Halt executed");
+                break;
             case IpcCommand::SetVelocityTuple:
                 AppLogger::instance().info(std::string("StageServer: SetVelocityTuple vx=") + std::to_string(req.dArgs[0]) +
                                            " vy=" + std::to_string(req.dArgs[1]) +

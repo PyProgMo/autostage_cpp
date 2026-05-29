@@ -13,6 +13,7 @@ enum class IpcCommand : int32_t {
     QueryPosTuple,
     MoveTuple,
     SetVelocityTuple,
+    Halt,
     WaitOnTarget,
     ConfigTriggerOut,
     EnableTriggerOut,

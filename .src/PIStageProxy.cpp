@@ -202,6 +202,15 @@ void PIStageProxy::adda(double vx, double vy, double vz) {
     sendCommand(req, res);
 }
 
+void PIStageProxy::halt() {
+    AppLogger::instance().info("PIStageProxy: halt requested");
+    IpcMessage req = {};
+    req.command = IpcCommand::Halt;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+}
+
 void PIStageProxy::runVelocitySweep(double vNominal, double xStop, double yHold, double xStart, double xStep) {
     AppLogger::instance().info("PIStageProxy: runVelocitySweep");
     IpcMessage req = {};

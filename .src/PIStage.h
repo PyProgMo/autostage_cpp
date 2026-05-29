@@ -67,6 +67,7 @@ public:
     void moveto(double x, double y, double z);
     void setVelocity(const char* axes, const double* velocities);
     void adda(double vx, double vy, double vz);
+    void halt();
     double getPos(const char* axis);
     void getPosMult(const char* axes, double* positions);
     void waitOnTarget(const char* axis, int timeoutMs = 10000);

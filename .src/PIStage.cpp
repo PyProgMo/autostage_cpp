@@ -120,6 +120,11 @@ void PIStage::adda(double vx, double vy, double vz) {
     if (!pVEL(id_, "1 2 3", velocities)) checkError();
 }
 
+void PIStage::halt() {
+    // Issue a GCS HLT command to immediately stop motion
+    if (!pGcsCommandset(id_, "HLT")) checkError();
+}
+
 void PIStage::runVelocitySweep(double vNominal, double xStop, double yHold, const std::vector<double>& zProfile, double xStart, double xStep) {
     // Basic boundaries check (units: micrometers)
     if (xStop > 300.0 || xStart < 0.0) throw std::runtime_error("X boundaries out of limits (0-300 um)");

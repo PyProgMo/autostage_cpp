@@ -42,6 +42,7 @@ inline const char* ipcCommandName(IpcCommand command) {
     case IpcCommand::QueryPosTuple: return "QueryPosTuple";
     case IpcCommand::MoveTuple: return "MoveTuple";
     case IpcCommand::SetVelocityTuple: return "SetVelocityTuple";
+    case IpcCommand::Halt: return "Halt";
     case IpcCommand::WaitOnTarget: return "WaitOnTarget";
     case IpcCommand::ConfigTriggerOut: return "ConfigTriggerOut";
     case IpcCommand::EnableTriggerOut: return "EnableTriggerOut";
