@@ -71,6 +71,13 @@ public:
     // Diagnostic one-row test scan used by the console velocitytest command.
     static void runOneRowTest(PIStageProxy& stage, double velocityNmPerS, double xDistanceNm);
 
+    // Corrected one-row scan that follows a fixed duration target and can optionally log to a file.
+    static void runRowCorrected(PIStageProxy& stage,
+                                double durationS,
+                                double xDistanceNm,
+                                bool logImportant = false,
+                                const std::string& logPath = "build/rowcorrected_log.csv");
+
     // Validate config and pre-calculate nX / nY
     void configure(const ScanConfig& cfg);
 

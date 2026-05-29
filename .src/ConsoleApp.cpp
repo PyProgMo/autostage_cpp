@@ -66,6 +66,7 @@ int main() {
             std::cout << "  stage adda [vx] [vy] [vz] (in nm/s)\n";
             std::cout << "  stage halt\n";
             std::cout << "  stage velocitytest [velocity_nm_s] [x_distance_nm]\n";
+            std::cout << "  stage rowcorrected [duration_s] [x_distance_nm] [log 0|1]\n";
             std::cout << "  stage m [axis] [pos] (in nm)\n";
             std::cout << "  stage wait [axis]\n";
             std::cout << "  andor connect [cameraIndex]\n";
@@ -124,6 +125,22 @@ int main() {
                         std::cout << "Velocity test completed.\n";
                     } else {
                         std::cout << "Usage: stage velocitytest [velocity_nm_s] [x_distance_nm]\n";
+                    }
+                } else if (action == "rowcorrected") {
+                    double durationS;
+                    double xDistanceNm;
+                    int logFlag = 0;
+                    if (iss >> durationS >> xDistanceNm) {
+                        if (!(iss >> logFlag)) {
+                            logFlag = 0;
+                        }
+                        RasterScan::runRowCorrected(*stage,
+                                                     durationS,
+                                                     xDistanceNm,
+                                                     logFlag != 0);
+                        std::cout << "Row corrected test completed.\n";
+                    } else {
+                        std::cout << "Usage: stage rowcorrected [duration_s] [x_distance_nm] [log 0|1]\n";
                     }
                 } else if (action == "moveto") {
                     double x, y, z;
