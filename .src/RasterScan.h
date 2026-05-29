@@ -81,6 +81,7 @@ public:
     void requestAbort();
 
     // ── Placeholder for future functionalities ──────────────────────────────
+    void startrasterscan(); // legacy function to run scan without using ScanConfig struct (for quick testing)
     // TODO: Add callback mechanism for scan progress (e.g., updating UI)
     // void setProgressCallback(std::function<void(int currentLine, int totalLines)> cb);
 
