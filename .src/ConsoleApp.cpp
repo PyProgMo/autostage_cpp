@@ -58,6 +58,9 @@ int main() {
             std::cout << "  stage connect\n";
             std::cout << "  stage disconnect\n";
             std::cout << "  stage pos [axis] \n";
+            std::cout << "  stage qpos\n";
+            std::cout << "  stage moveto [x] [y] [z] (in nm)\n";
+            std::cout << "  stage adda [vx] [vy] [vz] (in nm/s)\n";
             std::cout << "  stage m [axis] [pos] (in nm)\n";
             std::cout << "  stage wait [axis]\n";
             std::cout << "  andor connect [cameraIndex]\n";
@@ -103,10 +106,24 @@ int main() {
                     double pos = stage->getPos(axis.c_str())*1e3; // convert µm to nm for user
                     std::cout << axis << " Position: " << pos << "\n";
                 } else if (action == "qpos") { // print x y z positions
-                    double x = stage->getPos("X")*1e3; // convert µm to nm for user
-                    double y = stage->getPos("Y")*1e3; // convert µm to nm for user
-                    double z = stage->getPos("Z")*1e3; // convert µm to nm for user
-                    std::cout << "X: " << x << " Y: " << y << " Z: " << z << "\n";
+                    auto pos = stage->qpos();
+                    std::cout << "X: " << pos[0] << " Y: " << pos[1] << " Z: " << pos[2] << "\n";
+                } else if (action == "moveto") {
+                    double x, y, z;
+                    if (iss >> x >> y >> z) {
+                        stage->moveto(x, y, z);
+                        std::cout << "Moving X/Y/Z to " << x << " " << y << " " << z << " nm\n";
+                    } else {
+                        std::cout << "Usage: stage moveto [x] [y] [z] (in nm)\n";
+                    }
+                } else if (action == "adda") {
+                    double vx, vy, vz;
+                    if (iss >> vx >> vy >> vz) {
+                        stage->adda(vx, vy, vz);
+                        std::cout << "Setting X/Y/Z velocities to " << vx << " " << vy << " " << vz << " nm/s\n";
+                    } else {
+                        std::cout << "Usage: stage adda [vx] [vy] [vz] (in nm/s)\n";
+                    }
                 } else if (action == "m") {
                     std::string axis;
                     double pos;

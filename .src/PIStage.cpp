@@ -1,6 +1,7 @@
 // PIStage.cpp
 #include "PIStage.h"
 #include "Logger.h"
+#include <array>
 #include <vector>
 #include <iostream>
 #include <stdexcept>
@@ -88,6 +89,18 @@ void PIStage::moveAbs(const char* axis, double position) {
     if (!pGcsCommandset(id_, buf)) checkError();
 }
 
+std::array<double, 3> PIStage::qpos() {
+    std::array<double, 3> positions = {0.0, 0.0, 0.0};
+    if (!pqPOS(id_, "X Y Z", positions.data())) checkError();
+    return positions;
+}
+
+void PIStage::moveto(double x, double y, double z) {
+    char buf[256];
+    std::snprintf(buf, sizeof(buf), "MOV 1 %.17g 2 %.17g 3 %.17g", x, y, z);
+    if (!pGcsCommandset(id_, buf)) checkError();
+}
+
 double PIStage::getPos(const char* axis) {
     double pos = 0.0;
     if (!pqPOS(id_, axis, &pos)) checkError();
@@ -100,6 +113,11 @@ void PIStage::getPosMult(const char* axes, double* positions) {
 
 void PIStage::setVelocity(const char* axes, const double* velocities) {
     if (!pVEL(id_, axes, velocities)) checkError();
+}
+
+void PIStage::adda(double vx, double vy, double vz) {
+    const double velocities[3] = {vx, vy, vz};
+    if (!pVEL(id_, "X Y Z", velocities)) checkError();
 }
 
 void PIStage::runVelocitySweep(double vNominal, double xStop, double yHold, const std::vector<double>& zProfile, double xStart, double xStep) {

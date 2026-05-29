@@ -1,6 +1,7 @@
 // PIStageProxy.h
 #pragma once
 #include <Windows.h>
+#include <array>
 #include <string>
 #include <stdexcept>
 #include <vector>
@@ -18,6 +19,9 @@ public:
 
     void moveAbs(const char* axis, double position);
     double getPos(const char* axis);
+    std::array<double, 3> qpos();
+    void moveto(double x, double y, double z);
+    void adda(double vx, double vy, double vz);
     void waitOnTarget(const char* axis, int timeoutMs = 10000);
 
     // Advanced motion

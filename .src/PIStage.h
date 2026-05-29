@@ -1,6 +1,7 @@
 // PIStage.h
 #pragma once
 #include <Windows.h>
+#include <array>
 #include <string>
 #include <stdexcept>
 #include <vector>
@@ -62,7 +63,10 @@ public:
 
     void enableServo(const char* axis, bool enable);
     void moveAbs(const char* axis, double position);
+    std::array<double, 3> qpos();
+    void moveto(double x, double y, double z);
     void setVelocity(const char* axes, const double* velocities);
+    void adda(double vx, double vy, double vz);
     double getPos(const char* axis);
     void getPosMult(const char* axes, double* positions);
     void waitOnTarget(const char* axis, int timeoutMs = 10000);

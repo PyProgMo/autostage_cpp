@@ -79,6 +79,26 @@ void ProcessClient(HANDLE hPipe) {
                 res.dArgs[0] = stage.getPos(req.strArg);
                 AppLogger::instance().info(std::string("StageServer: GetPos axis=") + req.strArg + " value=" + std::to_string(res.dArgs[0]));
                 break;
+            case IpcCommand::QueryPosTuple: {
+                auto positions = stage.qpos();
+                res.dArgs[0] = positions[0];
+                res.dArgs[1] = positions[1];
+                res.dArgs[2] = positions[2];
+                AppLogger::instance().info("StageServer: QueryPosTuple completed");
+                break;
+            }
+            case IpcCommand::MoveTuple:
+                AppLogger::instance().info(std::string("StageServer: MoveTuple x=") + std::to_string(req.dArgs[0]) +
+                                           " y=" + std::to_string(req.dArgs[1]) +
+                                           " z=" + std::to_string(req.dArgs[2]));
+                stage.moveto(req.dArgs[0], req.dArgs[1], req.dArgs[2]);
+                break;
+            case IpcCommand::SetVelocityTuple:
+                AppLogger::instance().info(std::string("StageServer: SetVelocityTuple vx=") + std::to_string(req.dArgs[0]) +
+                                           " vy=" + std::to_string(req.dArgs[1]) +
+                                           " vz=" + std::to_string(req.dArgs[2]));
+                stage.adda(req.dArgs[0], req.dArgs[1], req.dArgs[2]);
+                break;
             case IpcCommand::WaitOnTarget:
                 AppLogger::instance().info(std::string("StageServer: WaitOnTarget axis=") + req.strArg + " timeoutMs=" + std::to_string(req.iArgs[0]));
                 stage.waitOnTarget(req.strArg, req.iArgs[0]);

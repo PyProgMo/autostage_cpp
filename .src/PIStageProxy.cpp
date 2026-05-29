@@ -3,6 +3,7 @@
 #include "IpcStructs.h"
 #include "Logger.h"
 
+#include <array>
 #include <iostream>
 #include <cstring>
 #include <sstream>
@@ -155,6 +156,50 @@ double PIStageProxy::getPos(const char* axis) {
     sendCommand(req, res);
     AppLogger::instance().info(std::string("PIStageProxy: getPos axis=") + axis + " value=" + std::to_string(res.dArgs[0]));
     return res.dArgs[0];
+}
+
+std::array<double, 3> PIStageProxy::qpos() {
+    AppLogger::instance().info("PIStageProxy: qpos");
+    IpcMessage req = {};
+    req.command = IpcCommand::QueryPosTuple;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+
+    std::array<double, 3> positions_nm = {
+        res.dArgs[0] * 1e3,
+        res.dArgs[1] * 1e3,
+        res.dArgs[2] * 1e3
+    };
+    return positions_nm;
+}
+
+void PIStageProxy::moveto(double x, double y, double z) {
+    AppLogger::instance().info(std::string("PIStageProxy: moveto x_nm=") + std::to_string(x) +
+                               " y_nm=" + std::to_string(y) +
+                               " z_nm=" + std::to_string(z));
+    IpcMessage req = {};
+    req.command = IpcCommand::MoveTuple;
+    req.dArgs[0] = x / 1e3;
+    req.dArgs[1] = y / 1e3;
+    req.dArgs[2] = z / 1e3;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+}
+
+void PIStageProxy::adda(double vx, double vy, double vz) {
+    AppLogger::instance().info(std::string("PIStageProxy: adda vx_nm_s=") + std::to_string(vx) +
+                               " vy_nm_s=" + std::to_string(vy) +
+                               " vz_nm_s=" + std::to_string(vz));
+    IpcMessage req = {};
+    req.command = IpcCommand::SetVelocityTuple;
+    req.dArgs[0] = vx / 1e3;
+    req.dArgs[1] = vy / 1e3;
+    req.dArgs[2] = vz / 1e3;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
 }
 
 void PIStageProxy::runVelocitySweep(double vNominal, double xStop, double yHold, double xStart, double xStep) {
