@@ -29,7 +29,7 @@ echo "Building 64-bit ConsoleApp..."
 "$CXX" -O2 -m64 \
 -o "$SCRIPT_DIR/build/ConsoleApp.exe" \
 "$SCRIPT_DIR/.src/ConsoleApp.cpp" \
-"$SCRIPT_DIR/.src/RasterScanOneRow.cpp" \
+"$SCRIPT_DIR/.src/RasterScan.cpp" \
 "$SCRIPT_DIR/.src/PIStageProxy.cpp" \
 "$SCRIPT_DIR/.src/AndorCameraProxy.cpp" \
 "$SCRIPT_DIR/.src/Logger.cpp" \
