@@ -329,11 +329,15 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, double velocityNmPerS, doubl
         targetPos[0] < kStageTestMinNm || targetPos[0] > kStageTestMaxNm) {
         throw std::runtime_error("Velocity test position is out of bounds");
     }
+    // to move on target: calculate the required velocity to cover the distance in the specified duration, then command a move with that velocity and wait for completion
+    double currentpos[3];
+    currentpos[0] = stage.getPos("1"); currentpos[1] = stage.getPos("2"); currentpos[2] = stage.getPos("3");
+    // take 10 seconds to get to the start position, then wait there for 1 second before starting the test move
+    stage.adda((startPos[0] - currentpos[0]) / 10.0, (startPos[1] - currentpos[1]) / 10.0, (startPos[2] - currentpos[2]) / 10.0);
+    std::this_thread::sleep_for(std::chrono::seconds(11));
 
-    stage.moveto(startPos[0], startPos[1], startPos[2]);
-    stage.waitOnTarget("1");
-    stage.waitOnTarget("2");
-    stage.waitOnTarget("3");
+    //stage.moveto(startPos[0], startPos[1], startPos[2]);
+
 
     stage.adda(velocityNmPerS, 0.0, 0.0);
     stage.moveto(targetPos[0], targetPos[1], targetPos[2]);

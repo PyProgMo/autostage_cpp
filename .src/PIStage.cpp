@@ -76,6 +76,10 @@ void PIStage::connect(const std::string& serialNum) {
         AppLogger::instance().error(message);
         throw std::runtime_error(message);
     }
+    // enable servo on all axes to ensure stage is responsive to commands immediately after connection (some controllers require this before accepting other commands)
+    enableServo("1", true);
+    enableServo("2", true);
+    enableServo("3", true);
 }
 
 void PIStage::enableServo(const char* axis, bool enable) {
@@ -163,9 +167,9 @@ void PIStage::moveto(double x, double y, double z) {
 
     // 2. Map your coordinates into an array corresponding to those axes
     // enable servos first to ensure controller is ready to accept commands
-    enableServo("1", true);
-    enableServo("2", true);
-    enableServo("3", true);
+    //enableServo("1", true);
+    //enableServo("2", true);
+    //enableServo("3", true);
     double pdValueArray[3] = { x, y, z };
 
     // 3. Log what you are doing for debugging
@@ -265,6 +269,8 @@ void PIStage::runVelocitySweep(double vNominal, double xStop, double yHold, cons
                  vCmdZ = grad * vX; 
              }
         }
+        // test: logging the computed velocities
+        AppLogger::instance().info("Velocity Sweep - X: " + std::to_string(vCmdX) + " Y: " + std::to_string(vCmdY) + " Z: " + std::to_string(vCmdZ));
 
         // Issue new commanded velocities
         double cmds[3] = {vCmdX, vCmdY, vCmdZ};
