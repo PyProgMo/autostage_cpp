@@ -175,9 +175,17 @@ std::array<double, 3> PIStageProxy::qpos() {
 }
 
 void PIStageProxy::moveto(double x, double y, double z) {
+    /* make req:     void move_axis(const std::string& axis, double value) {
+        send_command("MOV " + axis + " " + std::to_string(value));
+    }
+
+    void move_xyz(double x, double y, double z) {
+        send_command("MOV 1 " + std::to_string(x) + " 2 " + std::to_string(y) + " 3 " + std::to_string(z));
+    }
     AppLogger::instance().info(std::string("PIStageProxy: moveto x_nm=") + std::to_string(x) +
                                " y_nm=" + std::to_string(y) +
-                               " z_nm=" + std::to_string(z));
+                               " z_nm=" + std::to_string(z));*/
+
     IpcMessage req = {};
     req.command = IpcCommand::MoveTuple;
     req.dArgs[0] = x / 1e3;
@@ -186,6 +194,14 @@ void PIStageProxy::moveto(double x, double y, double z) {
 
     IpcMessage res = {};
     sendCommand(req, res);
+
+    // for testing, if move fails, retry after 2 ms
+
+    if (res.status != 0) {
+        AppLogger::instance().warn("PIStageProxy: moveto failed, retrying after 2ms");
+        Sleep(2);
+        sendCommand(req, res);
+    }
 }
 
 void PIStageProxy::adda(double vx, double vy, double vz) {

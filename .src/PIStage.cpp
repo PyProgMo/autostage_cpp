@@ -93,7 +93,6 @@ std::array<double, 3> PIStage::qpos() {
     std::array<double, 3> positions = {0.0, 0.0, 0.0};
 
     const char* primary = "1 2 3"; // numeric axis IDs (known-working form)
-    const char* alt = "X Y Z";     // letter axis names fallback
 
     // Attempt 1: primary form
     AppLogger::instance().info("PIStage: qpos attempt 1 using '1 2 3'");
@@ -106,13 +105,9 @@ std::array<double, 3> PIStage::qpos() {
     AppLogger::instance().error(std::string("PIStage: qpos primary failed: code=") + std::to_string(err) + " msg=" + errMsg);
 
     // Attempt 2: short delay then retry primary once (handles controller warm-up timing)
-    Sleep(50);
-    AppLogger::instance().info("PIStage: qpos retrying primary '1 2 3' after 50ms");
+    Sleep(2);
+    AppLogger::instance().info("PIStage: qpos retrying primary '1 2 3' after 2ms");
     if (pqPOS(id_, primary, positions.data())) return positions;
-
-    // Attempt 3: fallback to alternate axis naming
-    AppLogger::instance().info("PIStage: qpos fallback attempt using 'X Y Z'");
-    if (pqPOS(id_, alt, positions.data())) return positions;
 
     // Attempt 4: query axes individually (try numeric then letter names)
     double p0 = 0.0, p1 = 0.0, p2 = 0.0;
@@ -138,6 +133,9 @@ std::array<double, 3> PIStage::qpos() {
 
 void PIStage::moveto(double x, double y, double z) {
     char buf[256];
+    // %.17g ensures full double precision, but trailing noise could sometimes confuse parsing. 
+    // Trying %f with fixed precision (e.g., %.4f) can rule out syntax errors.
+    AppLogger::instance().info(std::string("Sending GCS Command: ") + buf);
     std::snprintf(buf, sizeof(buf), "MOV 1 %.17g 2 %.17g 3 %.17g", x, y, z);
     if (!pGcsCommandset(id_, buf)) checkError();
 }
