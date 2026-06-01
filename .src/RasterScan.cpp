@@ -331,9 +331,9 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, double velocityNmPerS, doubl
     }
 
     stage.moveto(startPos[0], startPos[1], startPos[2]);
-    stage.waitOnTarget("X");
-    stage.waitOnTarget("Y");
-    stage.waitOnTarget("Z");
+    stage.waitOnTarget("1");
+    stage.waitOnTarget("2");
+    stage.waitOnTarget("3");
 
     stage.adda(velocityNmPerS, 0.0, 0.0);
     stage.moveto(targetPos[0], targetPos[1], targetPos[2]);
@@ -364,9 +364,9 @@ void RasterScan::runRowCorrected(PIStageProxy& stage,
     }
 
     stage.moveto(startPos[0], startPos[1], startPos[2]);
-    stage.waitOnTarget("X");
-    stage.waitOnTarget("Y");
-    stage.waitOnTarget("Z");
+    stage.waitOnTarget("1");
+    stage.waitOnTarget("2");
+    stage.waitOnTarget("3");
 
     stage.adda(xDistanceNm / durationS, 0.0, 0.0);
     stage.moveto(targetPos[0], targetPos[1], targetPos[2]);

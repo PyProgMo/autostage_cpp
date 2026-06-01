@@ -109,7 +109,7 @@ std::array<double, 3> PIStage::qpos() {
     AppLogger::instance().info("PIStage: qpos retrying primary '1 2 3' after 2ms");
     if (pqPOS(id_, primary, positions.data())) return positions;
 
-    // Attempt 4: query axes individually (try numeric then letter names)
+    // Attempt 3: query axes individually (try numeric then letter names)
     double p0 = 0.0, p1 = 0.0, p2 = 0.0;
     AppLogger::instance().info("PIStage: qpos trying individual numeric axes '1','2','3'");
     if (pqPOS(id_, "1", &p0) && pqPOS(id_, "2", &p1) && pqPOS(id_, "3", &p2)) {
@@ -118,7 +118,7 @@ std::array<double, 3> PIStage::qpos() {
     }
 
     AppLogger::instance().info("PIStage: qpos trying individual letter axes 'X','Y','Z'");
-    if (pqPOS(id_, "X", &p0) && pqPOS(id_, "Y", &p1) && pqPOS(id_, "Z", &p2)) {
+    if (pqPOS(id_, "1", &p0) && pqPOS(id_, "2", &p1) && pqPOS(id_, "3", &p2)) {
         positions = {p0, p1, p2};
         return positions;
     }
@@ -131,13 +131,54 @@ std::array<double, 3> PIStage::qpos() {
     return positions;
 }
 
+
+
+/* this works: 
+    void send_command(const std::string& command) {
+        if (!GcsCommandset || id < 0) throw std::runtime_error("GCS command interface is not initialized");
+        if (!GcsCommandset(id, command.c_str())) {
+            throw ControllerError(get_error(), std::string("GCS command failed: ") + command);
+        }
+    }
+    void move_axis(const std::string& axis, double value) {
+        send_command("MOV " + axis + " " + std::to_string(value));
+    }
+
+    void move_xyz(double x, double y, double z) {
+        send_command("MOV 1 " + std::to_string(x) + " 2 " + std::to_string(y) + " 3 " + std::to_string(z));
+    }
+    Note: the current MOV implementation is not working for some reason
+*/
 void PIStage::moveto(double x, double y, double z) {
-    char buf[256];
+    //char buf[256];
+    const char szAxes[] = "1 2 3"; // numeric axis IDs (known-working form)
     // %.17g ensures full double precision, but trailing noise could sometimes confuse parsing. 
     // Trying %f with fixed precision (e.g., %.4f) can rule out syntax errors.
-    AppLogger::instance().info(std::string("Sending GCS Command: ") + buf);
-    std::snprintf(buf, sizeof(buf), "MOV 1 %.17g 2 %.17g 3 %.17g", x, y, z);
-    if (!pGcsCommandset(id_, buf)) checkError();
+    // std::snprintf(buf, sizeof(buf), "MOV 1 %.17g 2 %.17g 3 %.17g", x, y, z); // is not working. 
+    //std::snprintf(buf, sizeof(buf), "MOV 1 %.4f 2 %.4f 3 %.4f", x, y, z); // is working, suggests parsing issue with high-precision format
+
+    //AppLogger::instance().info(std::string("Send GCS Command: ") + buf);
+
+    //if (!pGcsCommandset(id_, buf)) checkError();
+
+    // 2. Map your coordinates into an array corresponding to those axes
+    // enable servos first to ensure controller is ready to accept commands
+    enableServo("1", true);
+    enableServo("2", true);
+    enableServo("3", true);
+    double pdValueArray[3] = { x, y, z };
+
+    // 3. Log what you are doing for debugging
+    AppLogger::instance().info("Calling PI_MOV on axes 123 to positions: " 
+                               + std::to_string(x) + ", " 
+                               + std::to_string(y) + ", " 
+                               + std::to_string(z));
+
+    // 4. Call the SDK function pointer directly
+    if (!pMOV(id_, szAxes, pdValueArray)) {
+        checkError();
+    }
+    
 }
 
 double PIStage::getPos(const char* axis) {

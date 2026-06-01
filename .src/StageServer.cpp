@@ -61,9 +61,9 @@ void ProcessClient(HANDLE hPipe) {
                 AppLogger::instance().info(std::string("StageServer: Connect serial='") + req.strArg + "'");
                 stage.connect(req.strArg);
                 try {
-                    stage.enableServo("X", true);
-                    stage.enableServo("Y", true);
-                    stage.enableServo("Z", true);
+                    stage.enableServo("1", true);
+                    stage.enableServo("2", true);
+                    stage.enableServo("3", true);
                 } catch (const std::exception& e) {
                     AppLogger::instance().error(std::string("StageServer: servo enable failed: ") + e.what());
                 }

@@ -108,7 +108,7 @@ int main() {
                 } else if (action == "pos") {
                     std::string axis;
                     iss >> axis;
-                    if (axis.empty()) axis = "X";
+                    if (axis.empty()) axis = "1";
                     double pos = stage->getPos(axis.c_str())*1e3; // convert µm to nm for user
                     std::cout << axis << " Position: " << pos << "\n";
                 } else if (action == "qpos") { // print x y z positions
@@ -145,7 +145,7 @@ int main() {
                 } else if (action == "moveto") {
                     double x, y, z;
                     if (iss >> x >> y >> z) {
-                        stage->moveto(x, y, z);
+                        stage->moveto(x, y, z); // conversion is handled inside the proxy
                         std::cout << "Moving X/Y/Z to " << x << " " << y << " " << z << " nm\n";
                     } else {
                         std::cout << "Usage: stage moveto [x] [y] [z] (in nm)\n";
@@ -347,32 +347,32 @@ int main() {
 
                 std::cout << "Scan: " << nX << " x " << nY << " points, " << nPix << " spectral px\n";
 
-                stage->configureTriggerOutput(trigCh, "X", xStart, xStep, xStop, pulseUs);
+                stage->configureTriggerOutput(trigCh, "1", xStart, xStep, xStop, pulseUs);
                 stage->enableTriggerOutput(trigCh, true);
                 cam->configureFVBKinetic(exposureS, nX);
 
-                stage->setupDataRecorder(1, "X", 2);
+                stage->setupDataRecorder(1, "1", 2);
                 stage->setRecordRate(4);
                 stage->setRecordTrigger(3);
 
-                stage->moveAbs("X", xStart);
-                stage->moveAbs("Y", yStart);
-                stage->waitOnTarget("X");
-                stage->waitOnTarget("Y");
+                stage->moveAbs("1", xStart);
+                stage->moveAbs("2", yStart);
+                stage->waitOnTarget("1");
+                stage->waitOnTarget("2");
 
                 std::vector<std::vector<std::vector<WORD>>> cube(
                     nY, std::vector<std::vector<WORD>>(nX, std::vector<WORD>(nPix, 0)));
 
                 for (int iy = 0; iy < nY; iy++) {
                     double yPos = yStart + iy * yStep;
-                    stage->moveAbs("Y", yPos);
-                    stage->moveAbs("X", xStart);
-                    stage->waitOnTarget("Y");
-                    stage->waitOnTarget("X");
+                    stage->moveAbs("2", yPos);
+                    stage->moveAbs("1", xStart);
+                    stage->waitOnTarget("2");
+                    stage->waitOnTarget("1");
 
                     cam->startAcquisition();
-                    stage->setWaitOnGo("X", 0x1);
-                    stage->moveAbs("X", xStop);
+                    stage->setWaitOnGo("1", 0x1);
+                    stage->moveAbs("1", xStop);
 
                     cam->waitForAcquisition();
                     std::vector<WORD> lineData = cam->getAllSpectra(nX, nPix);
@@ -380,7 +380,7 @@ int main() {
                         cube[iy][ix].assign(lineData.begin() + ix * nPix,
                                             lineData.begin() + (ix + 1) * nPix);
                     }
-                    stage->waitOnTarget("X");
+                    stage->waitOnTarget("1");
                     std::cout << "Line " << iy + 1 << "/" << nY << " done\n";
                 }
 

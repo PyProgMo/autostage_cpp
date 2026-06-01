@@ -118,6 +118,7 @@ void PIStageProxy::connect(const std::string& serialNum) {
     
     IpcMessage res = {};
     sendCommand(req, res);
+
 }
 
 void PIStageProxy::disconnect() {
