@@ -209,6 +209,7 @@ void PIStage::halt() {
     if (!pGcsCommandset(id_, "HLT")) checkError();
 }
 
+/* old version: 
 void PIStage::runVelocitySweep(double vNominal, double xStop, double yHold, const std::vector<double>& zProfile, double xStart, double xStep) {
     // Basic boundaries check (units: micrometers)
     if (xStop > 300.0 || xStart < 0.0) throw std::runtime_error("X boundaries out of limits (0-300 um)");
@@ -281,6 +282,161 @@ void PIStage::runVelocitySweep(double vNominal, double xStop, double yHold, cons
         prev_X = X_k;
         prev_vX = vX;
     }
+}
+*/
+/* new velocity sweep funciton: */
+// Unit conversion helpers (place in PIStage.h or a Units.h)
+namespace Units {
+    constexpr double nmToUm(double nm) { return nm * 0.001; }
+    constexpr double umToNm(double um) { return um * 1000.0; }
+}
+
+void PIStage::runVelocitySweep(
+    double vNominal,               // nm/s  ← caller uses nm
+    double xStop,                  // nm
+    double yHold,                  // nm
+    const std::vector<double>& zProfile,   // nm (Z values)
+    double xStart,                 // nm
+    double xStep)                  // nm
+{
+    // ── Convert all inputs from nm → µm for internal use ──────────────────────
+    const double vNominal_um = Units::nmToUm(vNominal);
+    const double xStop_um    = Units::nmToUm(xStop);
+    const double xStart_um   = Units::nmToUm(xStart);
+    const double xStep_um    = Units::nmToUm(xStep);
+    const double yHold_um    = Units::nmToUm(yHold);
+
+    std::vector<double> zProfile_um;
+    zProfile_um.reserve(zProfile.size());
+    for (double z : zProfile)
+        zProfile_um.push_back(Units::nmToUm(z));
+
+    // ── Preconditions (now checked in µm against stage limits) ────────────────
+    if (xStart_um < 0.0 || xStop_um > 300.0 || xStart_um >= xStop_um)
+        throw std::runtime_error("X boundaries invalid (0–300 µm / 0–300,000 nm)");
+    if (vNominal_um <= 0.0)
+        throw std::runtime_error("vNominal must be positive");
+    if (!zProfile_um.empty() && xStep_um <= 0.0)
+        throw std::runtime_error("xStep must be positive when zProfile is supplied");
+
+    // ── Everything below works in µm/s internally ─────────────────────────────
+    const double Kp      = 1.0;
+    const double Ki      = 0.1;
+    const double C0_cap  = vNominal_um * 0.20;
+    const double MAX_VEL = 1000.0;   // µm/s — stage datasheet limit
+
+    // ── High-resolution timer ──────────────────────────────────────────────────
+    LARGE_INTEGER qpfFreq;
+    QueryPerformanceFrequency(&qpfFreq);
+    auto nowSec = [&]() -> double {
+        LARGE_INTEGER t;
+        QueryPerformanceCounter(&t);
+        return static_cast<double>(t.QuadPart) / static_cast<double>(qpfFreq.QuadPart);
+    };
+
+    // ── Velocity low-pass (1st-order IIR, α ≈ cut-off / sample-rate) ──────────
+    const double VEL_ALPHA = 0.4;   // 0 = frozen, 1 = raw; tune as needed
+    auto lpf = [](double prev, double raw, double alpha) {
+        return alpha * raw + (1.0 - alpha) * prev;
+    };
+
+    auto clampVal = [](double v, double lo, double hi) {
+        return v < lo ? lo : (v > hi ? hi : v);
+    };
+
+    // ── Initialise state ───────────────────────────────────────────────────────
+    double positions[3] = {}; // µm
+    getPosMult("X Y Z", positions);
+
+    double prev_X  = positions[0]; // µm
+    double prev_t  = nowSec();
+    double vX_filt = vNominal;   // assume we start near nominal
+    double C0      = 0.0;
+    bool   firstIter = true;
+
+    AppLogger::instance().info(
+        "runVelocitySweep start: xStart=" + std::to_string(xStart) +
+        " xStop="  + std::to_string(xStop) +
+        " vNominal=" + std::to_string(vNominal));
+
+    // ── Sweep loop ─────────────────────────────────────────────────────────────
+    while (positions[0] < xStop) {
+
+        Sleep(5);   // ~5 ms cadence
+
+        double current_t = nowSec();
+        double dt = current_t - prev_t;
+        if (dt < 1e-4) dt = 0.005;   // guard against QPC glitch / first iter
+
+        getPosMult("X Y Z", positions);
+        const double X_k = positions[0];
+        const double Y_k = positions[1];
+        const double Z_k = positions[2];
+
+        // ── Raw velocity estimate, then smooth ─────────────────────────────
+        const double vX_raw = (X_k - prev_X) / dt;
+        vX_filt = lpf(vX_filt, vX_raw, VEL_ALPHA);
+
+        // Skip first iter – prev_X = initial position so first vX is valid,
+        // but C0/C1 would spike if the stage isn't yet at vNominal.
+        if (firstIter) {
+            firstIter = false;
+            prev_t = current_t;
+            prev_X = X_k;
+            continue;
+        }
+
+        // ── X velocity controller ──────────────────────────────────────────
+        const double err = vNominal - vX_filt;
+
+        C0 += Ki * err;
+        C0  = clampVal(C0, -C0_cap, C0_cap);
+
+        const double C1    = Kp * err;
+        const double vCmdX = clampVal(vNominal + C0 + C1, -MAX_VEL, MAX_VEL);
+
+        // ── Y hold – P controller with explicit velocity cap ───────────────
+        const double KpY   = 2.0;   // µm/s per µm error
+        const double vCmdY = clampVal(KpY * (yHold - Y_k), -MAX_VEL, MAX_VEL);
+
+        // ── Z profile tracker ──────────────────────────────────────────────
+        double vCmdZ = 0.0;
+        if (!zProfile.empty()) {
+            const int idx = static_cast<int>((X_k - xStart) / xStep);
+            if (idx >= 0 && static_cast<size_t>(idx) + 1 < zProfile.size()) {
+                const double grad = (zProfile[idx + 1] - zProfile[idx]) / xStep;
+                vCmdZ = clampVal(grad * vX_filt, -MAX_VEL, MAX_VEL);
+            }
+        }
+
+        // ── Convert µm/s → mm/s for PI stage API ──────────────────────────
+        const double API_SCALE = 1.0 / 1000.0;
+        double cmds[3] = { vCmdX * API_SCALE,
+                           vCmdY * API_SCALE,
+                           vCmdZ * API_SCALE };
+
+        AppLogger::instance().info(
+            "rowcorr t=" + std::to_string(current_t) +
+            " X=" + std::to_string(X_k) +
+            " err=" + std::to_string(err) +
+            " vX_filt=" + std::to_string(vX_filt) +
+            " vCmdX=" + std::to_string(vCmdX) +
+            " vCmdY=" + std::to_string(vCmdY) +
+            " vCmdZ=" + std::to_string(vCmdZ) +
+            " C0=" + std::to_string(C0));
+        // ── API call: µm/s → mm/s (stage wire format, unchanged) ──────────
+        const double API_Scale = 1.0 / 1000.0; // µm/s to mm/s
+        double cmds[3] = { vCmdX * API_SCALE,
+                           vCmdY * API_SCALE,
+                           vCmdZ * API_SCALE };
+        setVelocity("X Y Z", cmds);
+
+        prev_t = current_t;
+        prev_X = X_k;
+    }
+
+    AppLogger::instance().info("runVelocitySweep complete at X=" +
+                               std::to_string(positions[0]));
 }
 
 void PIStage::waitOnTarget(const char* axis, int timeoutMs) {
