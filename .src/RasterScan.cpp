@@ -11,6 +11,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <thread>
+// for timing: 
+#include <windows.h>
 
 namespace {
 #include <cerrno>
@@ -121,7 +123,8 @@ void runRowCorrectedLoop(PIStageProxy& stage,
                          const std::array<double, 3>& targetPos,
                          double durationS,
                          bool logImportant,
-                         const std::string& logPath) {
+                         const std::string& logPath
+                        ) {
     const double deltaX = targetPos[0] - startPos[0];
     const double deltaY = targetPos[1] - startPos[1];
     const double deltaZ = targetPos[2] - startPos[2];
@@ -155,9 +158,20 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     std::array<double, 3> previousVelocity = referenceVelocity;
     std::array<double, 3> filteredActual = startPos;
 
+    /* old timing using windows ticks. Bad since the windows clock ticks with 15 ms
     const auto startTime = std::chrono::steady_clock::now();
     auto lastTickTime = startTime;
     auto nextTickTime = startTime + std::chrono::milliseconds(static_cast<int>(kStageTestTickMs));
+    */
+    // new timing using high-resolution performance counter
+    SetThreadAffinityMask(GetCurrentThread(), 1<<7); // run on a single CPU core to reduce jitter
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+    const double loopms = 5.0; 
+
+    const long long freq = qpc_freq();
+    const long long period = (long long)(freq * loopms / 1000.0);
+
+    long long next = qpc_now();
 
     AppLogger::instance().info(std::string("rowcorrected: start x0=") + std::to_string(startPos[0]) +
                                " y0=" + std::to_string(startPos[1]) +
@@ -167,14 +181,28 @@ void runRowCorrectedLoop(PIStageProxy& stage,
                                (logImportant ? " log=on" : " log=off"));
 
     while (true) {
+        while (qpc_now() < next) {}
+
+
+        const long long tickStart = qpc_now();
+        next += period;
+
+        const long long nowQcp = qpc_now();
+        const double elapsedS = (double)(nowQcp - tickStart) / (double)freq;
+        const double tickS = std::max((double)period / (double)freq, kStageTestTickS);
+        const double progress = std::min(elapsedS / durationS, 1.0);
+        const double remainingS = std::max(durationS - elapsedS, kStageTestTickS);
+
+        /* old timing stuff wayy to slow
         std::this_thread::sleep_until(nextTickTime);
         nextTickTime += std::chrono::milliseconds(static_cast<int>(kStageTestTickMs));
-
         const auto now = std::chrono::steady_clock::now();
         const double elapsedS = std::chrono::duration<double>(now - startTime).count();
         const double tickS = std::max(std::chrono::duration<double>(now - lastTickTime).count(), kStageTestTickS);
         const double progress = std::min(elapsedS / durationS, 1.0);
         const double remainingS = std::max(durationS - elapsedS, kStageTestTickS);
+        */
+
 
         const std::array<double, 3> actual = stage.qpos();
 
@@ -258,9 +286,23 @@ void runRowCorrectedLoop(PIStageProxy& stage,
 
         stage.adda(row.commandedVelocityNmPerS[0], 0.0, 0.0);
 
-        previousVelocity = row.actualVelocityNmPerS;
-        previousActual = filteredActual;
-        lastTickTime = now;
+        // Check for overrun after body completes
+        const long long bodyEnd = qpc_now();
+        const double overrunMs = (double)(bodyEnd - tickStart) / (double)freq * 1000.0;
+        if (bodyEnd > next) {
+            const long long skippedTicks = (bodyEnd - next) / period + 1;
+            std::ostringstream oss;
+            oss << "Tick overrun: body took " << std::fixed << std::setprecision(3) << overrunMs
+                << " ms (budget: " << kStageTestTickMs << " ms), skipping " << skippedTicks << " tick(s)";
+            AppLogger::instance().warn(oss.str());
+        // Skip missed ticks, force re-sync
+        while (next < bodyEnd)
+            next += period;
+    }
+
+    if (progress >= 1.0)
+        break;
+
     }
 
     stage.adda(0.0, 0.0, 0.0);
@@ -376,4 +418,16 @@ void RasterScan::runRowCorrected(PIStageProxy& stage,
     stage.moveto(targetPos[0], targetPos[1], targetPos[2]);
 
     runRowCorrectedLoop(stage, startPos, targetPos, durationS, logImportant, logPath);
+}
+
+static inline long long qpc_now() {
+    LARGE_INTEGER t;
+    QueryPerformanceCounter(&t);
+    return t.QuadPart;
+}
+
+static inline long long qpc_freq() {
+    LARGE_INTEGER f;
+    QueryPerformanceFrequency(&f);
+    return f.QuadPart;
 }
