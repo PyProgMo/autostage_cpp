@@ -6,6 +6,7 @@
 #include <array>
 #include <chrono>
 #include <cmath>
+#include <deque>
 #include <iomanip>
 #include <fstream>
 #include <iostream>
@@ -32,6 +33,26 @@ constexpr double kRowCorrectedMaxCommandNmPerS = 5000.0;
 
 static inline long long qpc_now();
 static inline long long qpc_freq();
+
+void waitUntilQpc(long long targetQpc, long long freq) {
+    const long long yieldThreshold = std::max(1LL, freq / 1000LL);
+    while (true) {
+        const long long now = qpc_now();
+        if (now >= targetQpc) {
+            return;
+        }
+
+        const long long remaining = targetQpc - now;
+        if (remaining > yieldThreshold) {
+            Sleep(0);
+            continue;
+        }
+
+        while (qpc_now() < targetQpc) {
+        }
+        return;
+    }
+}
 
 struct RowCorrectedLogRow {
     double timeS = 0.0;
@@ -159,8 +180,8 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         }
     }
 
-    std::array<double, 3> previousActual = startPos;
-    std::array<double, 3> previousVelocity = referenceVelocity;
+    std::array<double, 3> previousRawActual = startPos;
+    std::array<double, 3> previousRawVelocity = referenceVelocity;
     std::array<double, 3> filteredActual = startPos;
 
     // Real-time thread scheduling adjustment
@@ -178,37 +199,46 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     }
 
     const long long startQpc = qpc_now();
-    long long next = startQpc + period;
-    
-    // Prevent division-by-zero / spikes on the very first frame
-    long long lastTickStart = startQpc; 
+    long long tickIndex = 0;
+    long long lastTickStart = startQpc;
 
     // Compute explicit real-time allocation size to prevent hot-path heap allocations.
     // Keep extra headroom so longer-than-expected runs can keep logging without reallocating.
     const size_t expectedTicks = static_cast<size_t>((durationS * 1000.0) / loopms) + 2048;
-    std::vector<RowCorrectedLogRow> logBuffer;
-    logBuffer.reserve(expectedTicks); 
+    const size_t maxLogRows = expectedTicks * 2;
+    std::deque<RowCorrectedLogRow> logBuffer;
     
     std::vector<std::string> warnBuffer;
     warnBuffer.reserve(expectedTicks / 4 + 64);
     bool boundaryHit = false;
+    size_t dtFallbackCount = 0;
+    size_t logTruncationCount = 0;
 
     AppLogger::instance().info("rowcorrected: loop initialized for " + std::to_string(durationS) + "s");
 
     while (true) {
-        // High-precision spin lock
-        while (qpc_now() < next) {}
+        const long long nowQpc = qpc_now();
+        const long long expectedTickIndex = ((nowQpc - startQpc) / period) + 1;
+        if (expectedTickIndex > tickIndex + 1) {
+            tickIndex = expectedTickIndex - 1;
+        }
+
+        ++tickIndex;
+        const long long next = startQpc + tickIndex * period;
+
+        // Hybrid wait: yield while far away, spin only near the deadline.
+        waitUntilQpc(next, freq);
 
         const long long tickStart = qpc_now();
         
         // Safeguard dtS from being exactly zero or negative due to system anomalies
         double dtS = (double)(tickStart - lastTickStart) / (double)freq;
         if (dtS <= 0.0) {
-            dtS = loopms / 1000.0; 
+            dtS = loopms / 1000.0;
+            ++dtFallbackCount;
         }
         
         lastTickStart = tickStart;
-        next += period;
 
         const double elapsedS = (double)(tickStart - startQpc) / (double)freq;
         const double progress = std::min(elapsedS / durationS, 1.0);
@@ -237,8 +267,8 @@ void runRowCorrectedLoop(PIStageProxy& stage,
 
         // Numerical derivatives for physical state estimation
         for (int axis = 0; axis < 3; ++axis) {
-            row.actualVelocityNmPerS[axis]      = (filteredActual[axis] - previousActual[axis]) / dtS;
-            row.actualAccelerationNmPerS2[axis] = (row.actualVelocityNmPerS[axis] - previousVelocity[axis]) / dtS;
+            row.actualVelocityNmPerS[axis]      = (actual[axis] - previousRawActual[axis]) / dtS;
+            row.actualAccelerationNmPerS2[axis] = (row.actualVelocityNmPerS[axis] - previousRawVelocity[axis]) / dtS;
         }
 
         const double kp = 0.60; 
@@ -265,16 +295,25 @@ void runRowCorrectedLoop(PIStageProxy& stage,
             row.commandedVelocityNmPerS[axis] = clampSymmetric(row.commandedVelocityNmPerS[axis], kRowCorrectedMaxCommandNmPerS);
         }
 
-        row.boundaryHit =
+        const bool rawBoundaryHit =
             actual[0] < kStageTestMinNm || actual[0] > kStageTestMaxNm ||
             actual[1] < kStageTestMinNm || actual[1] > kStageTestMaxNm ||
             actual[2] < kStageTestMinNm || actual[2] > kStageTestMaxNm;
+        const bool filteredBoundaryHit =
+            filteredActual[0] < kStageTestMinNm || filteredActual[0] > kStageTestMaxNm ||
+            filteredActual[1] < kStageTestMinNm || filteredActual[1] > kStageTestMaxNm ||
+            filteredActual[2] < kStageTestMinNm || filteredActual[2] > kStageTestMaxNm;
+        row.boundaryHit = rawBoundaryHit || filteredBoundaryHit;
 
         // Hot Path Safe: Vector operations only, zero file systems operations
+        if (logBuffer.size() >= maxLogRows) {
+            logBuffer.pop_front();
+            ++logTruncationCount;
+        }
         logBuffer.push_back(row);
 
-        previousActual   = filteredActual;
-        previousVelocity = row.actualVelocityNmPerS;
+        previousRawActual   = actual;
+        previousRawVelocity = row.actualVelocityNmPerS;
 
         if (row.boundaryHit) {
             warnBuffer.push_back("rowcorrected: boundary exceeded, halting stage");
@@ -298,15 +337,21 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         // Real-Time Overrun Monitor
         const long long bodyEnd = qpc_now();
         if (bodyEnd > next) {
-            const long long skippedTicks = (bodyEnd - next) / period + 1;
+            const long long overdueTicks = (bodyEnd - next) / period + 1;
             const double overrunMs = (double)(bodyEnd - tickStart) / (double)freq * 1000.0;
             std::ostringstream oss;
             oss << "Tick overrun: body took " << std::fixed << std::setprecision(3) << overrunMs
-                << " ms (budget: " << loopms << " ms), skipping " << skippedTicks << " tick(s)";
+                << " ms (budget: " << loopms << " ms), overdue by " << overdueTicks << " tick(s)";
             warnBuffer.push_back(oss.str());
-            next += skippedTicks * period;
         }
     } // end while(true)
+
+    if (dtFallbackCount > 0) {
+        warnBuffer.push_back("rowcorrected: non-positive dtS encountered " + std::to_string(dtFallbackCount) + " time(s)");
+    }
+    if (logTruncationCount > 0) {
+        warnBuffer.push_back("rowcorrected: log buffer truncated " + std::to_string(logTruncationCount) + " time(s)");
+    }
 
     // --- Post-processing: Offloaded heavy I/O operations outside the loop ---
     for (const auto& w : warnBuffer) {
