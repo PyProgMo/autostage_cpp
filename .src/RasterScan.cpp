@@ -158,11 +158,6 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     std::array<double, 3> previousVelocity = referenceVelocity;
     std::array<double, 3> filteredActual = startPos;
 
-    /* old timing using windows ticks. Bad since the windows clock ticks with 15 ms
-    const auto startTime = std::chrono::steady_clock::now();
-    auto lastTickTime = startTime;
-    auto nextTickTime = startTime + std::chrono::milliseconds(static_cast<int>(kStageTestTickMs));
-    */
     // new timing using high-resolution performance counter
     SetThreadAffinityMask(GetCurrentThread(), 1<<7); // run on a single CPU core to reduce jitter
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
@@ -189,111 +184,137 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     long long next           = startQpc;
     long long lastTickStart  = startQpc;
 
+    std::vector<RowCorrectedLogRow> logBuffer;
+    logBuffer.reserve(4096); // pre-allocate, no heap alloc during loop
+    std::vector<std::string> warnBuffer;
+    bool boundaryHit = false;
+
     while (true) {
         while (qpc_now() < next) {}
 
-            const long long tickStart = qpc_now();
-            const double dtS          = (double)(tickStart - lastTickStart) / (double)freq;
-            lastTickStart             = tickStart;
-            next                     += period;
+        const long long tickStart = qpc_now();
+        const double dtS          = (double)(tickStart - lastTickStart) / (double)freq;
+        lastTickStart             = tickStart;
+        next                     += period;
 
-            const double elapsedS   = (double)(tickStart - startQpc) / (double)freq;
-            const double tickS      = std::max((double)period / (double)freq, kStageTestTickS);
-            const double progress   = std::min(elapsedS / durationS, 1.0);
-            const double remainingS = std::max(durationS - elapsedS, kStageTestTickS);
+        const double elapsedS   = (double)(tickStart - startQpc) / (double)freq;
+        const double tickS      = std::max((double)period / (double)freq, kStageTestTickS);
+        const double progress   = std::min(elapsedS / durationS, 1.0);
+        const double remainingS = std::max(durationS - elapsedS, kStageTestTickS);
 
-            const std::array<double, 3> actual = stage.qpos();
+        const std::array<double, 3> actual = stage.qpos();
 
-            const double alpha = 0.35;
-            for (int axis = 0; axis < 3; ++axis) {
-                filteredActual[axis] = alpha * actual[axis] + (1.0 - alpha) * filteredActual[axis];
-            }
+        const double alpha = 0.35;
+        for (int axis = 0; axis < 3; ++axis) {
+            filteredActual[axis] = alpha * actual[axis] + (1.0 - alpha) * filteredActual[axis];
+        }
 
-            RowCorrectedLogRow row;
-            row.timeS      = elapsedS;
-            row.elapsedS   = elapsedS;
-            row.remainingS = remainingS;
-            row.referenceNm[0] = startPos[0] + deltaX * progress;
-            row.referenceNm[1] = startPos[1] + deltaY * progress;
-            row.referenceNm[2] = startPos[2] + deltaZ * progress;
-            row.actualNm       = actual;
-            row.errorNm[0]     = row.referenceNm[0] - filteredActual[0];
-            row.errorNm[1]     = row.referenceNm[1] - filteredActual[1];
-            row.errorNm[2]     = row.referenceNm[2] - filteredActual[2];
+        RowCorrectedLogRow row;
+        row.timeS      = elapsedS;
+        row.elapsedS   = elapsedS;
+        row.remainingS = remainingS;
+        row.referenceNm[0] = startPos[0] + deltaX * progress;
+        row.referenceNm[1] = startPos[1] + deltaY * progress;
+        row.referenceNm[2] = startPos[2] + deltaZ * progress;
+        row.actualNm       = actual;
+        row.errorNm[0]     = row.referenceNm[0] - filteredActual[0];
+        row.errorNm[1]     = row.referenceNm[1] - filteredActual[1];
+        row.errorNm[2]     = row.referenceNm[2] - filteredActual[2];
 
-            for (int axis = 0; axis < 3; ++axis) {
-                row.actualVelocityNmPerS[axis]       = (filteredActual[axis] - previousActual[axis]) / dtS;
-                row.actualAccelerationNmPerS2[axis]  = (row.actualVelocityNmPerS[axis] - previousVelocity[axis]) / dtS;
-            }
+        for (int axis = 0; axis < 3; ++axis) {
+            row.actualVelocityNmPerS[axis]      = (filteredActual[axis] - previousActual[axis]) / dtS;
+            row.actualAccelerationNmPerS2[axis] = (row.actualVelocityNmPerS[axis] - previousVelocity[axis]) / dtS;
+        }
 
-            const double kp = 0.60;
-            const double kv = 0.80;
-            const double ka = 0.20;
+        const double kp = 0.60; // position error -> velocity correction (fixed gain)
+        const double kv = 0.80; // velocity error -> velocity correction
+        const double ka = 0.20; // acceleration damping (D-term)
 
-            const std::array<double, 3> referenceAcceleration = {{0.0, 0.0, 0.0}};
+        const std::array<double, 3> referenceAcceleration = {{0.0, 0.0, 0.0}};
 
-            for (int axis = 0; axis < 3; ++axis) {
-                const double positionCorrection     = kp * row.errorNm[axis] / remainingS;
-                const double velocityError          = referenceVelocity[axis] - row.actualVelocityNmPerS[axis];
-                const double velocityCorrection     = kv * velocityError;
-                const double accelerationError      = referenceAcceleration[axis] - row.actualAccelerationNmPerS2[axis];
-                const double accelerationCorrection = ka * accelerationError * dtS;
+        for (int axis = 0; axis < 3; ++axis) {
+            // P: correct position error with fixed gain
+            const double positionCorrection     = kp * row.errorNm[axis];
 
-                row.correction1NmPerS[axis] = positionCorrection;
-                row.correction2NmPerS[axis] = velocityCorrection;
-                row.correction3NmPerS[axis] = accelerationCorrection;
+            // V: correct velocity error
+            const double velocityError          = referenceVelocity[axis] - row.actualVelocityNmPerS[axis];
+            const double velocityCorrection     = kv * velocityError;
 
-                row.commandedVelocityNmPerS[axis] = referenceVelocity[axis]
-                                                + row.correction1NmPerS[axis]
-                                                + row.correction2NmPerS[axis]
-                                                + row.correction3NmPerS[axis];
-                row.commandedVelocityNmPerS[axis] = clampSymmetric(row.commandedVelocityNmPerS[axis], kRowCorrectedMaxCommandNmPerS);
-            }
+            // D: damp acceleration (suppress overshoot) — negative feedback
+            const double accelerationError      = row.actualAccelerationNmPerS2[axis] - referenceAcceleration[axis];
+            const double accelerationCorrection = -ka * accelerationError;
 
-            row.boundaryHit =
-                actual[0] < kStageTestMinNm || actual[0] > kStageTestMaxNm ||
-                actual[1] < kStageTestMinNm || actual[1] > kStageTestMaxNm ||
-                actual[2] < kStageTestMinNm || actual[2] > kStageTestMaxNm;
+            row.correction1NmPerS[axis] = positionCorrection;
+            row.correction2NmPerS[axis] = velocityCorrection;
+            row.correction3NmPerS[axis] = accelerationCorrection;
 
-            const std::string line = formatRowCorrectedLine(row);
-            std::cout << line << "\n";
-            AppLogger::instance().info(line);
-            if (logImportant) {
-                writeRowCorrectedCsvRow(rowLog, row);
-            }
+            row.commandedVelocityNmPerS[axis] = referenceVelocity[axis]
+                                            + row.correction1NmPerS[axis]
+                                            + row.correction2NmPerS[axis]
+                                            + row.correction3NmPerS[axis];
+            row.commandedVelocityNmPerS[axis] = clampSymmetric(row.commandedVelocityNmPerS[axis], kRowCorrectedMaxCommandNmPerS);
+        }
 
-            if (row.boundaryHit) {
-                AppLogger::instance().error("rowcorrected: boundary exceeded, halting stage");
-                stage.halt();
-                throw std::runtime_error("rowcorrected aborted: stage left safe bounds");
-            }
+        row.boundaryHit =
+            actual[0] < kStageTestMinNm || actual[0] > kStageTestMaxNm ||
+            actual[1] < kStageTestMinNm || actual[1] > kStageTestMaxNm ||
+            actual[2] < kStageTestMinNm || actual[2] > kStageTestMaxNm;
 
-            previousActual   = filteredActual;
-            previousVelocity = row.actualVelocityNmPerS;
+        // buffer log rows — no disk I/O in hot path
+        logBuffer.push_back(row);
+        if (logImportant) {
+            writeRowCorrectedCsvRow(rowLog, row);
+        }
 
-            if (elapsedS >= durationS) {
-                break;
-            }
+        previousActual   = filteredActual;
+        previousVelocity = row.actualVelocityNmPerS;
 
-            stage.adda(row.commandedVelocityNmPerS[0], 0.0, 0.0);
+        if (row.boundaryHit) {
+            warnBuffer.push_back("rowcorrected: boundary exceeded, halting stage");
+            stage.halt();
+            boundaryHit = true;
+            break;
+        }
 
-            // Check and handle overrun
-            const long long bodyEnd   = qpc_now();
-            const double overrunMs    = (double)(bodyEnd - tickStart) / (double)freq * 1000.0;
-            if (bodyEnd > next) {
-                const long long skippedTicks = (bodyEnd - next) / period + 1;
-                std::ostringstream oss;
-                oss << "Tick overrun: body took " << std::fixed << std::setprecision(3) << overrunMs
-                    << " ms (budget: " << kStageTestTickMs << " ms), skipping " << skippedTicks << " tick(s)";
-                AppLogger::instance().warn(oss.str());
-                next += skippedTicks * period;
-            }
+        if (elapsedS >= durationS) {
+            break;
+        }
 
-    } // end function 
-    // after the loop, ensure the stage is stopped and log completion
+        // all 3 axes — fix for axis mismatch bug
+        stage.adda(row.commandedVelocityNmPerS[0],
+                row.commandedVelocityNmPerS[1],
+                row.commandedVelocityNmPerS[2]);
+
+        // overrun check
+        const long long bodyEnd = qpc_now();
+        if (bodyEnd > next) {
+            const long long skippedTicks = (bodyEnd - next) / period + 1;
+            const double overrunMs = (double)(bodyEnd - tickStart) / (double)freq * 1000.0;
+            std::ostringstream oss;
+            oss << "Tick overrun: body took " << std::fixed << std::setprecision(3) << overrunMs
+                << " ms (budget: " << kStageTestTickMs << " ms), skipping " << skippedTicks << " tick(s)";
+            warnBuffer.push_back(oss.str());
+            next += skippedTicks * period;
+        }
+    } // end while(true)
+
+    // --- all logging happens here, outside the hot path ---
+    for (const auto& w : warnBuffer)
+        AppLogger::instance().warn(w);
+    for (const auto& r : logBuffer) {
+        const std::string line = formatRowCorrectedLine(r);
+        std::cout << line << "\n";
+        AppLogger::instance().info(line);
+    }
+
+    if (boundaryHit) {
+        AppLogger::instance().error("rowcorrected: boundary exceeded, halting stage");
+        throw std::runtime_error("rowcorrected aborted: stage left safe bounds");
+    }
+
     stage.adda(0.0, 0.0, 0.0);
     AppLogger::instance().info("rowcorrected: completed");
-} 
+} // end void
 
 RasterScan::RasterScan(PIStageProxy& stage, AndorCamera& cam)
     : stage_(stage), cam_(cam) {}
