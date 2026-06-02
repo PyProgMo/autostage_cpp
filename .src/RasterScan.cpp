@@ -6,6 +6,7 @@
 #include <array>
 #include <chrono>
 #include <cmath>
+#include <iomanip>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -28,6 +29,9 @@ constexpr double kStageTestStartNm = 1000.0;
 constexpr double kStageTestTickMs = 10.0;
 constexpr double kStageTestTickS = kStageTestTickMs / 1000.0;
 constexpr double kRowCorrectedMaxCommandNmPerS = 5000.0;
+
+static inline long long qpc_now();
+static inline long long qpc_freq();
 
 struct RowCorrectedLogRow {
     double timeS = 0.0;
@@ -125,6 +129,10 @@ void runRowCorrectedLoop(PIStageProxy& stage,
                          bool logImportant,
                          const std::string& logPath) 
 {
+    if (durationS <= 0.0) {
+        throw std::runtime_error("runRowCorrectedLoop requires a positive duration");
+    }
+
     const double deltaX = targetPos[0] - startPos[0];
     const double deltaY = targetPos[1] - startPos[1];
     const double deltaZ = targetPos[2] - startPos[2];
@@ -161,7 +169,13 @@ void runRowCorrectedLoop(PIStageProxy& stage,
 
     const double loopms = 5.0; 
     const long long freq = qpc_freq();
+    if (freq <= 0) {
+        throw std::runtime_error("QueryPerformanceFrequency returned an invalid value");
+    }
     const long long period = (long long)(freq * loopms / 1000.0);
+    if (period <= 0) {
+        throw std::runtime_error("Row-corrected loop period is invalid");
+    }
 
     const long long startQpc = qpc_now();
     long long next = startQpc + period;
@@ -169,12 +183,14 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     // Prevent division-by-zero / spikes on the very first frame
     long long lastTickStart = startQpc; 
 
-    // Compute explicit real-time allocation size to prevent hot-path heap allocations
-    size_t expectedTicks = static_cast<size_t>((durationS * 1000.0) / loopms) + 500;
+    // Compute explicit real-time allocation size to prevent hot-path heap allocations.
+    // Keep extra headroom so longer-than-expected runs can keep logging without reallocating.
+    const size_t expectedTicks = static_cast<size_t>((durationS * 1000.0) / loopms) + 2048;
     std::vector<RowCorrectedLogRow> logBuffer;
     logBuffer.reserve(expectedTicks); 
     
     std::vector<std::string> warnBuffer;
+    warnBuffer.reserve(expectedTicks / 4 + 64);
     bool boundaryHit = false;
 
     AppLogger::instance().info("rowcorrected: loop initialized for " + std::to_string(durationS) + "s");
