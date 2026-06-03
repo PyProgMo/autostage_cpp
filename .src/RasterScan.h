@@ -69,14 +69,29 @@ public:
     RasterScan(PIStageProxy& stage, AndorCamera& cam);
 
     // Diagnostic one-row test scan used by the console velocitytest command.
-    static void runOneRowTest(PIStageProxy& stage, double velocityNmPerS, double xDistanceNm);
+    static void runOneRowTest(PIStageProxy& stage, AndorCamera& cam, double velocityNmPerS, double xDistanceNm);
 
     // Corrected one-row scan that follows a fixed duration target and can optionally log to a file.
     static void runRowCorrected(PIStageProxy& stage,
+                                AndorCamera& cam,
                                 double durationS,
                                 double xDistanceNm,
                                 bool logImportant = false,
                                 const std::string& logPath = "build/rowcorrected_log.csv");
+    
+    // Configure area scan, that scans an area looping over runRowCorrected for each line. This will validate the config and pre-calculate nX/nY.
+    static void runAreaScan(ScanConfig& cfg, 
+                        PIStageProxy& stage,
+                        AndorCamera& cam,
+                        bool logImportant = true,
+                        const std::string& logPathPrefix = "build/rowcorrected_line_", 
+                        const std::string& outputCubePath = "build/scan_cube.raw", 
+                        double durationSPerLine = 1.0,
+                        double xDistanceNm = 1000.0,
+                        double yDistanceNm = 1000.0, 
+                        double zDistanceNm = 0.0, 
+                        double rowdistanceNm = 100.0
+            );                    
 
     // Validate config and pre-calculate nX / nY
     void configure(const ScanConfig& cfg);

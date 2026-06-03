@@ -144,6 +144,7 @@ bool ensureParentDirExists(const std::string& path) {
 }
 
 void runRowCorrectedLoop(PIStageProxy& stage,
+                         AndorCamera& cam,
                          const std::array<double, 3>& startPos,
                          const std::array<double, 3>& targetPos,
                          double durationS,
@@ -215,6 +216,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     size_t logTruncationCount = 0;
 
     AppLogger::instance().info("rowcorrected: loop initialized for " + std::to_string(durationS) + "s");
+    stage.moveto(targetPos[0], targetPos[1], targetPos[2]);
 
     while (true) {
         const long long nowQpc = qpc_now();
@@ -421,7 +423,7 @@ void RasterScan::startrasterscan() {
     throw std::runtime_error("RasterScan::startrasterscan is legacy and not implemented");
 }
 
-void RasterScan::runOneRowTest(PIStageProxy& stage, double velocityNmPerS, double xDistanceNm) {
+void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCamera& cam, double velocityNmPerS, double xDistanceNm) {
     if (velocityNmPerS < 10.0 || velocityNmPerS > 10000.0) {
         throw std::runtime_error("Velocity must be between 10 and 10000 nm/s");
     }
@@ -443,19 +445,21 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, double velocityNmPerS, doubl
     double currentpos[3];
     currentpos[0] = stage.getPos("1"); currentpos[1] = stage.getPos("2"); currentpos[2] = stage.getPos("3");
     // take 10 seconds to get to the start position, then wait there for 1 second before starting the test move
-    stage.adda((startPos[0] - currentpos[0]) / 10.0, (startPos[1] - currentpos[1]) / 10.0, (startPos[2] - currentpos[2]) / 10.0);
+    stage.adda(
+        std::abs(startPos[0] - currentpos[0]) / 10.0,
+        std::abs(startPos[1] - currentpos[1]) / 10.0,
+        std::abs(startPos[2] - currentpos[2]) / 10.0
+    );    
+    stage.moveto(startPos[0], startPos[1], startPos[2]);
     std::this_thread::sleep_for(std::chrono::seconds(11));
 
-    //stage.moveto(startPos[0], startPos[1], startPos[2]);
+    stage.adda(std::abs(velocityNmPerS), 0.0, 0.0);
 
-
-    stage.adda(velocityNmPerS, 0.0, 0.0);
-    stage.moveto(targetPos[0], targetPos[1], targetPos[2]);
-
-    runRowCorrectedLoop(stage, startPos, targetPos, durationS, false, "build/rowcorrected_log.csv");
+    runRowCorrectedLoop(stage, cam, startPos, targetPos, durationS, false, "build/rowcorrected_log.csv");
 }
 
 void RasterScan::runRowCorrected(PIStageProxy& stage,
+                                 AndorCamera& cam,
                                  double durationS,
                                  double xDistanceNm,
                                  bool logImportant,
@@ -482,11 +486,71 @@ void RasterScan::runRowCorrected(PIStageProxy& stage,
     stage.waitOnTarget("2");
     stage.waitOnTarget("3");
 
-    stage.adda(xDistanceNm / durationS, 0.0, 0.0);
-    stage.moveto(targetPos[0], targetPos[1], targetPos[2]);
+    stage.adda(std::abs(xDistanceNm) / durationS, 0.0, 0.0);
 
-    runRowCorrectedLoop(stage, startPos, targetPos, durationS, logImportant, logPath);
+    runRowCorrectedLoop(stage, cam, startPos, targetPos, durationS, logImportant, logPath);
 }
+
+void RasterScan::runAreaScan(
+    ScanConfig& cfg,
+    PIStageProxy& stage,
+    AndorCamera& cam,
+    bool logImportant,
+    const std::string& logPathPrefix,
+    const std::string& outputCubePath,
+    double durationSPerLine,
+    double xDistanceNm,
+    double yDistanceNm,
+    double zpositionNm,
+    double rowdistanceNm
+    ){
+    // Validate config and pre-calculate nX / nY
+    if (durationSPerLine <= 0.0) {
+        throw std::runtime_error("Duration per line must be greater than 0 seconds");
+    }
+    if (xDistanceNm <= 0.0) {
+        throw std::runtime_error("X distance must be greater than 0 nm");
+    }
+    if (yDistanceNm < 0.0) {
+        throw std::runtime_error("Y distance must be greater than or equal to 0 nm");
+    }
+    if (rowdistanceNm <= 0.0) {
+        throw std::runtime_error("Row distance must be greater than 0 nm");
+    }
+    const int nX = static_cast<int>(std::round(xDistanceNm / cfg.xStep)) + 1;
+    const int nY = static_cast<int>(std::round(yDistanceNm / rowdistanceNm)) + 1;
+    if (nX <= 0 || nY <= 0) {
+        throw std::runtime_error("Calculated scan dimensions are invalid");
+    }
+    AppLogger::instance().info("Area scan configuration: nX=" + std::to_string(nX) + ", nY=" + std::to_string(nY));
+
+    // Loop over lines, running runRowCorrected for each line with the appropriate start/stop positions and durations
+    std::array<double, 3> lineStartPos = {{cfg.xStart, cfg.yStart, zpositionNm}};
+    std::array<double, 3> lineTargetPos = {{cfg.xStop, cfg.yStart + 10, zpositionNm}};
+    for (int iy = 0; iy < nY; ++iy) {
+        const double yOffset = iy * rowdistanceNm;
+        if (iy %2 == 0) { // switch direction every other line to avoid long flyback times
+            lineStartPos = {{cfg.xStart, cfg.yStart + yOffset, zpositionNm}};
+            lineTargetPos = {{cfg.xStop, cfg.yStart + yOffset, zpositionNm}};
+        }
+        else {
+            lineStartPos = {{cfg.xStop, cfg.yStart + yOffset, zpositionNm}};
+            lineTargetPos = {{cfg.xStart, cfg.yStart + yOffset, zpositionNm}};
+        }
+
+        const std::string logPath = logImportant ? (logPathPrefix + std::to_string(iy) + ".csv") : "";
+
+        // move stage on Start position and wait for it to settle before starting the row-corrected loop
+        stage.moveto(lineStartPos[0], lineStartPos[1], lineStartPos[2]);
+        stage.waitOnTarget("1");
+        stage.waitOnTarget("2");
+        stage.waitOnTarget("3");
+
+        runRowCorrectedLoop(stage, cam, lineStartPos, lineTargetPos, durationSPerLine, logImportant, logPath);
+    }
+
+    }
+
 
 static inline long long qpc_now() {
     LARGE_INTEGER t;
