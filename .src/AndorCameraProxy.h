@@ -46,9 +46,13 @@ public:
     void startAcquisition();
     void abortAcquisition();
     void waitForAcquisition();
+    // testAcquireAndSave functions
     void testAcquireAndSave(float exposureSeconds, const std::string& filename);
     void testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
     std::vector<WORD> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
+    
+    // AcquireAndSavefast function
+    void AcquireAndSavefast(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
 
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }

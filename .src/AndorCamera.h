@@ -113,6 +113,7 @@ public:
     // declare the test functions here so they can be called from ConsoleApp without including private members
     void testAcquireAndSave(float exposureSeconds, const std::string& filename);
     void testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void AcquireAndSavefast(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
 
 private:
     HMODULE hDll_ = nullptr;
