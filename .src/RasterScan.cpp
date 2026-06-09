@@ -325,9 +325,9 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         }
 
         // Output corrections to all 3 axes
-        stage.adda(row.commandedVelocityNmPerS[0],
-                   row.commandedVelocityNmPerS[1],
-                   row.commandedVelocityNmPerS[2]);
+        stage.adda(std::abs(row.commandedVelocityNmPerS[0]),
+                   std::abs(row.commandedVelocityNmPerS[1]),
+                   std::abs(row.commandedVelocityNmPerS[2]));
 
         // if traveled by DS trigger the spectrometer here (optional optimization for very long lines, but adds complexity to the loop and timing)
 
