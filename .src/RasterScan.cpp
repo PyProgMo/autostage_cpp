@@ -30,7 +30,7 @@ constexpr double kStageTestStartNm = 1000.0;
 constexpr double kStageTestTickMs = 10.0;
 constexpr double kStageTestTickS = kStageTestTickMs / 1000.0;
 constexpr double kRowCorrectedMaxCommandNmPerS = 5000.0;
-
+}
 static inline long long qpc_now();
 static inline long long qpc_freq();
 

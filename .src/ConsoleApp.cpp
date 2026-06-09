@@ -121,7 +121,7 @@ int main() {
                     double velocityNmPerS;
                     double xDistanceNm;
                     if (iss >> velocityNmPerS >> xDistanceNm) {
-                        RasterScan::runOneRowTest(*stage, velocityNmPerS, xDistanceNm);
+                        RasterScan::runOneRowTest(*stage, *cam, velocityNmPerS, xDistanceNm);
                         std::cout << "Velocity test completed.\n";
                     } else {
                         std::cout << "Usage: stage velocitytest [velocity_nm_s] [x_distance_nm]\n";
