@@ -12,6 +12,7 @@ try/__pycache__/
 *.xlsx
 *.png
 *.exe
+*.o
 # ignore log files (.txt)
 *.txt
 # ignore all .env files
