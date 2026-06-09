@@ -425,10 +425,6 @@ void PIStage::runVelocitySweep(
             " vCmdZ=" + std::to_string(vCmdZ) +
             " C0=" + std::to_string(C0));
         // ── API call: µm/s → mm/s (stage wire format, unchanged) ──────────
-        const double API_Scale = 1.0 / 1000.0; // µm/s to mm/s
-        double cmds[3] = { vCmdX * API_SCALE,
-                           vCmdY * API_SCALE,
-                           vCmdZ * API_SCALE };
         setVelocity("X Y Z", cmds);
 
         prev_t = current_t;
