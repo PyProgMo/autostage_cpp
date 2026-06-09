@@ -327,11 +327,11 @@ int main() {
                 } else if (action == "testfunctions") {
                     std::cout << "andor testfunctions:\n";
                     std::cout << "  andor test -> testmeasurement\n";
-                    std::cout << "  andor testAcquireAndSave -> measure 10 spectra with 0.1 s exposure, print the first 10 pixels of each to console, also save them to disk, important: print how loong it took\n (important: timing uses windows chorono)"; 
+                    std::cout << "  andor testtiming -> measure 100 spectra with 0.1 s exposure, also save them to disk, important: print how loong it took\n (important: timing uses windows chorono)\n"; 
                 } else if (action == "test") {
                     cam->testAcquireAndSave(0.1f, "test_spectrum");
                     std::cout << "Measured spectrum and sig-bg saved under the timestamped measurements folder when a background is available.\n";
-                } else if (action == "testAcquireAndSave") {
+                } else if (action == "testtiming") {
                     cam->testtenspectime();
                 }
                 else {

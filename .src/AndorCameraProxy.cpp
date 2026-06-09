@@ -459,6 +459,8 @@ void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int 
     }
 }
 
+
+
 // overload that acquires data and calls the above test function
 void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& filename) {
     configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, 1);
@@ -497,29 +499,137 @@ std::vector<WORD> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerS
     return obj;
 }
 
-// new test function: acquire 10 spectra with 0.1 s exposure and print the first 10 pixels of each to console, also save them to disk, important: print how loong it took
+// new test function: acquire 10 spectra with 0.1 s exposure, save them to disk, important: print how loong it took
 void AndorCameraProxy::testtenspectime() {
-    const int numSpectra = 10;
+    const int numSpectra = 100;
     const int pixelsPerSpectrum = getXPixels();
     const float exposureS = 0.1f;
+    long totalExposureTime = numSpectra * exposureS;
+    long overheadone = 0; // save in ms
+    long overheadfast = 0; // save in ms
+    long measuretimeone = 0; // total time for testAcquireAndSave
+    long measuretimefast = 0; // total time for AcquireAndSavefast
 
     auto start = std::chrono::high_resolution_clock::now();
-    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, numSpectra);
+    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::External, exposureS, numSpectra);
     startAcquisition();
     waitForAcquisition();
     std::vector<WORD> spectra = getAllSpectra(numSpectra, pixelsPerSpectrum);
     auto end = std::chrono::high_resolution_clock::now();
 
     for (int i = 0; i < numSpectra; ++i) {
-        std::cout << "Spectrum " << i << ": ";
-        for (int j = 0; j < std::min(10, pixelsPerSpectrum); ++j) {
-            std::cout << spectra[i * pixelsPerSpectrum + j] << ' ';
-        }
-        std::cout << '\n';
+        // call the spectrometer to measure 100 times with 0.1 s exposure
+        testAcquireAndSave(std::vector<WORD>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
+                         1, pixelsPerSpectrum, "spectrum_" + std::to_string(i));
+        
     }
 
-    testAcquireAndSave(spectra, numSpectra, pixelsPerSpectrum, "tenspectest");
-
     std::chrono::duration<double> elapsed = end - start;
-    std::cout << "Acquired and saved " << numSpectra << " spectra in " << elapsed.count() << " seconds.\n";
+    measuretimeone = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+    overheadone = measuretimeone - totalExposureTime * 1000; // convert to ms
+
+    // then call AcquireAndSavefast to do the same but optimized, measure time again and print how long it took
+    start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < numSpectra; ++i) {
+        AcquireAndSavefast(std::vector<WORD>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
+                         1, pixelsPerSpectrum, "fast_spectrum_" + std::to_string(i));
+    }
+    end = std::chrono::high_resolution_clock::now();
+    measuretimefast = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    overheadfast = measuretimefast - totalExposureTime * 1000; // convert to ms
+
+    // end: print results
+    std::cout << "testAcquireAndSave: total time = " << measuretimeone << " ms, overhead = " << overheadone << " ms\n";
+    std::cout << "AcquireAndSavefast: total time = " << measuretimefast << " ms, overhead = " << overheadfast << " ms\n";
+    // print saved time for each spectrum
+    std::cout << "Average time per spectrum for testAcquireAndSave: " << measuretimeone / numSpectra << " ms\n";
+    std::cout << "Average time per spectrum for AcquireAndSavefast: " << measuretimefast / numSpectra << " ms\n";
+    std::cout << "saved time per spectrum: " << (measuretimeone - measuretimefast) / numSpectra << " ms\n";
+
+}
+
+void AndorCameraProxy::AcquireAndSavefast(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+    // 1. Keep the safety checks (they are fast and essential)
+    if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
+        throw std::runtime_error("AndorCameraProxy: invalid spectrum image dimensions");
+    }
+    
+    // Use size_t directly to avoid repeated casting later
+    const size_t totalPixels = static_cast<size_t>(numSpectra) * static_cast<size_t>(pixelsPerSpectrum);
+    if (spectra.empty() || spectra.size() < totalPixels) {
+        throw std::runtime_error("AndorCameraProxy: AcquireAndSavefast requires non-empty spectrum data");
+    }
+
+    const std::string measurementFolder = createMeasurementFolder();
+    const std::vector<WORD>& background = getBackground(); // Use a reference to avoid any hidden copies
+    const bool hasBackground = !background.empty() && (background.size() >= totalPixels);
+
+    // Default base names to avoid checking empty string inside loops
+    const std::string baseName = filename.empty() ? "frame" : filename;
+
+    // Handle single spectrum case quickly
+    if (numSpectra == 1) {
+        const std::string stem = filename.empty() ? "spectrum" : filename;
+        saveSpectrumSet(measurementFolder, stem, spectra, numSpectra, pixelsPerSpectrum);
+
+        if (hasBackground) {
+            const std::vector<WORD> sigBg = subtractBackground(spectra, background);
+            saveSpectrumSet(measurementFolder, "sig-bg", sigBg, numSpectra, pixelsPerSpectrum);
+        }
+        return;
+    }
+
+    // ==============================================================================
+    // HIGH-SPEED MULTI-FRAME EXECUTION LAYER
+    // ==============================================================================
+    
+    // Allocation Optimization: Allocate buffers ONCE outside the loop to prevent heap thrashing
+    std::vector<WORD> frameDataBuffer(pixelsPerSpectrum);
+    std::vector<WORD> sigBgBuffer(pixelsPerSpectrum);
+
+    // String Optimization: Pre-allocate a reusable string buffer for frame names
+    std::string nameCache;
+    nameCache.reserve(baseName.size() + 5); 
+    nameCache.assign(baseName).append("_000");
+    size_t suffixIdx = baseName.size() + 1; // Index where the digits start
+
+    // Pre-calculate raw data pointers for blisteringly fast iterator math
+    const WORD* rawSpectraPtr = spectra.data();
+    const WORD* rawBgPtr = hasBackground ? background.data() : nullptr;
+
+    for (int frame = 0; frame < numSpectra; ++frame) {
+        const size_t offset = static_cast<size_t>(frame) * pixelsPerSpectrum;
+        const WORD* currentFrameSrc = rawSpectraPtr + offset;
+
+        // Fast zero-allocation buffer copy
+        std::memcpy(frameDataBuffer.data(), currentFrameSrc, pixelsPerSpectrum * sizeof(WORD));
+
+        // Update the string directly using fast math instead of std::ostringstream
+        int hundred = frame / 100;
+        int ten = (frame / 10) % 10;
+        int one = frame % 10;
+        nameCache[suffixIdx]     = '0' + hundred;
+        nameCache[suffixIdx + 1] = '0' + ten;
+        nameCache[suffixIdx + 2] = '0' + one;
+
+        // Save raw frame data
+        saveSpectrumSet(measurementFolder, nameCache, frameDataBuffer, 1, pixelsPerSpectrum);
+
+        if (hasBackground) {
+            const WORD* currentBgSrc = rawBgPtr + offset;
+            
+            // Vectorized Processing: Unrolled loop or SIMD-friendly element subtraction
+            WORD* dst = sigBgBuffer.data();
+            for (int i = 0; i < pixelsPerSpectrum; ++i) {
+                // Prevents underflow if background is greater than signal
+                dst[i] = (currentFrameSrc[i] > currentBgSrc[i]) ? (currentFrameSrc[i] - currentBgSrc[i]) : 0;
+            }
+
+            // Create background filename string ("sig-bg_000") without allocations or substr()
+            std::string bgName = "sig-bg_";
+            bgName.append(nameCache.data() + suffixIdx, 3);
+
+            saveSpectrumSet(measurementFolder, bgName, sigBgBuffer, 1, pixelsPerSpectrum);
+        }
+    }
 }
