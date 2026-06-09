@@ -454,8 +454,13 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     std::this_thread::sleep_for(std::chrono::seconds(11));
 
     stage.adda(std::abs(velocityNmPerS), 0.0, 0.0);
+    // build name of the rowcorrected_log file with timestamp: rowcorrected_log_YYYYMMDD_HHMMSS.csv
+    const auto t = std::time(nullptr);
+    const auto tm = *std::localtime(&t);
+    std::ostringstream oss;
+    oss << "build/rowcorrected_log_" << std::put_time(&tm, "%Y%m%d_%H%M%S") << ".csv";
 
-    runRowCorrectedLoop(stage, cam, startPos, targetPos, durationS, false, "build/rowcorrected_log.csv");
+    runRowCorrectedLoop(stage, cam, startPos, targetPos, durationS, false, oss.str());
 }
 
 void RasterScan::runRowCorrected(PIStageProxy& stage,

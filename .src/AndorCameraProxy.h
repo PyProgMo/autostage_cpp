@@ -53,6 +53,10 @@ public:
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }
 
+    // add test function for sanity checks
+    // acquire 10 spectra with 0.1 s exposure and print the first 10 pixels of each to console, also save them to disk, important: print how loong it took
+    void testtenspectime();
+
 private:
     HANDLE hPipe_ = INVALID_HANDLE_VALUE;
     int xpix_ = 0, ypix_ = 0;

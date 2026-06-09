@@ -86,7 +86,7 @@ int main() {
             std::cout << "  andor getStatus\n";
             std::cout << "  andor setKineticCycleTime [s]\n";
             std::cout << "  andor setNumberKinetics [num]\n";
-            std::cout << "  andor test\n";
+            std::cout << "  andor testfunctions\n";
             std::cout << "  andor disconnect\n";
             std::cout << "  scan\n";
             continue;
@@ -97,6 +97,7 @@ int main() {
         iss >> target >> action;
 
         try {
+
             if (target == "stage") {
                 if (action == "connect") {
                     stage->loadDLL("E7XX_GCS2_DLL.dll");
@@ -177,6 +178,7 @@ int main() {
                 } else {
                     std::cout << "Unknown stage action: " << action << "\n";
                 }
+
             } else if (target == "andor") {
                 if (action == "connect") {
                     int cameraIndex = 0;
@@ -246,9 +248,6 @@ int main() {
                     }
                     std::cout << "...\n";
                     cam->testAcquireAndSave(data, 1, cam->getXPixels(), "measured_spectrum");
-                } else if (action == "test") {
-                    cam->testAcquireAndSave(0.1f, "test_spectrum");
-                    std::cout << "Measured spectrum and sig-bg saved under the timestamped measurements folder when a background is available.\n";
                 } else if (action == "setTint") {
                     float tint;
                     if (iss >> tint) {
@@ -325,6 +324,15 @@ int main() {
                     } else {
                         std::cout << "Usage: andor setNumberKinetics [num]\n";
                     }
+                } else if (action == "testfunctions") {
+                    std::cout << "andor testfunctions:\n";
+                    std::cout << "  andor test -> testmeasurement\n";
+                    std::cout << "  andor testAcquireAndSave -> measure 10 spectra with 0.1 s exposure, print the first 10 pixels of each to console, also save them to disk, important: print how loong it took\n (important: timing uses windows chorono)"; 
+                } else if (action == "test") {
+                    cam->testAcquireAndSave(0.1f, "test_spectrum");
+                    std::cout << "Measured spectrum and sig-bg saved under the timestamped measurements folder when a background is available.\n";
+                } else if (action == "testAcquireAndSave") {
+                    cam->testtenspectime();
                 }
                 else {
                     std::cout << "Unknown andor action: " << action << "\n";

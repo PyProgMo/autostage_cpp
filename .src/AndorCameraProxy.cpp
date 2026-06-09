@@ -496,3 +496,29 @@ std::vector<WORD> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerS
     }
     return obj;
 }
+
+// new test function: acquire 10 spectra with 0.1 s exposure and print the first 10 pixels of each to console, also save them to disk, important: print how loong it took
+void AndorCameraProxy::testtenspectime() {
+    const int numSpectra = 10;
+    const int pixelsPerSpectrum = getXPixels();
+    const float exposureS = 0.1f;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, numSpectra);
+    startAcquisition();
+    waitForAcquisition();
+    std::vector<WORD> spectra = getAllSpectra(numSpectra, pixelsPerSpectrum);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < numSpectra; ++i) {
+        std::cout << "Spectrum " << i << ": ";
+        for (int j = 0; j < std::min(10, pixelsPerSpectrum); ++j) {
+            std::cout << spectra[i * pixelsPerSpectrum + j] << ' ';
+        }
+        std::cout << '\n';
+    }
+
+    testAcquireAndSave(spectra, numSpectra, pixelsPerSpectrum, "tenspectest");
+
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Acquired and saved " << numSpectra << " spectra in " << elapsed.count() << " seconds.\n";
