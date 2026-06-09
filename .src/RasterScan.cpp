@@ -144,7 +144,7 @@ bool ensureParentDirExists(const std::string& path) {
 }
 
 void runRowCorrectedLoop(PIStageProxy& stage,
-                         AndorCamera& cam,
+                         AndorCameraProxy& cam,
                          const std::array<double, 3>& startPos,
                          const std::array<double, 3>& targetPos,
                          double durationS,
@@ -380,7 +380,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     AppLogger::instance().info("rowcorrected: completed cleanly");
 }
 
-RasterScan::RasterScan(PIStageProxy& stage, AndorCamera& cam)
+RasterScan::RasterScan(PIStageProxy& stage, AndorCameraProxy& cam)
     : stage_(stage), cam_(cam) {}
 
 void RasterScan::configure(const ScanConfig& cfg) {
@@ -423,7 +423,7 @@ void RasterScan::startrasterscan() {
     throw std::runtime_error("RasterScan::startrasterscan is legacy and not implemented");
 }
 
-void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCamera& cam, double velocityNmPerS, double xDistanceNm) {
+void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double velocityNmPerS, double xDistanceNm) {
     if (velocityNmPerS < 10.0 || velocityNmPerS > 10000.0) {
         throw std::runtime_error("Velocity must be between 10 and 10000 nm/s");
     }
@@ -459,7 +459,7 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCamera& cam, double vel
 }
 
 void RasterScan::runRowCorrected(PIStageProxy& stage,
-                                 AndorCamera& cam,
+                                 AndorCameraProxy& cam,
                                  double durationS,
                                  double xDistanceNm,
                                  bool logImportant,
@@ -494,7 +494,7 @@ void RasterScan::runRowCorrected(PIStageProxy& stage,
 void RasterScan::runAreaScan(
     ScanConfig& cfg,
     PIStageProxy& stage,
-    AndorCamera& cam,
+    AndorCameraProxy& cam,
     bool logImportant,
     const std::string& logPathPrefix,
     const std::string& outputCubePath,

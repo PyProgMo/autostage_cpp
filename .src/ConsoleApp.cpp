@@ -134,7 +134,8 @@ int main() {
                         if (!(iss >> logFlag)) {
                             logFlag = 0;
                         }
-                        RasterScan::runRowCorrected(*stage,
+                        RasterScan::runRowCorrected(*stage, 
+                                                     *cam, 
                                                      durationS,
                                                      xDistanceNm,
                                                      logFlag != 0);
