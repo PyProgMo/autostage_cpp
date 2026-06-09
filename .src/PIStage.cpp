@@ -304,7 +304,6 @@ void PIStage::runVelocitySweep(
     const double xStop_um    = Units::nmToUm(xStop);
     const double xStart_um   = Units::nmToUm(xStart);
     const double xStep_um    = Units::nmToUm(xStep);
-    const double yHold_um    = Units::nmToUm(yHold);
 
     std::vector<double> zProfile_um;
     zProfile_um.reserve(zProfile.size());
@@ -408,6 +407,13 @@ void PIStage::runVelocitySweep(
                 vCmdZ = clampVal(grad * vX_filt, -MAX_VEL, MAX_VEL);
             }
         }
+
+        // important: if Z diverges too much, z-velocity must be set to move back on track, otherwise we will lose focus and ruin the scan. So we should not just cap vCmdZ, but also log if it hits the cap to monitor if our profile or velocity is too aggressive.
+        if (std::abs(vCmdZ) >= MAX_VEL) {
+            AppLogger::instance().warn("vCmdZ hit velocity cap at X=" + std::to_string(X_k) + " Z=" + std::to_string(Z_k) + " vCmdZ=" + std::to_string(vCmdZ));
+            // also set vCmdZ to the capped value to ensure we at least try to correct, even if it's not fully aggressive
+        }
+        
 
         // ── Convert µm/s → mm/s for PI stage API ──────────────────────────
         const double API_SCALE = 1.0 / 1000.0;
