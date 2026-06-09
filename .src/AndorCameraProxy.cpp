@@ -522,3 +522,4 @@ void AndorCameraProxy::testtenspectime() {
 
     std::chrono::duration<double> elapsed = end - start;
     std::cout << "Acquired and saved " << numSpectra << " spectra in " << elapsed.count() << " seconds.\n";
+}
