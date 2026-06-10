@@ -85,11 +85,11 @@ std::string createMeasurementFolder() {
     return folder;
 }
 
-cv::Mat buildSpectrumImage(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, WORD& maxVal) {
+cv::Mat buildSpectrumImage(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, int& maxVal) {
     maxVal = 0;
-    for (WORD val : spectra) {
-        if (val > maxVal) {
-            maxVal = val;
+    for (size_t i = 0; i < spectra.size(); ++i) {
+        if (spectra[i] > maxVal) {
+            maxVal = spectra[i];
         }
     }
     if (maxVal == 0) {
@@ -99,14 +99,14 @@ cv::Mat buildSpectrumImage(const std::vector<WORD>& spectra, int numSpectra, int
     cv::Mat img(numSpectra, pixelsPerSpectrum, CV_8UC1);
     for (int i = 0; i < numSpectra; ++i) {
         for (int j = 0; j < pixelsPerSpectrum; ++j) {
-            const WORD val = spectra[i * pixelsPerSpectrum + j];
+            const int val = spectra[i * pixelsPerSpectrum + j];
             img.at<uchar>(i, j) = static_cast<uchar>((val * 255) / maxVal);
         }
     }
     return img;
 }
 
-void writeSpectrumTxt(const std::string& filePath, const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum) {
+void writeSpectrumTxt(const std::string& filePath, const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum) {
     std::ofstream outFile(filePath.c_str());
     if (!outFile) {
         throw std::runtime_error(std::string("Andor: failed to write TXT: ") + filePath);
@@ -120,21 +120,22 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<WORD>& spec
     }
 }
 
-std::vector<WORD> subtractBackground(const std::vector<WORD>& spectra, const std::vector<WORD>& background) {
-    std::vector<WORD> sigBg = spectra;
+std::vector<int> subtractBackground(const std::vector<int>& spectra, const std::vector<int>& background) {
+    std::vector<int> sigBg = spectra;
     const size_t count = std::min(sigBg.size(), background.size());
     for (size_t i = 0; i < count; ++i) {
-        sigBg[i] = static_cast<WORD>(sigBg[i] > background[i] ? sigBg[i] - background[i] : 0);
+        sigBg[i] = static_cast<int>(sigBg[i] > background[i] ? sigBg[i] - background[i] : 0);
     }
     return sigBg;
 }
 
 void saveSpectrumSet(const std::string& measurementFolder,
                      const std::string& stem,
-                     const std::vector<WORD>& spectra,
+                     const std::vector<int>& spectra,
+                     const std::vector<float>& WL,
                      int numSpectra,
                      int pixelsPerSpectrum) {
-    WORD maxVal = 0;
+    int maxVal = 0;
     cv::Mat img = buildSpectrumImage(spectra, numSpectra, pixelsPerSpectrum, maxVal);
     if (!cv::imwrite(joinPath(measurementFolder, stem) + ".png", img)) {
         throw std::runtime_error(std::string("Andor: failed to write PNG: ") + stem);
@@ -244,7 +245,7 @@ void AndorCamera::enableCooling(bool enable) {
     }
 }
 
-void AndorCamera::setBackground(const std::vector<WORD>& spectra) {
+void AndorCamera::setBackground(const std::vector<int>& spectra) {
     ensureLoaded();
     backgrounds_[selectedCameraIndex_] = spectra;
 }
@@ -254,7 +255,7 @@ bool AndorCamera::hasBackground() const {
     return it != backgrounds_.end() && !it->second.empty();
 }
 
-std::vector<WORD> AndorCamera::getBackground() const {
+std::vector<int> AndorCamera::getBackground() const {
     auto it = backgrounds_.find(selectedCameraIndex_);
     if (it == backgrounds_.end()) {
         return {};
@@ -365,9 +366,9 @@ void AndorCamera::waitForAcquisition() {
     check(pWaitForAcquisition(), "WaitForAcquisition");
 }
 
-std::vector<WORD> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
+std::vector<int> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
     ensureLoaded();
-    std::vector<WORD> buf(numSpectra * pixelsPerSpectrum);
+    std::vector<int> buf(numSpectra * pixelsPerSpectrum);
     long vf, vl;
     check(pGetImages16(1, numSpectra, buf.data(),
                        (unsigned long)buf.size(), &vf, &vl),
@@ -387,7 +388,7 @@ void AndorCamera::ensureLoaded() {
     loadDLL("atmcd64d.dll");
 }
 
-void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+void AndorCamera::testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
     if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
         throw std::runtime_error("Andor: invalid spectrum image dimensions");
     }
@@ -399,15 +400,15 @@ void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSp
 
     std::cout << "OpenCV Build Information:\n" << cv::getBuildInformation() << "\n";
 
-    const std::vector<WORD> background = getBackground();
+    const std::vector<int> background = getBackground();
 
     if (numSpectra == 1) {
         const std::string stem = filename.empty() ? "spectrum" : filename;
-        saveSpectrumSet(measurementFolder, stem, spectra, numSpectra, pixelsPerSpectrum);
+        saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, numSpectra, pixelsPerSpectrum, specmeta[selectedCameraIndex_]);
 
         if (!background.empty()) {
-            const std::vector<WORD> sigBg = subtractBackground(spectra, background);
-            saveSpectrumSet(measurementFolder, "sig-bg", sigBg, numSpectra, pixelsPerSpectrum);
+            const std::vector<int> sigBg = subtractBackground(spectra, background);
+            saveSpectrumSet(measurementFolder, "sig-bg", sigBg, wlArray_, numSpectra, pixelsPerSpectrum, specmeta[selectedCameraIndex_]);
         }
 
         std::cout << "Saved spectrum to " << measurementFolder << "\n";
@@ -415,18 +416,18 @@ void AndorCamera::testAcquireAndSave(const std::vector<WORD>& spectra, int numSp
     }
 
     for (int frame = 0; frame < numSpectra; ++frame) {
-        std::vector<WORD> frameData(spectra.begin() + (frame * pixelsPerSpectrum),
+        std::vector<int> frameData(spectra.begin() + (frame * pixelsPerSpectrum),
                                     spectra.begin() + ((frame + 1) * pixelsPerSpectrum));
 
         std::ostringstream name;
         name << (filename.empty() ? "frame" : filename) << '_' << std::setw(3) << std::setfill('0') << frame;
-        saveSpectrumSet(measurementFolder, name.str(), frameData, 1, pixelsPerSpectrum);
+        saveSpectrumSet(measurementFolder, name.str(), frameData, wlArray_, 1, pixelsPerSpectrum, specmeta[selectedCameraIndex_]);
 
         if (!background.empty()) {
-            std::vector<WORD> bgFrame(background.begin() + (frame * pixelsPerSpectrum),
+            std::vector<int> bgFrame(background.begin() + (frame * pixelsPerSpectrum),
                                       background.begin() + ((frame + 1) * pixelsPerSpectrum));
-            const std::vector<WORD> sigBg = subtractBackground(frameData, bgFrame);
-            saveSpectrumSet(measurementFolder, std::string("sig-bg_") + name.str().substr(name.str().find_last_of('_') + 1), sigBg, 1, pixelsPerSpectrum);
+            const std::vector<int> sigBg = subtractBackground(frameData, bgFrame);
+            saveSpectrumSet(measurementFolder, std::string("sig-bg_") + name.str().substr(name.str().find_last_of('_') + 1), sigBg, wlArray_, 1, pixelsPerSpectrum, specmeta[selectedCameraIndex_]);
         }
     }
 
@@ -439,21 +440,30 @@ void AndorCamera::measureBackground(float exposureSeconds, const std::string& fi
     startAcquisition();
     waitForAcquisition();
 
-    const std::vector<WORD> spectra = getAllSpectra(1, getXPixels());
+    const std::vector<int> spectra = getAllSpectra(1, getXPixels());
     setBackground(spectra);
 
     const std::string measurementFolder = createMeasurementFolder();
     const std::string stem = filename.empty() ? "background" : filename;
-    saveSpectrumSet(measurementFolder, stem, spectra, 1, getXPixels());
+    saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, 1, getXPixels(), specmeta[selectedCameraIndex_]);
     std::cout << "Saved background to " << measurementFolder << "\n";
 }
 
-/* this founction exists twice in the script
-void AndorCamera::testAcquireAndSave(float exposureSeconds, const std::string& filename) {
-    configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureSeconds);
-    startAcquisition();
-    waitForAcquisition();
+void AndorCamera::getWLarray(float startWL, float endWL, std::vector<float>& WL) {
+    // placeholder for future wavelength calibration data, for now return 1024 pixels from 0 to 1023
+    WL.clear();
+    const int numPixels = getXPixels();
+    for (int i = 0; i < numPixels; ++i) {
+        WL.push_back(static_cast<int>(i));
+    }
 
-    std::vector<WORD> spectra = getAllSpectra(1, getXPixels());
-    testAcquireAndSave(spectra, 1, getXPixels(), filename);
-}*/
+}
+
+void AndorCamera::setWLarray(std::vector<float>& WL) {
+    wlStart_ = WL.empty() ? 0 : WL.front();
+    wlEnd_ = WL.empty() ? 0 : WL.back();
+    wlNumPoints_ = static_cast<float>(WL.size());
+    
+}
+    
+    

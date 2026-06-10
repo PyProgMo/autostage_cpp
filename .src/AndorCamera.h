@@ -33,7 +33,7 @@ typedef unsigned int (__stdcall *FP_StartAcquisition)   ();
 typedef unsigned int (__stdcall *FP_AbortAcquisition)   ();
 typedef unsigned int (__stdcall *FP_WaitForAcquisition) ();
 typedef unsigned int (__stdcall *FP_GetAcquiredData)    (long* arr, unsigned long size);
-typedef unsigned int (__stdcall *FP_GetAcquiredData16)  (WORD* arr, unsigned long size);
+typedef unsigned int (__stdcall *FP_GetAcquiredData16)  (int* arr, unsigned long size);
 typedef unsigned int (__stdcall *FP_GetStatus)          (int* status);
 typedef unsigned int (__stdcall *FP_ShutDown)           ();
 typedef unsigned int (__stdcall *FP_SetSpool)           (int active, int method,
@@ -42,7 +42,7 @@ typedef unsigned int (__stdcall *FP_SetKineticCycleTime)(float seconds);
 typedef unsigned int (__stdcall *FP_SetNumberKinetics)  (int numKin);
 typedef unsigned int (__stdcall *FP_GetNumberNewImages) (long* first, long* last);
 typedef unsigned int (__stdcall *FP_GetImages16)        (long first, long last,
-                                                          WORD* arr, unsigned long size,
+                                                          int* arr, unsigned long size,
                                                           long* validfirst, long* validlast);
 
 class AndorCamera {
@@ -62,6 +62,11 @@ public:
         SingleTrack = 3,      // Single Track — like Multi but only one track (for spectroscopy)
         FullImage   = 4,       // Full Image — no binning, 2D image readout
     };
+    enum class Camera {
+        Newton = 0,
+        Clara = 1,
+        Idus = 2,
+    };
 
     AndorCamera();
     ~AndorCamera();
@@ -75,9 +80,9 @@ public:
     void setCoolingTemperature(int temperatureC);
     int getCoolingTemperature();
     bool isCoolingEnabled();
-    void setBackground(const std::vector<WORD>& spectra);
+    void setBackground(const std::vector<int>& spectra);
     bool hasBackground() const;
-    std::vector<WORD> getBackground() const;
+    std::vector<int> getBackground() const;
     void measureBackground(float exposureSeconds, const std::string& filename = "background");
 
     void setReadMode(int mode);
@@ -105,15 +110,29 @@ public:
     void waitForAcquisition();
 
     // Read all kinetic data at end of scan
-    std::vector<WORD> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
+    std::vector<int> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
 
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }
 
     // declare the test functions here so they can be called from ConsoleApp without including private members
     void testAcquireAndSave(float exposureSeconds, const std::string& filename);
-    void testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
-    void AcquireAndSavefast(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+
+    // wl array function: init array for the wl-array
+    void getWLarray(float startWL, float endWL, std::vector<float>& WL);
+    void setWLarray(std::vector<float>& WL);
+    SpectrumMetadata specmeta;
+    void saveSpectrumSet(const std::string& measurementFolder,
+                      const std::string& stem,
+                      const std::vector<int>& spectra,
+                      const std::vector<float>& WL,
+                      int numSpectra,
+                      int pixelsPerSpectrum,
+                      SpectrumMetadata& specmeta,
+                      bool saveAsPng = false);
+
 
 private:
     HMODULE hDll_ = nullptr;
@@ -121,6 +140,13 @@ private:
     int selectedCameraIndex_ = 0;
     long selectedCameraHandle_ = 0;
     long availableCameras_ = 0;
+    // wavelength array init.
+    int wldummy = 1; // placeholder to check. start=1 (dummy), 0=init, 
+    int wlStart_ = 0, wlEnd_ = 1023; // placeholder values for wavelength calibration range
+    int wlNumPoints_ = 1024; // placeholder for number of points in wavelength calibration, typically matches pixel count
+    std::vector<float> wlArray_; // placeholder for wavelength calibration data, on start initialize with pixel indices, later with real wavelength values
+    
+
 
     FP_Initialize              pInitialize              = nullptr;
     FP_GetAvailableCameras      pGetAvailableCameras     = nullptr;
@@ -147,7 +173,7 @@ private:
     FP_SetNumberKinetics       pSetNumberKinetics       = nullptr;
     FP_GetImages16             pGetImages16             = nullptr;
 
-    std::map<int, std::vector<WORD>> backgrounds_;
+    std::map<int, std::vector<int>> backgrounds_;
 
     void ensureLoaded();
     void check(unsigned int ret, const char* context);
@@ -155,3 +181,47 @@ private:
     template<typename T>
     T loadProc(const char* name);
 };
+
+// spectrum metadata struct for saving metadata along with spectra, can be extended in the future as needed
+struct SpectrumMetadata {
+
+        // ── Identity ──────────────────────────────────────────────────────────
+        std::string date;           // "09.06.2026/10:46"
+        std::string userName;       // "the master of microscopy"
+        std::string fileName;       // "pl1"
+
+        // ── Spectrograph ──────────────────────────────────────────────────────
+        double      slitWidthUm;    // 250.0
+        std::string grating;        // "500 blz 300l/mm"
+        std::string filter;         // "Empty"
+        double      centralWlNm;    // 599.98
+
+        // ── Detector ──────────────────────────────────────────────────────────
+        std::string                  detector;          // "CCD"
+        double                       coolingTempC;      // -70
+        double                       exposureTimeS;     // 1.00
+        int                          horizontalBinning; // 1
+        double                       wlFirstPixelNm;   // 458.55
+        double                       wlLastPixelNm;    // 1024.00
+        double                       deltaWlNm;        // 0.275
+        AndorCamera::ReadMode        readMode;          // FVB
+        AndorCamera::TriggerMode     triggerMode;       // External
+
+        // ── Nano Stage ────────────────────────────────────────────────────────
+        double xPos, yPos, zPos;    // 150.000, 150.000, 263.000
+        int    switchUD;            // 1
+        int    switchLR;            // 1
+
+        // ── Light Source ──────────────────────────────────────────────────────
+        std::string nktSystem;      // "SuperK Varia (VIS)"
+        std::string operation;      // ""
+        double      powerLevelPct;  // 0.0
+        float         shortWlNm;      // 0
+        float         longWlNm;       // 0
+
+        // ── Microscopy ────────────────────────────────────────────────────────
+        int    laserPosX;           // 520
+        int    laserPosY;           // 696
+        double magnification;       // 83.333
+        double powerAtGlassUW;      // -0.008998
+    };
