@@ -369,8 +369,8 @@ int main() {
                 stage->waitOnTarget("1");
                 stage->waitOnTarget("2");
 
-                std::vector<std::vector<std::vector<WORD>>> cube(
-                    nY, std::vector<std::vector<WORD>>(nX, std::vector<WORD>(nPix, 0)));
+                std::vector<std::vector<std::vector<int>>> cube(
+                    nY, std::vector<std::vector<int>>(nX, std::vector<int>(nPix, 0)));
 
                 for (int iy = 0; iy < nY; iy++) {
                     double yPos = yStart + iy * yStep;
@@ -384,7 +384,7 @@ int main() {
                     stage->moveAbs("1", xStop);
 
                     cam->waitForAcquisition();
-                    std::vector<WORD> lineData = cam->getAllSpectra(nX, nPix);
+                    std::vector<int> lineData = cam->getAllSpectra(nX, nPix);
                     for (int ix = 0; ix < nX; ix++) {
                         cube[iy][ix].assign(lineData.begin() + ix * nPix,
                                             lineData.begin() + (ix + 1) * nPix);

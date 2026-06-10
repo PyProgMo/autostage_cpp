@@ -22,9 +22,9 @@ public:
     void setCoolingTemperature(int temperatureC);
     int getCoolingTemperature();
     bool isCoolingEnabled();
-    void setBackground(const std::vector<WORD>& spectra);
+    void setBackground(const std::vector<int>& spectra);
     bool hasBackground() const;
-    std::vector<WORD> getBackground() const;
+    std::vector<int> getBackground() const;
     void measureBackground(float exposureSeconds, const std::string& filename = "background");
 
     void setReadMode(int mode);
@@ -48,14 +48,18 @@ public:
     void waitForAcquisition();
     // testAcquireAndSave functions
     void testAcquireAndSave(float exposureSeconds, const std::string& filename);
-    void testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
-    std::vector<WORD> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
+    void testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    std::vector<int> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
     
     // AcquireAndSavefast function
-    void AcquireAndSavefast(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
 
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }
+
+    // wl array function: init array for the wl-array
+    void getWLarray(float startWL, float endWL, std::vector<int>& WL);
+
 
     // add test function for sanity checks
     // acquire 10 spectra with 0.1 s exposure and print the first 10 pixels of each to console, also save them to disk, important: print how loong it took
@@ -65,7 +69,7 @@ private:
     HANDLE hPipe_ = INVALID_HANDLE_VALUE;
     int xpix_ = 0, ypix_ = 0;
     int selectedCameraIndex_ = 0;
-    std::map<int, std::vector<WORD>> backgrounds_;
+    std::map<int, std::vector<int>> backgrounds_;
 
     void sendCommand(const IpcMessage& msg, IpcMessage& response);
 };

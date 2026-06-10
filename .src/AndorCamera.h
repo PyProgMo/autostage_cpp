@@ -33,7 +33,7 @@ typedef unsigned int (__stdcall *FP_StartAcquisition)   ();
 typedef unsigned int (__stdcall *FP_AbortAcquisition)   ();
 typedef unsigned int (__stdcall *FP_WaitForAcquisition) ();
 typedef unsigned int (__stdcall *FP_GetAcquiredData)    (long* arr, unsigned long size);
-typedef unsigned int (__stdcall *FP_GetAcquiredData16)  (WORD* arr, unsigned long size);
+typedef unsigned int (__stdcall *FP_GetAcquiredData16)  (int* arr, unsigned long size);
 typedef unsigned int (__stdcall *FP_GetStatus)          (int* status);
 typedef unsigned int (__stdcall *FP_ShutDown)           ();
 typedef unsigned int (__stdcall *FP_SetSpool)           (int active, int method,
@@ -42,7 +42,7 @@ typedef unsigned int (__stdcall *FP_SetKineticCycleTime)(float seconds);
 typedef unsigned int (__stdcall *FP_SetNumberKinetics)  (int numKin);
 typedef unsigned int (__stdcall *FP_GetNumberNewImages) (long* first, long* last);
 typedef unsigned int (__stdcall *FP_GetImages16)        (long first, long last,
-                                                          WORD* arr, unsigned long size,
+                                                          int* arr, unsigned long size,
                                                           long* validfirst, long* validlast);
 
 class AndorCamera {
@@ -75,9 +75,9 @@ public:
     void setCoolingTemperature(int temperatureC);
     int getCoolingTemperature();
     bool isCoolingEnabled();
-    void setBackground(const std::vector<WORD>& spectra);
+    void setBackground(const std::vector<int>& spectra);
     bool hasBackground() const;
-    std::vector<WORD> getBackground() const;
+    std::vector<int> getBackground() const;
     void measureBackground(float exposureSeconds, const std::string& filename = "background");
 
     void setReadMode(int mode);
@@ -105,15 +105,19 @@ public:
     void waitForAcquisition();
 
     // Read all kinetic data at end of scan
-    std::vector<WORD> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
+    std::vector<int> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
 
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }
 
     // declare the test functions here so they can be called from ConsoleApp without including private members
     void testAcquireAndSave(float exposureSeconds, const std::string& filename);
-    void testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
-    void AcquireAndSavefast(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+
+    // wl array function: init array for the wl-array
+    void getWLarray(float startWL, float endWL, std::vector<int>& WL);
+    void setWLarray(const std::vector<int>& WL);
 
 private:
     HMODULE hDll_ = nullptr;
@@ -121,6 +125,11 @@ private:
     int selectedCameraIndex_ = 0;
     long selectedCameraHandle_ = 0;
     long availableCameras_ = 0;
+    // wavelength array init.
+    int wldummy = 1; // placeholder to check. start=1 (dummy), 0=init, 
+    int wlStart_ = 0, wlEnd_ = 1023; // placeholder values for wavelength calibration range
+    int wlNumPoints_ = 1024; // placeholder for number of points in wavelength calibration, typically matches pixel count
+    std::vector<int> wlArray_; // placeholder for wavelength calibration data, on start initialize with pixel indices, later with real wavelength values
 
     FP_Initialize              pInitialize              = nullptr;
     FP_GetAvailableCameras      pGetAvailableCameras     = nullptr;
@@ -147,7 +156,7 @@ private:
     FP_SetNumberKinetics       pSetNumberKinetics       = nullptr;
     FP_GetImages16             pGetImages16             = nullptr;
 
-    std::map<int, std::vector<WORD>> backgrounds_;
+    std::map<int, std::vector<int>> backgrounds_;
 
     void ensureLoaded();
     void check(unsigned int ret, const char* context);

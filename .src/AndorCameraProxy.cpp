@@ -87,9 +87,9 @@ std::string createMeasurementFolder() {
     return folder;
 }
 
-cv::Mat buildSpectrumImage(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum) {
-    WORD maxVal = 0;
-    for (WORD val : spectra) {
+cv::Mat buildSpectrumImage(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum) {
+    int maxVal = 0;
+    for (int val : spectra) {
         if (val > maxVal) {
             maxVal = val;
         }
@@ -101,14 +101,14 @@ cv::Mat buildSpectrumImage(const std::vector<WORD>& spectra, int numSpectra, int
     cv::Mat img(numSpectra, pixelsPerSpectrum, CV_8UC1);
     for (int i = 0; i < numSpectra; ++i) {
         for (int j = 0; j < pixelsPerSpectrum; ++j) {
-            WORD val = spectra[i * pixelsPerSpectrum + j];
+            const int val = spectra[i * pixelsPerSpectrum + j];
             img.at<uchar>(i, j) = static_cast<uchar>((val * 255) / maxVal);
         }
     }
     return img;
 }
 
-void writeSpectrumTxt(const std::string& filePath, const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum) {
+void writeSpectrumTxt(const std::string& filePath, const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum) {
     std::ofstream outFile(filePath.c_str());
     if (!outFile) {
         throw std::runtime_error(std::string("AndorCameraProxy: failed to write TXT: ") + filePath);
@@ -122,18 +122,19 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<WORD>& spec
     }
 }
 
-std::vector<WORD> subtractBackground(const std::vector<WORD>& spectra, const std::vector<WORD>& background) {
-    std::vector<WORD> sigBg = spectra;
+std::vector<int> subtractBackground(const std::vector<int>& spectra, const std::vector<int>& background) {
+    std::vector<int> sigBg = spectra;
     const size_t count = std::min(sigBg.size(), background.size());
     for (size_t i = 0; i < count; ++i) {
-        sigBg[i] = static_cast<WORD>(sigBg[i] > background[i] ? sigBg[i] - background[i] : 0);
+        sigBg[i] = static_cast<int>(sigBg[i] > background[i] ? sigBg[i] - background[i] : 0);
     }
     return sigBg;
 }
 
 void saveSpectrumSet(const std::string& measurementFolder,
                      const std::string& stem,
-                     const std::vector<WORD>& spectra,
+                     const std::vector<int>& spectra,
+                     const std::vector<int>& WL,
                      int numSpectra,
                      int pixelsPerSpectrum) {
     cv::Mat img = buildSpectrumImage(spectra, numSpectra, pixelsPerSpectrum);
@@ -287,7 +288,7 @@ bool AndorCameraProxy::isCoolingEnabled() {
     return res.iArgs[0] != 0;
 }
 
-void AndorCameraProxy::setBackground(const std::vector<WORD>& spectra) {
+void AndorCameraProxy::setBackground(const std::vector<int>& spectra) {
     backgrounds_[selectedCameraIndex_] = spectra;
 }
 
@@ -296,7 +297,7 @@ bool AndorCameraProxy::hasBackground() const {
     return it != backgrounds_.end() && !it->second.empty();
 }
 
-std::vector<WORD> AndorCameraProxy::getBackground() const {
+std::vector<int> AndorCameraProxy::getBackground() const {
     auto it = backgrounds_.find(selectedCameraIndex_);
     if (it == backgrounds_.end()) {
         return {};
@@ -309,7 +310,7 @@ void AndorCameraProxy::measureBackground(float exposureSeconds, const std::strin
     startAcquisition();
     waitForAcquisition();
 
-    const std::vector<WORD> spectra = getAllSpectra(1, getXPixels());
+    const std::vector<int> spectra = getAllSpectra(1, getXPixels());
     setBackground(spectra);
 
     const std::string measurementFolder = createMeasurementFolder();
@@ -421,7 +422,7 @@ void AndorCameraProxy::waitForAcquisition() {
 }
 
 // new test function: 
-void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+void AndorCameraProxy::testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
     if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
         throw std::runtime_error("AndorCameraProxy: invalid spectrum image dimensions");
     }
@@ -430,30 +431,31 @@ void AndorCameraProxy::testAcquireAndSave(const std::vector<WORD>& spectra, int 
     }
 
     const std::string measurementFolder = createMeasurementFolder();
-    const std::vector<WORD> background = getBackground();
+    const std::vector<int> background = getBackground();
+    const std::vector<int> WL; // placeholder for future wavelength data
 
     if (numSpectra == 1) {
         const std::string stem = filename.empty() ? "spectrum" : filename;
         saveSpectrumSet(measurementFolder, stem, spectra, numSpectra, pixelsPerSpectrum);
 
         if (!background.empty()) {
-            const std::vector<WORD> sigBg = subtractBackground(spectra, background);
+            const std::vector<int> sigBg = subtractBackground(spectra, background);
             saveSpectrumSet(measurementFolder, "sig-bg", sigBg, numSpectra, pixelsPerSpectrum);
         }
         return;
     }
 
     for (int frame = 0; frame < numSpectra; ++frame) {
-        std::vector<WORD> frameData(spectra.begin() + (frame * pixelsPerSpectrum),
+        std::vector<int> frameData(spectra.begin() + (frame * pixelsPerSpectrum),
                                     spectra.begin() + ((frame + 1) * pixelsPerSpectrum));
         std::ostringstream name;
         name << (filename.empty() ? "frame" : filename) << '_' << std::setw(3) << std::setfill('0') << frame;
         saveSpectrumSet(measurementFolder, name.str(), frameData, 1, pixelsPerSpectrum);
 
         if (!background.empty()) {
-            std::vector<WORD> bgFrame(background.begin() + (frame * pixelsPerSpectrum),
+            std::vector<int> bgFrame(background.begin() + (frame * pixelsPerSpectrum),
                                       background.begin() + ((frame + 1) * pixelsPerSpectrum));
-            const std::vector<WORD> sigBg = subtractBackground(frameData, bgFrame);
+            const std::vector<int> sigBg = subtractBackground(frameData, bgFrame);
             saveSpectrumSet(measurementFolder, std::string("sig-bg_") + name.str().substr(name.str().find_last_of('_') + 1), sigBg, 1, pixelsPerSpectrum);
         }
     }
@@ -467,12 +469,12 @@ void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& fi
     startAcquisition();
     waitForAcquisition();
 
-    std::vector<WORD> spectra = getAllSpectra(1, getXPixels());
+    std::vector<int> spectra = getAllSpectra(1, getXPixels());
     testAcquireAndSave(spectra, 1, getXPixels(), filename);
 }
 
 
-std::vector<WORD> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
+std::vector<int> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
     IpcMessage req = {};
     req.command = IpcCommand::AndorGetImages16;
     req.iArgs[0] = numSpectra;
@@ -481,7 +483,7 @@ std::vector<WORD> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerS
     IpcMessage res = {};
     sendCommand(req, res);
     
-    std::vector<WORD> obj(res.dataSize / sizeof(WORD));
+    std::vector<int> obj(res.dataSize / sizeof(WORD));
     
     if (res.dataSize > 0) {
         BYTE* inPtr = reinterpret_cast<BYTE*>(obj.data());
@@ -512,9 +514,9 @@ void AndorCameraProxy::testtenspectime() {
 
     auto start = std::chrono::high_resolution_clock::now();
     configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::External, exposureS, numSpectra);
-    startAcquisition();
-    waitForAcquisition();
-    std::vector<WORD> spectra = getAllSpectra(numSpectra, pixelsPerSpectrum);
+    //startAcquisition();
+    //waitForAcquisition();
+    std::vector<int> spectra = getAllSpectra(numSpectra, pixelsPerSpectrum);
     auto end = std::chrono::high_resolution_clock::now();
 
     // testing: print "starting loop"
@@ -523,7 +525,7 @@ void AndorCameraProxy::testtenspectime() {
     for (int i = 0; i < numSpectra; ++i) {
         // call the spectrometer to measure 100 times with 0.1 s exposure
         std::cout << "Processing spectrum " << (i + 1) << "/" << numSpectra << "...\n";
-        testAcquireAndSave(std::vector<WORD>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
+        testAcquireAndSave(std::vector<int>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
                          1, pixelsPerSpectrum, "spectrum_" + std::to_string(i));
         
     }
@@ -535,7 +537,7 @@ void AndorCameraProxy::testtenspectime() {
     // then call AcquireAndSavefast to do the same but optimized, measure time again and print how long it took
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < numSpectra; ++i) {
-        AcquireAndSavefast(std::vector<WORD>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
+        AcquireAndSavefast(std::vector<int>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
                          1, pixelsPerSpectrum, "fast_spectrum_" + std::to_string(i));
     }
     end = std::chrono::high_resolution_clock::now();
@@ -552,7 +554,7 @@ void AndorCameraProxy::testtenspectime() {
 
 }
 
-void AndorCameraProxy::AcquireAndSavefast(const std::vector<WORD>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+void AndorCameraProxy::AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
     // 1. Keep the safety checks (they are fast and essential)
     if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
         throw std::runtime_error("AndorCameraProxy: invalid spectrum image dimensions");
@@ -565,7 +567,7 @@ void AndorCameraProxy::AcquireAndSavefast(const std::vector<WORD>& spectra, int 
     }
 
     const std::string measurementFolder = createMeasurementFolder();
-    const std::vector<WORD>& background = getBackground(); // Use a reference to avoid any hidden copies
+    const std::vector<int>& background = getBackground(); // Use a reference to avoid any hidden copies
     const bool hasBackground = !background.empty() && (background.size() >= totalPixels);
 
     // Default base names to avoid checking empty string inside loops
@@ -577,7 +579,7 @@ void AndorCameraProxy::AcquireAndSavefast(const std::vector<WORD>& spectra, int 
         saveSpectrumSet(measurementFolder, stem, spectra, numSpectra, pixelsPerSpectrum);
 
         if (hasBackground) {
-            const std::vector<WORD> sigBg = subtractBackground(spectra, background);
+            const std::vector<int> sigBg = subtractBackground(spectra, background);
             saveSpectrumSet(measurementFolder, "sig-bg", sigBg, numSpectra, pixelsPerSpectrum);
         }
         return;
@@ -588,8 +590,8 @@ void AndorCameraProxy::AcquireAndSavefast(const std::vector<WORD>& spectra, int 
     // ==============================================================================
     
     // Allocation Optimization: Allocate buffers ONCE outside the loop to prevent heap thrashing
-    std::vector<WORD> frameDataBuffer(pixelsPerSpectrum);
-    std::vector<WORD> sigBgBuffer(pixelsPerSpectrum);
+    std::vector<int> frameDataBuffer(pixelsPerSpectrum);
+    std::vector<int> sigBgBuffer(pixelsPerSpectrum);
 
     // String Optimization: Pre-allocate a reusable string buffer for frame names
     std::string nameCache;
@@ -598,12 +600,12 @@ void AndorCameraProxy::AcquireAndSavefast(const std::vector<WORD>& spectra, int 
     size_t suffixIdx = baseName.size() + 1; // Index where the digits start
 
     // Pre-calculate raw data pointers for blisteringly fast iterator math
-    const WORD* rawSpectraPtr = spectra.data();
-    const WORD* rawBgPtr = hasBackground ? background.data() : nullptr;
+    const int* rawSpectraPtr = spectra.data();
+    const int* rawBgPtr = hasBackground ? background.data() : nullptr;
 
     for (int frame = 0; frame < numSpectra; ++frame) {
         const size_t offset = static_cast<size_t>(frame) * pixelsPerSpectrum;
-        const WORD* currentFrameSrc = rawSpectraPtr + offset;
+        const int* currentFrameSrc = rawSpectraPtr + offset;
 
         // Fast zero-allocation buffer copy
         std::memcpy(frameDataBuffer.data(), currentFrameSrc, pixelsPerSpectrum * sizeof(WORD));
@@ -620,10 +622,10 @@ void AndorCameraProxy::AcquireAndSavefast(const std::vector<WORD>& spectra, int 
         saveSpectrumSet(measurementFolder, nameCache, frameDataBuffer, 1, pixelsPerSpectrum);
 
         if (hasBackground) {
-            const WORD* currentBgSrc = rawBgPtr + offset;
+            const int* currentBgSrc = rawBgPtr + offset;
             
             // Vectorized Processing: Unrolled loop or SIMD-friendly element subtraction
-            WORD* dst = sigBgBuffer.data();
+            int* dst = sigBgBuffer.data();
             for (int i = 0; i < pixelsPerSpectrum; ++i) {
                 // Prevents underflow if background is greater than signal
                 dst[i] = (currentFrameSrc[i] > currentBgSrc[i]) ? (currentFrameSrc[i] - currentBgSrc[i]) : 0;
@@ -635,5 +637,15 @@ void AndorCameraProxy::AcquireAndSavefast(const std::vector<WORD>& spectra, int 
 
             saveSpectrumSet(measurementFolder, bgName, sigBgBuffer, 1, pixelsPerSpectrum);
         }
+    }
+}
+
+// wl function: init array for the wl-array, for now just return 1024 pixels from 0 to 1023, later we can implement a real calibration
+void AndorCameraProxy::getWLarray(float startWL, float endWL, std::vector<int>& WL) {
+    // placeholder for future wavelength calibration data, for now return 1024 pixels from 0 to 1023
+    WL.clear();
+    const int numPixels = getXPixels();
+    for (int i = 0; i < numPixels; ++i) {
+        WL.push_back(static_cast<int>(i));
     }
 }
