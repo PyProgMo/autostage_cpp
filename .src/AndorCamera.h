@@ -44,6 +44,30 @@ typedef unsigned int (__stdcall *FP_GetNumberNewImages) (long* first, long* last
 typedef unsigned int (__stdcall *FP_GetImages16)        (long first, long last,
                                                           int* arr, unsigned long size,
                                                           long* validfirst, long* validlast);
+
+namespace Andor {
+    enum class TriggerMode {
+        Internal      = 0,
+        External      = 1,    // edge trigger — one frame per pulse
+        ExternalStart = 6,    // first pulse starts a kinetic series
+        FastExternal  = 7,    // fast external — best for raster scanning
+        Software      = 10
+    };
+
+    enum class ReadMode {
+        FVB         = 0,     // Full Vertical Binning — fastest, 1D spectrum
+        MultiTrack  = 1,     // Multiple Track — several binned tracks on sensor
+        RandomTrack = 2,     // Random Track — user-defined rows to bin
+        SingleTrack = 3,     // Single Track — like Multi but only one track (for spectroscopy)
+        FullImage   = 4,     // Full Image — no binning, 2D image readout
+    };
+
+    enum class Camera {
+        Newton = 0,
+        Clara  = 1,
+        Idus   = 2,
+    };
+}
                                                           
 // spectrum metadata struct for saving metadata along with spectra, can be extended in the future as needed
 struct SpectrumMetadata {
@@ -67,8 +91,8 @@ struct SpectrumMetadata {
         double                       wlFirstPixelNm;   // 458.55
         double                       wlLastPixelNm;    // 1024.00
         double                       deltaWlNm;        // 0.275
-        AndorCamera::ReadMode        readMode;          // FVB
-        AndorCamera::TriggerMode     triggerMode;       // External
+        Andor::ReadMode              readMode;          // FVB
+        Andor::TriggerMode           triggerMode;       // External
 
         // ── Nano Stage ────────────────────────────────────────────────────────
         double xPos, yPos, zPos;    // 150.000, 150.000, 263.000
@@ -90,26 +114,9 @@ struct SpectrumMetadata {
     };
 class AndorCamera {
 public:
-    enum class TriggerMode {
-        Internal    = 0,
-        External    = 1,    // edge trigger — one frame per pulse
-        ExternalStart = 6,  // first pulse starts a kinetic series
-        FastExternal = 7,   // fast external — best for raster scanning
-        Software    = 10
-    };
-
-    enum class ReadMode {
-        FVB         = 0,     // Full Vertical Binning — fastest, 1D spectrum
-        MultiTrack  = 1,     // Multiple Track — several binned tracks on sensor
-        RandomTrack  = 2,     // Random Track — user-defined rows to bin
-        SingleTrack = 3,      // Single Track — like Multi but only one track (for spectroscopy)
-        FullImage   = 4,       // Full Image — no binning, 2D image readout
-    };
-    enum class Camera {
-        Newton = 0,
-        Clara = 1,
-        Idus = 2,
-    };
+    using TriggerMode = Andor::TriggerMode;
+    using ReadMode = Andor::ReadMode;
+    using Camera = Andor::Camera;
 
     AndorCamera();
     ~AndorCamera();
