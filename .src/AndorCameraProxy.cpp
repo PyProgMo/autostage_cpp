@@ -504,23 +504,29 @@ void AndorCameraProxy::testtenspectime() {
     const int numSpectra = 100;
     const int pixelsPerSpectrum = getXPixels();
     const float exposureS = 0.1f;
-    long totalExposureTime = numSpectra * exposureS;
+    const float readoutS = 0.02f; // assume 20 ms readout time, adjust as needed based on actual camera performance
+    long totalExposureTime = numSpectra * exposureS + numSpectra * readoutS; // total time spent on exposure + readout, used for calculating overhead
     long overheadone = 0; // save in ms
     long overheadfast = 0; // save in ms
     long measuretimeone = 0; // total time for testAcquireAndSave
     long measuretimefast = 0; // total time for AcquireAndSavefast
 
     auto start = std::chrono::high_resolution_clock::now();
-    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::External, exposureS, numSpectra);
+    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, numSpectra);
     startAcquisition();
     waitForAcquisition();
     std::vector<WORD> spectra = getAllSpectra(numSpectra, pixelsPerSpectrum);
     auto end = std::chrono::high_resolution_clock::now();
 
+    // setup the spectrometer to waite for a trigger
+
     for (int i = 0; i < numSpectra; ++i) {
         // call the spectrometer to measure 100 times with 0.1 s exposure
         testAcquireAndSave(std::vector<WORD>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
                          1, pixelsPerSpectrum, "spectrum_" + std::to_string(i));
+        // waite for 120 ms to ensure the 100 ms exposure is done
+        Sleep(120);
+        
         
     }
 
