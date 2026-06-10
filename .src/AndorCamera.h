@@ -44,7 +44,50 @@ typedef unsigned int (__stdcall *FP_GetNumberNewImages) (long* first, long* last
 typedef unsigned int (__stdcall *FP_GetImages16)        (long first, long last,
                                                           int* arr, unsigned long size,
                                                           long* validfirst, long* validlast);
+                                                          
+// spectrum metadata struct for saving metadata along with spectra, can be extended in the future as needed
+struct SpectrumMetadata {
 
+        // ── Identity ──────────────────────────────────────────────────────────
+        std::string date;           // "09.06.2026/10:46"
+        std::string userName;       // "the master of microscopy"
+        std::string fileName;       // "pl1"
+
+        // ── Spectrograph ──────────────────────────────────────────────────────
+        double      slitWidthUm;    // 250.0
+        std::string grating;        // "500 blz 300l/mm"
+        std::string filter;         // "Empty"
+        double      centralWlNm;    // 599.98
+
+        // ── Detector ──────────────────────────────────────────────────────────
+        std::string                  detector;          // "CCD"
+        double                       coolingTempC;      // -70
+        double                       exposureTimeS;     // 1.00
+        int                          horizontalBinning; // 1
+        double                       wlFirstPixelNm;   // 458.55
+        double                       wlLastPixelNm;    // 1024.00
+        double                       deltaWlNm;        // 0.275
+        AndorCamera::ReadMode        readMode;          // FVB
+        AndorCamera::TriggerMode     triggerMode;       // External
+
+        // ── Nano Stage ────────────────────────────────────────────────────────
+        double xPos, yPos, zPos;    // 150.000, 150.000, 263.000
+        int    switchUD;            // 1
+        int    switchLR;            // 1
+
+        // ── Light Source ──────────────────────────────────────────────────────
+        std::string nktSystem;      // "SuperK Varia (VIS)"
+        std::string operation;      // ""
+        double      powerLevelPct;  // 0.0
+        float         shortWlNm;      // 0
+        float         longWlNm;       // 0
+
+        // ── Microscopy ────────────────────────────────────────────────────────
+        int    laserPosX;           // 520
+        int    laserPosY;           // 696
+        double magnification;       // 83.333
+        double powerAtGlassUW;      // -0.008998
+    };
 class AndorCamera {
 public:
     enum class TriggerMode {
@@ -182,46 +225,3 @@ private:
     T loadProc(const char* name);
 };
 
-// spectrum metadata struct for saving metadata along with spectra, can be extended in the future as needed
-struct SpectrumMetadata {
-
-        // ── Identity ──────────────────────────────────────────────────────────
-        std::string date;           // "09.06.2026/10:46"
-        std::string userName;       // "the master of microscopy"
-        std::string fileName;       // "pl1"
-
-        // ── Spectrograph ──────────────────────────────────────────────────────
-        double      slitWidthUm;    // 250.0
-        std::string grating;        // "500 blz 300l/mm"
-        std::string filter;         // "Empty"
-        double      centralWlNm;    // 599.98
-
-        // ── Detector ──────────────────────────────────────────────────────────
-        std::string                  detector;          // "CCD"
-        double                       coolingTempC;      // -70
-        double                       exposureTimeS;     // 1.00
-        int                          horizontalBinning; // 1
-        double                       wlFirstPixelNm;   // 458.55
-        double                       wlLastPixelNm;    // 1024.00
-        double                       deltaWlNm;        // 0.275
-        AndorCamera::ReadMode        readMode;          // FVB
-        AndorCamera::TriggerMode     triggerMode;       // External
-
-        // ── Nano Stage ────────────────────────────────────────────────────────
-        double xPos, yPos, zPos;    // 150.000, 150.000, 263.000
-        int    switchUD;            // 1
-        int    switchLR;            // 1
-
-        // ── Light Source ──────────────────────────────────────────────────────
-        std::string nktSystem;      // "SuperK Varia (VIS)"
-        std::string operation;      // ""
-        double      powerLevelPct;  // 0.0
-        float         shortWlNm;      // 0
-        float         longWlNm;       // 0
-
-        // ── Microscopy ────────────────────────────────────────────────────────
-        int    laserPosX;           // 520
-        int    laserPosY;           // 696
-        double magnification;       // 83.333
-        double powerAtGlassUW;      // -0.008998
-    };
