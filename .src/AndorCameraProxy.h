@@ -53,6 +53,14 @@ public:
     
     // AcquireAndSavefast function
     void AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void saveSpectrumSet(const std::string& measurementFolder,
+                      const std::string& stem,
+                      const std::vector<int>& spectra,
+                      const std::vector<float>& WL,
+                      int numSpectra,
+                      int pixelsPerSpectrum,
+                      SpectrumMetadata& meta,
+                      bool saveAsPng = false);
 
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }
@@ -72,4 +80,9 @@ private:
     std::map<int, std::vector<int>> backgrounds_;
 
     void sendCommand(const IpcMessage& msg, IpcMessage& response);
+
+    // hold a copy of the wl array in the proxy for saving metadata, to avoid having to pass it back and forth with every save command
+    std::vector<float> wlArray_;
+    // hold a pointer to the Metadata of AndorCamera
+    std::map<int, SpectrumMetadata> metadataMap_;
 };

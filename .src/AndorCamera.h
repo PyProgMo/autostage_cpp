@@ -62,6 +62,11 @@ public:
         SingleTrack = 3,      // Single Track — like Multi but only one track (for spectroscopy)
         FullImage   = 4,       // Full Image — no binning, 2D image readout
     };
+    enum class Camera {
+        Newton = 0,
+        Clara = 1,
+        Idus = 2,
+    };
 
     AndorCamera();
     ~AndorCamera();
@@ -116,8 +121,18 @@ public:
     void AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
 
     // wl array function: init array for the wl-array
-    void getWLarray(float startWL, float endWL, std::vector<int>& WL);
-    void setWLarray(const std::vector<int>& WL);
+    void getWLarray(float startWL, float endWL, std::vector<float>& WL);
+    void setWLarray(std::vector<float>& WL);
+    SpectrumMetadata specmeta;
+    void saveSpectrumSet(const std::string& measurementFolder,
+                      const std::string& stem,
+                      const std::vector<int>& spectra,
+                      const std::vector<float>& WL,
+                      int numSpectra,
+                      int pixelsPerSpectrum,
+                      SpectrumMetadata& specmeta,
+                      bool saveAsPng = false);
+
 
 private:
     HMODULE hDll_ = nullptr;
@@ -129,7 +144,9 @@ private:
     int wldummy = 1; // placeholder to check. start=1 (dummy), 0=init, 
     int wlStart_ = 0, wlEnd_ = 1023; // placeholder values for wavelength calibration range
     int wlNumPoints_ = 1024; // placeholder for number of points in wavelength calibration, typically matches pixel count
-    std::vector<int> wlArray_; // placeholder for wavelength calibration data, on start initialize with pixel indices, later with real wavelength values
+    std::vector<float> wlArray_; // placeholder for wavelength calibration data, on start initialize with pixel indices, later with real wavelength values
+    
+
 
     FP_Initialize              pInitialize              = nullptr;
     FP_GetAvailableCameras      pGetAvailableCameras     = nullptr;
@@ -164,3 +181,47 @@ private:
     template<typename T>
     T loadProc(const char* name);
 };
+
+// spectrum metadata struct for saving metadata along with spectra, can be extended in the future as needed
+struct SpectrumMetadata {
+
+        // ── Identity ──────────────────────────────────────────────────────────
+        std::string date;           // "09.06.2026/10:46"
+        std::string userName;       // "the master of microscopy"
+        std::string fileName;       // "pl1"
+
+        // ── Spectrograph ──────────────────────────────────────────────────────
+        double      slitWidthUm;    // 250.0
+        std::string grating;        // "500 blz 300l/mm"
+        std::string filter;         // "Empty"
+        double      centralWlNm;    // 599.98
+
+        // ── Detector ──────────────────────────────────────────────────────────
+        std::string                  detector;          // "CCD"
+        double                       coolingTempC;      // -70
+        double                       exposureTimeS;     // 1.00
+        int                          horizontalBinning; // 1
+        double                       wlFirstPixelNm;   // 458.55
+        double                       wlLastPixelNm;    // 1024.00
+        double                       deltaWlNm;        // 0.275
+        AndorCamera::ReadMode        readMode;          // FVB
+        AndorCamera::TriggerMode     triggerMode;       // External
+
+        // ── Nano Stage ────────────────────────────────────────────────────────
+        double xPos, yPos, zPos;    // 150.000, 150.000, 263.000
+        int    switchUD;            // 1
+        int    switchLR;            // 1
+
+        // ── Light Source ──────────────────────────────────────────────────────
+        std::string nktSystem;      // "SuperK Varia (VIS)"
+        std::string operation;      // ""
+        double      powerLevelPct;  // 0.0
+        float         shortWlNm;      // 0
+        float         longWlNm;       // 0
+
+        // ── Microscopy ────────────────────────────────────────────────────────
+        int    laserPosX;           // 520
+        int    laserPosY;           // 696
+        double magnification;       // 83.333
+        double powerAtGlassUW;      // -0.008998
+    };

@@ -132,7 +132,7 @@ std::vector<int> subtractBackground(const std::vector<int>& spectra, const std::
 void saveSpectrumSet(const std::string& measurementFolder,
                      const std::string& stem,
                      const std::vector<int>& spectra,
-                     const std::vector<int>& WL,
+                     const std::vector<float>& WL,
                      int numSpectra,
                      int pixelsPerSpectrum) {
     int maxVal = 0;
@@ -404,11 +404,11 @@ void AndorCamera::testAcquireAndSave(const std::vector<int>& spectra, int numSpe
 
     if (numSpectra == 1) {
         const std::string stem = filename.empty() ? "spectrum" : filename;
-        saveSpectrumSet(measurementFolder, stem, spectra, numSpectra, pixelsPerSpectrum);
+        saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, numSpectra, pixelsPerSpectrum, specmeta[selectedCameraIndex_]);
 
         if (!background.empty()) {
             const std::vector<int> sigBg = subtractBackground(spectra, background);
-            saveSpectrumSet(measurementFolder, "sig-bg", sigBg, numSpectra, pixelsPerSpectrum);
+            saveSpectrumSet(measurementFolder, "sig-bg", sigBg, wlArray_, numSpectra, pixelsPerSpectrum, specmeta[selectedCameraIndex_]);
         }
 
         std::cout << "Saved spectrum to " << measurementFolder << "\n";
@@ -421,13 +421,13 @@ void AndorCamera::testAcquireAndSave(const std::vector<int>& spectra, int numSpe
 
         std::ostringstream name;
         name << (filename.empty() ? "frame" : filename) << '_' << std::setw(3) << std::setfill('0') << frame;
-        saveSpectrumSet(measurementFolder, name.str(), frameData, 1, pixelsPerSpectrum);
+        saveSpectrumSet(measurementFolder, name.str(), frameData, wlArray_, 1, pixelsPerSpectrum, specmeta[selectedCameraIndex_]);
 
         if (!background.empty()) {
             std::vector<int> bgFrame(background.begin() + (frame * pixelsPerSpectrum),
                                       background.begin() + ((frame + 1) * pixelsPerSpectrum));
             const std::vector<int> sigBg = subtractBackground(frameData, bgFrame);
-            saveSpectrumSet(measurementFolder, std::string("sig-bg_") + name.str().substr(name.str().find_last_of('_') + 1), sigBg, 1, pixelsPerSpectrum);
+            saveSpectrumSet(measurementFolder, std::string("sig-bg_") + name.str().substr(name.str().find_last_of('_') + 1), sigBg, wlArray_, 1, pixelsPerSpectrum, specmeta[selectedCameraIndex_]);
         }
     }
 
@@ -445,11 +445,11 @@ void AndorCamera::measureBackground(float exposureSeconds, const std::string& fi
 
     const std::string measurementFolder = createMeasurementFolder();
     const std::string stem = filename.empty() ? "background" : filename;
-    saveSpectrumSet(measurementFolder, stem, spectra, 1, getXPixels());
+    saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, 1, getXPixels(), specmeta[selectedCameraIndex_]);
     std::cout << "Saved background to " << measurementFolder << "\n";
 }
 
-void AndorCamera::getWLarray(float startWL, float endWL, std::vector<int>& WL) {
+void AndorCamera::getWLarray(float startWL, float endWL, std::vector<float>& WL) {
     // placeholder for future wavelength calibration data, for now return 1024 pixels from 0 to 1023
     WL.clear();
     const int numPixels = getXPixels();
@@ -459,11 +459,10 @@ void AndorCamera::getWLarray(float startWL, float endWL, std::vector<int>& WL) {
 
 }
 
-void AndorCamera::setWLarray(std::vector<int>& WL) {
-    wlstart_ = WL.empty() ? 0 : WL.front();
-    wlend_ = WL.empty() ? 0 : WL.back();
-    wlnumpixels_ = static_cast<int>(WL.size());
-
+void AndorCamera::setWLarray(std::vector<float>& WL) {
+    wlStart_ = WL.empty() ? 0 : WL.front();
+    wlEnd_ = WL.empty() ? 0 : WL.back();
+    wlNumPoints_ = static_cast<float>(WL.size());
     
 }
     
