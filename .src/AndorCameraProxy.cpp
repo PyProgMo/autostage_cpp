@@ -517,8 +517,12 @@ void AndorCameraProxy::testtenspectime() {
     std::vector<WORD> spectra = getAllSpectra(numSpectra, pixelsPerSpectrum);
     auto end = std::chrono::high_resolution_clock::now();
 
+    // testing: print "starting loop"
+    std::cout << "Starting testAcquireAndSave loop for " << numSpectra << " spectra...\n";
+
     for (int i = 0; i < numSpectra; ++i) {
         // call the spectrometer to measure 100 times with 0.1 s exposure
+        std::cout << "Processing spectrum " << (i + 1) << "/" << numSpectra << "...\n";
         testAcquireAndSave(std::vector<WORD>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
                          1, pixelsPerSpectrum, "spectrum_" + std::to_string(i));
         
