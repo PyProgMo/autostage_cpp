@@ -465,6 +465,27 @@ void AndorCameraProxy::testAcquireAndSave(const std::vector<int>& spectra, int n
     }
 }
 
+// savefast function: save spectrum
+void AndorCameraProxy::savespecfast(const std::string& measurementFolder,
+         const std::vector<int>& spectra, 
+         int numSpectra, 
+         int pixelsPerSpectrum, 
+         SpectrumMetadata& specmeta,
+         const std::string& filename)
+
+{
+    if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
+        throw std::runtime_error("AndorCameraProxy: invalid spectrum image dimensions");
+    }
+    if (spectra.empty() || spectra.size() < static_cast<size_t>(numSpectra) * static_cast<size_t>(pixelsPerSpectrum)) {
+        throw std::runtime_error("AndorCameraProxy: savespecfast requires non-empty spectrum data");
+    }
+    const std::vector<int> background = getBackground();
+    const std::vector<float> WL; // placeholder for future wavelength data
+
+    writePlemTxt(joinPath(measurementFolder, filename) + ".txt",
+                 specmeta, spectra, WL, numSpectra, pixelsPerSpectrum);
+}
 
 
 // overload that acquires data and calls the above test function
@@ -518,24 +539,12 @@ void AndorCameraProxy::testtenspectime() {
     long measuretimefast = 0; // total time for AcquireAndSavefast
 
     auto start = std::chrono::high_resolution_clock::now();
-<<<<<<< HEAD
     configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, numSpectra);
-    startAcquisition();
-    waitForAcquisition();
-    std::vector<WORD> spectra = getAllSpectra(numSpectra, pixelsPerSpectrum);
-    auto end = std::chrono::high_resolution_clock::now();
-
-    // setup the spectrometer to waite for a trigger
-=======
-    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::External, exposureS, numSpectra);
-    //startAcquisition();
-    //waitForAcquisition();
     std::vector<int> spectra = getAllSpectra(numSpectra, pixelsPerSpectrum);
     auto end = std::chrono::high_resolution_clock::now();
 
     // testing: print "starting loop"
     std::cout << "Starting testAcquireAndSave loop for " << numSpectra << " spectra...\n";
->>>>>>> a8f4584f3384e4d3fdd888f5c680513f7a33f218
 
     for (int i = 0; i < numSpectra; ++i) {
         // call the spectrometer to measure 100 times with 0.1 s exposure
@@ -543,8 +552,7 @@ void AndorCameraProxy::testtenspectime() {
         testAcquireAndSave(std::vector<int>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
                          1, pixelsPerSpectrum, "spectrum_" + std::to_string(i));
         // waite for 120 ms to ensure the 100 ms exposure is done
-        Sleep(120);
-        
+        Sleep(120);  
         
     }
 
@@ -555,8 +563,10 @@ void AndorCameraProxy::testtenspectime() {
     // then call AcquireAndSavefast to do the same but optimized, measure time again and print how long it took
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < numSpectra; ++i) {
+//const std::string& measurementFolder, const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+
         AcquireAndSavefast(std::vector<int>(spectra.begin() + (i * pixelsPerSpectrum), spectra.begin() + ((i + 1) * pixelsPerSpectrum)),
-                         1, pixelsPerSpectrum, "fast_spectrum_" + std::to_string(i));
+                         1, pixelsPerSpectrum, "spectrum_" + std::to_string(i));
     }
     end = std::chrono::high_resolution_clock::now();
     measuretimefast = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();

@@ -61,6 +61,12 @@ public:
                       int pixelsPerSpectrum,
                       SpectrumMetadata& meta,
                       bool saveAsPng = false);
+    void savespecfast(const std::string& measurementFolder,
+         const std::vector<int>& spectra, 
+         int numSpectra, 
+         int pixelsPerSpectrum, 
+         SpectrumMetadata& meta,
+         const std::string& filename);
 
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }
