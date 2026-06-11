@@ -432,7 +432,7 @@ void AndorCameraProxy::loadDLL(const std::string& dllPath) {
     strncpy(req.strArg, dllPath.c_str(), sizeof(req.strArg) - 1);
     
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 10000);
 }
 
 void AndorCameraProxy::initialize(const std::string& iniDir) {
@@ -481,7 +481,7 @@ void AndorCameraProxy::setCoolingTemperature(int temperatureC) {
     req.iArgs[0] = temperatureC;
 
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 10000);
 }
 
 int AndorCameraProxy::getCoolingTemperature() {
@@ -489,7 +489,7 @@ int AndorCameraProxy::getCoolingTemperature() {
     req.command = IpcCommand::AndorGetCoolingTemperature;
 
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 5000);
     return res.iArgs[0];
 }
 
@@ -498,7 +498,7 @@ bool AndorCameraProxy::isCoolingEnabled() {
     req.command = IpcCommand::AndorIsCoolingEnabled;
 
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 5000);
     return res.iArgs[0] != 0;
 }
 
@@ -537,32 +537,32 @@ void AndorCameraProxy::shutdown() {
     req.command = IpcCommand::AndorShutDown;
     IpcMessage res = {};
     try {
-        sendCommand(req, res);
+        sendCommand(req, res, 1000);
     } catch (...) {}
 }
 
 void AndorCameraProxy::setReadMode(int mode) {
     IpcMessage req = {}, res = {};
     req.command = IpcCommand::AndorSetReadMode; req.iArgs[0] = mode;
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
 }
 
 void AndorCameraProxy::setAcquisitionMode(int mode) {
     IpcMessage req = {}, res = {};
     req.command = IpcCommand::AndorSetAcquisitionMode; req.iArgs[0] = mode;
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
 }
 
 void AndorCameraProxy::setExposureTime(float seconds) {
     IpcMessage req = {}, res = {};
     req.command = IpcCommand::AndorSetExposureTime; req.dArgs[0] = seconds;
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
 }
 
 void AndorCameraProxy::setTriggerMode(int mode) {
     IpcMessage req = {}, res = {};
     req.command = IpcCommand::AndorSetTriggerMode; req.iArgs[0] = mode;
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
 }
 
 void AndorCameraProxy::setImage(int hbin, int vbin, int hstart, int hend, int vstart, int vend) {
@@ -570,13 +570,13 @@ void AndorCameraProxy::setImage(int hbin, int vbin, int hstart, int hend, int vs
     req.command = IpcCommand::AndorSetImage;
     req.iArgs[0] = hbin; req.iArgs[1] = vbin; req.iArgs[2] = hstart;
     req.iArgs[3] = hend; req.iArgs[4] = vstart; req.iArgs[5] = vend;
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
 }
 
 int AndorCameraProxy::getStatus() {
     IpcMessage req = {}, res = {};
     req.command = IpcCommand::AndorGetStatus;
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
     return res.iArgs[0];
 }
 
@@ -589,7 +589,7 @@ void AndorCameraProxy::setKineticCycleTime(float seconds) {
 void AndorCameraProxy::setNumberKinetics(int numKin) {
     IpcMessage req = {}, res = {};
     req.command = IpcCommand::AndorSetNumberKinetics; req.iArgs[0] = numKin;
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
 }
 
 void AndorCameraProxy::configureSpectral(AndorCamera::ReadMode ReadMode, AndorCamera::TriggerMode trigMode, float exposureSeconds, int numSpectra) {
@@ -601,7 +601,7 @@ void AndorCameraProxy::configureSpectral(AndorCamera::ReadMode ReadMode, AndorCa
     req.dArgs[0] = exposureSeconds;
     
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
 }
 
 void AndorCameraProxy::configureFVBKinetic(float exposureSeconds, int numLines) {
@@ -611,28 +611,28 @@ void AndorCameraProxy::configureFVBKinetic(float exposureSeconds, int numLines) 
     req.iArgs[0] = numLines;
     
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 5000);
 }
 
 void AndorCameraProxy::startAcquisition() {
     IpcMessage req = {};
     req.command = IpcCommand::AndorStartAcquisition;
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
 }
 
 void AndorCameraProxy::abortAcquisition() {
     IpcMessage req = {};
     req.command = IpcCommand::AndorAbortAcquisition;
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 1000);
 }
 
 void AndorCameraProxy::waitForAcquisition() {
     IpcMessage req = {};
     req.command = IpcCommand::AndorWaitForAcquisition;
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 300000); // 5 minute timeout for acquisition to complete
 }
 
 // new test function: 
