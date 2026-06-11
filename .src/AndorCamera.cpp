@@ -497,8 +497,9 @@ void AndorCamera::runfastAcquistiontriggered(float exposureSeconds, int numSpect
     
 }
 
+
 void AndorCamera::measureBackground(float exposureSeconds, const std::string& filename) {
-    configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureSeconds, 1);
+    configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureSeconds);
     startAcquisition();
     waitForAcquisition();
 
@@ -527,3 +528,5 @@ void AndorCamera::setWLarray(std::vector<float>& WL) {
     wlNumPoints_ = static_cast<float>(WL.size());
     
 }
+    
+    
