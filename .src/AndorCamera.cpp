@@ -130,6 +130,8 @@ std::vector<int> subtractBackground(const std::vector<int>& spectra, const std::
     return sigBg;
 }
 
+} // namespace
+
 void AndorCamera::saveSpectrumSet(const std::string& measurementFolder,
                      const std::string& stem,
                      const std::vector<int>& spectra,
@@ -147,8 +149,6 @@ void AndorCamera::saveSpectrumSet(const std::string& measurementFolder,
     }
     writeSpectrumTxt(joinPath(measurementFolder, stem) + ".txt", spectra, numSpectra, pixelsPerSpectrum);
 }
-
-} // namespace
 
 AndorCamera::AndorCamera() {}
 
