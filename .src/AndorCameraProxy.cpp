@@ -1,6 +1,5 @@
 // AndorCameraProxy.cpp
 #include "AndorCameraProxy.h"
-//#include "AndorCamera.h"
 #include "IpcStructs.h"
 #include "Logger.h"
 #include <opencv2/opencv.hpp>
@@ -385,7 +384,7 @@ void AndorCameraProxy::sendCommand(const IpcMessage& msg, IpcMessage& response, 
     bool readtimeout = false;
     unsigned int tnow = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 
-    while (toWrite > 0 and !writetimeout) {
+    while (toWrite > 0 && !writetimeout) {
         if (!WriteFile(hPipe_, outPtr, (DWORD)toWrite, &bytesWritten, NULL)) {
             throw std::runtime_error("AndorCameraProxy: failed to write to pipe");
         }
@@ -405,7 +404,7 @@ void AndorCameraProxy::sendCommand(const IpcMessage& msg, IpcMessage& response, 
     BYTE* inPtr = reinterpret_cast<BYTE*>(&response);
     size_t toRead = sizeof(IpcMessage);
     DWORD bytesRead = 0;
-    while (toRead > 0, !readtimeout) {
+    while (toRead > 0 && !readtimeout) {
         if (!ReadFile(hPipe_, inPtr, (DWORD)toRead, &bytesRead, NULL)) {
             throw std::runtime_error("AndorCameraProxy: failed to read response header from pipe");
         }
@@ -417,7 +416,7 @@ void AndorCameraProxy::sendCommand(const IpcMessage& msg, IpcMessage& response, 
             std::chrono::steady_clock::now().time_since_epoch()).count();
         if ((tnow - tstart) > timeout_ms) {
             readtimeout = true;
-            throw std::runtime_error("AndorCameraProxy: write to pipe timed out after " + std::to_string(timeout_ms) + " ms. at Command: " + std::to_string(static_cast<int>(msg.command)));
+            throw std::runtime_error("AndorCameraProxy: read from pipe timed out after " + std::to_string(timeout_ms) + " ms. at Command: " + std::to_string(static_cast<int>(msg.command)));
         }
     }
 
