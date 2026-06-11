@@ -371,28 +371,54 @@ AndorCameraProxy::~AndorCameraProxy() {
     }
 }
 
-void AndorCameraProxy::sendCommand(const IpcMessage& msg, IpcMessage& response) {
+void AndorCameraProxy::sendCommand(const IpcMessage& msg, IpcMessage& response, unsigned int timeout_ms) {
+    // todo: add timeout handling: if the server doesn't respond within the timeout, we should throw an exception instead of hanging indefinitely. This would involve using overlapped I/O with ReadFile/WriteFile and WaitForSingleObject on the event, or using a separate thread to perform the read/write and waiting on that thread with a timeout.
+    // best practice would be to implement a timeout for both the write and the read operations, and to handle the case where the server becomes unresponsive or takes too long to respond. This would prevent the client from hanging indefinitely if there is an issue with the server or the communication channel.
+
     const BYTE* outPtr = reinterpret_cast<const BYTE*>(&msg);
     size_t toWrite = sizeof(IpcMessage);
     DWORD bytesWritten = 0;
-    while (toWrite > 0) {
+    unsigned int tstart = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    
+    bool writetimeout = false;
+    bool readtimeout = false;
+    unsigned int tnow = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+
+    while (toWrite > 0 and !writetimeout) {
         if (!WriteFile(hPipe_, outPtr, (DWORD)toWrite, &bytesWritten, NULL)) {
             throw std::runtime_error("AndorCameraProxy: failed to write to pipe");
         }
         outPtr += bytesWritten;
         toWrite -= bytesWritten;
+
+        tnow = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        if ((tnow - tstart) > timeout_ms) {
+            writetimeout = true;
+            throw std::runtime_error("AndorCameraProxy: write to pipe timed out after " + std::to_string(timeout_ms) + " ms. at Command: " + std::to_string(static_cast<int>(msg.command)));
+        }
     }
+    tstart = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
 
     BYTE* inPtr = reinterpret_cast<BYTE*>(&response);
     size_t toRead = sizeof(IpcMessage);
     DWORD bytesRead = 0;
-    while (toRead > 0) {
+    while (toRead > 0, !readtimeout) {
         if (!ReadFile(hPipe_, inPtr, (DWORD)toRead, &bytesRead, NULL)) {
             throw std::runtime_error("AndorCameraProxy: failed to read response header from pipe");
         }
         if (bytesRead == 0) throw std::runtime_error("AndorCameraProxy: zero bytes read");
         inPtr += bytesRead;
         toRead -= bytesRead;
+
+        tnow = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        if ((tnow - tstart) > timeout_ms) {
+            readtimeout = true;
+            throw std::runtime_error("AndorCameraProxy: write to pipe timed out after " + std::to_string(timeout_ms) + " ms. at Command: " + std::to_string(static_cast<int>(msg.command)));
+        }
     }
 
     if (response.status != 0) {
@@ -415,7 +441,7 @@ void AndorCameraProxy::initialize(const std::string& iniDir) {
     strncpy(req.strArg, iniDir.c_str(), sizeof(req.strArg) - 1);
     
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 10000);
     
     xpix_ = res.iArgs[0];
     ypix_ = res.iArgs[1];
@@ -426,7 +452,7 @@ int AndorCameraProxy::getAvailableCameras() {
     req.command = IpcCommand::AndorGetAvailableCameras;
 
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 5000);
     return res.iArgs[0];
 }
 
@@ -436,7 +462,7 @@ void AndorCameraProxy::selectCamera(int cameraIndex) {
     req.iArgs[0] = cameraIndex;
 
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 5000);
     selectedCameraIndex_ = cameraIndex;
 }
 
@@ -446,7 +472,7 @@ void AndorCameraProxy::enableCooling(bool enable) {
     req.iArgs[0] = enable ? 1 : 0;
 
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 5000);
 }
 
 void AndorCameraProxy::setCoolingTemperature(int temperatureC) {
