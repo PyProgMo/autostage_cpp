@@ -132,6 +132,124 @@ std::vector<int> subtractBackground(const std::vector<int>& spectra, const std::
 
 } // namespace
 
+const char* AndorCamera::readModeToString(Andor::ReadMode mode) {
+    switch (mode) {
+        case Andor::ReadMode::FVB: return "FVB";
+        case Andor::ReadMode::MultiTrack: return "MultiTrack";
+        case Andor::ReadMode::RandomTrack: return "RandomTrack";
+        case Andor::ReadMode::SingleTrack: return "SingleTrack";
+        case Andor::ReadMode::FullImage: return "FullImage";
+        default: return "Unknown";
+    }
+}
+
+const char* AndorCamera::triggerModeToString(Andor::TriggerMode mode) {
+    switch (mode) {
+        case Andor::TriggerMode::Internal: return "Internal";
+        case Andor::TriggerMode::External: return "External";
+        case Andor::TriggerMode::ExternalStart: return "ExternalStart";
+        case Andor::TriggerMode::FastExternal: return "ExternalExposure";
+        case Andor::TriggerMode::Software: return "Software";
+        default: return "Unknown";
+    }
+}
+
+const char* AndorCamera::CameraNtoName(int cameraN) {
+    switch (cameraN) {
+        case 0: return "Newton";
+        case 1: return "Clara";
+        case 2: return "Idus";
+        default: return "Unknown Camera";
+    }
+}
+
+std::string AndorCamera::TranslateCameraErrorToString(int status) {
+    switch (static_cast<CameraErrorToString>(status)) {
+        case Andor::CameraErrorToString::Success:                    return "DRV_SUCCESS";
+        case Andor::CameraErrorToString::VxdNotInstalled:            return "DRV_VXDNOTINSTALLED";
+        case Andor::CameraErrorToString::ErrorScan:                  return "DRV_ERROR_SCAN";
+        case Andor::CameraErrorToString::ErrorCheckSum:              return "DRV_ERROR_CHECK_SUM";
+        case Andor::CameraErrorToString::ErrorFileload:              return "DRV_ERROR_FILELOAD";
+        case Andor::CameraErrorToString::UnknownFunction:            return "DRV_UNKNOWN_FUNCTION";
+        case Andor::CameraErrorToString::ErrorVxdInit:               return "DRV_ERROR_VXD_INIT";
+        case Andor::CameraErrorToString::ErrorAddress:               return "DRV_ERROR_ADDRESS";
+        case Andor::CameraErrorToString::ErrorPagelock:              return "DRV_ERROR_PAGELOCK";
+        case Andor::CameraErrorToString::ErrorPageUnlock:            return "DRV_ERROR_PAGE_UNLOCK";
+        case Andor::CameraErrorToString::ErrorBoardtest:             return "DRV_ERROR_BOARDTEST";
+        case Andor::CameraErrorToString::ErrorAck:                   return "DRV_ERROR_ACK";
+        case Andor::CameraErrorToString::ErrorUpFifo:                return "DRV_ERROR_UP_FIFO";
+        case Andor::CameraErrorToString::ErrorPattern:               return "DRV_ERROR_PATTERN";
+        case Andor::CameraErrorToString::AcquisitionErrors:          return "DRV_ACQUISITION_ERRORS";
+        case Andor::CameraErrorToString::AcqBuffer:                  return "DRV_ACQ_BUFFER";
+        case Andor::CameraErrorToString::AcqDownfifoFull:            return "DRV_ACQ_DOWNFIFO_FULL";
+        case Andor::CameraErrorToString::ProcUnknownInstruction:     return "DRV_PROC_UNKNOWN_INSTRUCTION";
+        case Andor::CameraErrorToString::IllegalOpCode:              return "DRV_ILLEGAL_OP_CODE";
+        case Andor::CameraErrorToString::KineticTimeNotMet:          return "DRV_KINETIC_TIME_NOT_MET";
+        case Andor::CameraErrorToString::AccumTimeNotMet:            return "DRV_ACCUM_TIME_NOT_MET";
+        case Andor::CameraErrorToString::NoNewData:                  return "DRV_NO_NEW_DATA";
+        case Andor::CameraErrorToString::PciDmaFail:                 return "PCI_DMA_FAIL";
+        case Andor::CameraErrorToString::SpoolError:                 return "DRV_SPOOLERROR";
+        case Andor::CameraErrorToString::SpoolSetupError:            return "DRV_SPOOLSETUPERROR";
+        case Andor::CameraErrorToString::Saturated:                  return "SATURATED";
+        case Andor::CameraErrorToString::TemperatureOff:             return "DRV_TEMPERATURE_OFF";
+        case Andor::CameraErrorToString::TempNotStabilized:          return "DRV_TEMP_NOT_STABILIZED";
+        case Andor::CameraErrorToString::TemperatureStabilized:      return "DRV_TEMPERATURE_STABILIZED";
+        case Andor::CameraErrorToString::TemperatureNotReached:      return "DRV_TEMPERATURE_NOT_REACHED";
+        case Andor::CameraErrorToString::TemperatureOutRange:        return "DRV_TEMPERATURE_OUT_RANGE";
+        case Andor::CameraErrorToString::TemperatureNotSupported:    return "DRV_TEMPERATURE_NOT_SUPPORTED";
+        case Andor::CameraErrorToString::TemperatureDrift:           return "DRV_TEMPERATURE_DRIFT";
+        case Andor::CameraErrorToString::InvalidAux:                 return "DRV_INVALID_AUX";
+        case Andor::CameraErrorToString::CofNotLoaded:               return "DRV_COF_NOTLOADED";
+        case Andor::CameraErrorToString::FpgaProg:                   return "DRV_FPGAPROG";
+        case Andor::CameraErrorToString::FlexError:                  return "DRV_FLEXERROR";
+        case Andor::CameraErrorToString::GpibError:                  return "DRV_GPIBERROR";
+        case Andor::CameraErrorToString::ErrorDmaUpload:             return "ERROR_DMA_UPLOAD";
+        case Andor::CameraErrorToString::Datatype:                   return "DRV_DATATYPE";
+        case Andor::CameraErrorToString::P1Invalid:                  return "DRV_P1INVALID";
+        case Andor::CameraErrorToString::P2Invalid:                  return "DRV_P2INVALID";
+        case Andor::CameraErrorToString::P3Invalid:                  return "DRV_P3INVALID";
+        case Andor::CameraErrorToString::P4Invalid:                  return "DRV_P4INVALID";
+        case Andor::CameraErrorToString::IniError:                   return "DRV_INIERROR";
+        case Andor::CameraErrorToString::CofError:                   return "DRV_COFERROR";
+        case Andor::CameraErrorToString::Acquiring:                  return "DRV_ACQUIRING";
+        case Andor::CameraErrorToString::Idle:                       return "DRV_IDLE";
+        case Andor::CameraErrorToString::TempCycle:                  return "DRV_TEMPCYCLE";
+        case Andor::CameraErrorToString::NotInitialized:             return "DRV_NOT_INITIALIZED";
+        case Andor::CameraErrorToString::P5Invalid:                  return "DRV_P5INVALID";
+        case Andor::CameraErrorToString::P6Invalid:                  return "DRV_P6INVALID";
+        case Andor::CameraErrorToString::InvalidMode:                return "DRV_INVALID_MODE";
+        case Andor::CameraErrorToString::InvalidFilter:              return "DRV_INVALID_FILTER";
+        case Andor::CameraErrorToString::I2cErrors:                  return "DRV_I2CERRORS";
+        case Andor::CameraErrorToString::I2cDevNotFound:             return "DRV_DRV_I2CDEVNOTFOUND";
+        case Andor::CameraErrorToString::I2cTimeout:                 return "DRV_I2CTIMEOUT";
+        case Andor::CameraErrorToString::P7Invalid:                  return "DRV_P7INVALID";
+        case Andor::CameraErrorToString::UsbError:                   return "DRV_USBERROR";
+        case Andor::CameraErrorToString::IocError:                   return "DRV_IOCERROR";
+        case Andor::CameraErrorToString::VrmVersionError:            return "DRV_VRMVERSIONERROR";
+        case Andor::CameraErrorToString::UsbInterruptEndpointError:  return "DRV_USB_INTERRUPT_ENDPOINT_ERROR";
+        case Andor::CameraErrorToString::RandomTrackError:           return "DRV_RANDOM_TRACK_ERROR";
+        case Andor::CameraErrorToString::InvalidTriggerMode:         return "DRV_INVALID_TRIGGER_MODE";
+        case Andor::CameraErrorToString::LoadFirmwareError:          return "DRV_LOAD_FIRMWARE_ERROR";
+        case Andor::CameraErrorToString::DivideByZeroError:          return "DRV_DIVIDE_BY_ZERO_ERROR";
+        case Andor::CameraErrorToString::InvalidRingExposures:       return "DRV_INVALID_RINGEXPOSURES";
+        case Andor::CameraErrorToString::BinningError:               return "DRV_BINNING_ERROR";
+        case Andor::CameraErrorToString::InvalidAmplifier:           return "DRV_INVALID_AMPLIFIER";
+        case Andor::CameraErrorToString::InvalidCountconvertMode:    return "DRV_INVALID_COUNTCONVERT_MODE";
+        case Andor::CameraErrorToString::ErrorMap:                   return "DRV_ERROR_MAP";
+        case Andor::CameraErrorToString::ErrorUnmap:                 return "DRV_ERROR_UNMAP";
+        case Andor::CameraErrorToString::ErrorMdl:                   return "DRV_ERROR_MDL";
+        case Andor::CameraErrorToString::ErrorUnmdl:                 return "DRV_ERROR_UNMDL";
+        case Andor::CameraErrorToString::ErrorBuffsize:              return "DRV_ERROR_BUFFSIZE";
+        case Andor::CameraErrorToString::ErrorNoHandle:              return "DRV_ERROR_NOHANDLE";
+        case Andor::CameraErrorToString::GatingNotAvailable:         return "DRV_GATING_NOT_AVAILABLE";
+        case Andor::CameraErrorToString::FpgaVoltageError:           return "DRV_FPGA_VOLTAGE_ERROR";
+        case Andor::CameraErrorToString::ErrorNoCamera:              return "DRV_ERROR_NOCAMERA";
+        case Andor::CameraErrorToString::NotSupported:               return "DRV_NOT_SUPPORTED";
+        case Andor::CameraErrorToString::NotAvailable:               return "DRV_NOT_AVAILABLE";
+        default:                                      return "Unknown";
+    }
+}
+
 void AndorCamera::saveSpectrumSet(const std::string& measurementFolder,
                      const std::string& stem,
                      const std::vector<int>& spectra,

@@ -67,6 +67,95 @@ namespace Andor {
         Clara  = 1,
         Idus   = 2,
     };
+
+        // Andor error codes
+    enum class CameraErrorToString : int {
+        ErrorCodes              = 20001,
+        Success                 = 20002,
+        VxdNotInstalled         = 20003,
+        ErrorScan               = 20004,
+        ErrorCheckSum           = 20005,
+        ErrorFileload           = 20006,
+        UnknownFunction         = 20007,
+        ErrorVxdInit            = 20008,
+        ErrorAddress            = 20009,
+        ErrorPagelock           = 20010,
+        ErrorPageUnlock         = 20011,
+        ErrorBoardtest          = 20012,
+        ErrorAck                = 20013,
+        ErrorUpFifo             = 20014,
+        ErrorPattern            = 20015,
+        AcquisitionErrors       = 20017,
+        AcqBuffer               = 20018,
+        AcqDownfifoFull         = 20019,
+        ProcUnknownInstruction  = 20020,
+        IllegalOpCode           = 20021,
+        KineticTimeNotMet       = 20022,
+        AccumTimeNotMet         = 20023,
+        NoNewData               = 20024,
+        PciDmaFail              = 20025,
+        SpoolError              = 20026,
+        SpoolSetupError         = 20027,
+        Saturated               = 20029,
+        TemperatureCodes        = 20033,
+        TemperatureOff          = 20034,
+        TempNotStabilized       = 20035,
+        TemperatureStabilized   = 20036,
+        TemperatureNotReached   = 20037,
+        TemperatureOutRange     = 20038,
+        TemperatureNotSupported = 20039,
+        TemperatureDrift        = 20040,
+        GeneralErrors           = 20049,
+        InvalidAux              = 20050,
+        CofNotLoaded            = 20051,
+        FpgaProg                = 20052,
+        FlexError               = 20053,
+        GpibError               = 20054,
+        ErrorDmaUpload          = 20055,
+        Datatype                = 20064,
+        DriverErrors            = 20065,
+        P1Invalid               = 20066,
+        P2Invalid               = 20067,
+        P3Invalid               = 20068,
+        P4Invalid               = 20069,
+        IniError                = 20070,
+        CofError                = 20071,
+        Acquiring               = 20072,
+        Idle                    = 20073,
+        TempCycle               = 20074,
+        NotInitialized          = 20075,
+        P5Invalid               = 20076,
+        P6Invalid               = 20077,
+        InvalidMode             = 20078,
+        InvalidFilter           = 20079,
+        I2cErrors               = 20080,
+        I2cDevNotFound          = 20081,
+        I2cTimeout              = 20082,
+        P7Invalid               = 20083,
+        UsbError                = 20089,
+        IocError                = 20090,
+        VrmVersionError         = 20091,
+        UsbInterruptEndpointError = 20093,
+        RandomTrackError        = 20094,
+        InvalidTriggerMode      = 20095,
+        LoadFirmwareError       = 20096,
+        DivideByZeroError       = 20097,
+        InvalidRingExposures    = 20098,
+        BinningError            = 20099,
+        InvalidAmplifier        = 20100,
+        InvalidCountconvertMode = 20101,
+        ErrorMap                = 20115,
+        ErrorUnmap              = 20116,
+        ErrorMdl                = 20117,
+        ErrorUnmdl              = 20118,
+        ErrorBuffsize           = 20119,
+        ErrorNoHandle           = 20121,
+        GatingNotAvailable      = 20130,
+        FpgaVoltageError        = 20131,
+        ErrorNoCamera           = 20990,
+        NotSupported            = 20991,
+        NotAvailable            = 20992,
+    };
 }
                                                           
 // spectrum metadata struct for saving metadata along with spectra, can be extended in the future as needed
@@ -117,6 +206,7 @@ public:
     using TriggerMode = Andor::TriggerMode;
     using ReadMode = Andor::ReadMode;
     using Camera = Andor::Camera;
+    using CameraErrorToString = Andor::CameraErrorToString;
 
     AndorCamera();
     ~AndorCamera();
@@ -184,7 +274,11 @@ public:
                       int pixelsPerSpectrum,
                       SpectrumMetadata& specmeta,
                       bool saveAsPng = false);
-
+    
+    const char* readModeToString(Andor::ReadMode mode);
+    const char* triggerModeToString(Andor::TriggerMode mode);
+    const char* CameraNtoName(int cameraN);
+    std::string TranslateCameraErrorToString(int status);
 
 private:
     HMODULE hDll_ = nullptr;
