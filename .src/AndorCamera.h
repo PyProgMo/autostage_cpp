@@ -157,6 +157,8 @@ namespace Andor {
         NotAvailable            = 20992,
     };
 }
+
+
                                                           
 // spectrum metadata struct for saving metadata along with spectra, can be extended in the future as needed
 struct SpectrumMetadata {
@@ -275,10 +277,12 @@ public:
                       SpectrumMetadata& specmeta,
                       bool saveAsPng = false);
     
-    const char* readModeToString(Andor::ReadMode mode);
-    const char* triggerModeToString(Andor::TriggerMode mode);
-    const char* CameraNtoName(int cameraN);
+    static const char* readModeToString(Andor::ReadMode mode);
+    static const char* triggerModeToString(Andor::TriggerMode mode);
+    static const char* CameraNtoName(int cameraN);
     std::string TranslateCameraErrorToString(int status);
+
+
 
 private:
     HMODULE hDll_ = nullptr;
