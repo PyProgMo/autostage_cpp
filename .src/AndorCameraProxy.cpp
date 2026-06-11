@@ -280,7 +280,7 @@ static void writePlemTxt(const std::string& path,
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Short Wavelength (nm): %.4f\n", specmeta.shortWlNm);
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Long Wavelength (nm): %.4f\n", specmeta.longWlNm);
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Background Measurement with Open Shutter\n");
-    pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Readout Mode: %s\n", specmeta.ReadMode);
+    pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Readout Mode: %s\n", AndorCamera::readModeToString(specmeta.ReadMode));
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Microscopy:\n");
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Laser Position  (x,y): (%.3f,%.3f)\n", specmeta.laserPosX/1000, specmeta.laserPosY/1000);
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "magnification: %.3f\n", specmeta.magnification);
