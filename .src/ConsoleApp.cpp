@@ -238,7 +238,7 @@ int main() {
                 }
                 else if (action == "measure") {
                     cam->configureSpectral(AndorCamera::ReadMode::FVB,
-                                           AndorCamera::TriggerMode::Internal, 0.1f);
+                                           AndorCamera::TriggerMode::Internal, 0.1f, 1);
                     cam->startAcquisition();
                     cam->waitForAcquisition();
                     auto data = cam->getAllSpectra(1, cam->getXPixels());
@@ -258,7 +258,7 @@ int main() {
                         // convert tint from ms to seconds for the SDK
                         tint /= 1000.0f;
                         cam->configureSpectral(AndorCamera::ReadMode::FVB,
-                                               AndorCamera::TriggerMode::External, tint);
+                                               AndorCamera::TriggerMode::External, tint, 1);
                         std::cout << "Exposure time set to " << tint << " seconds.\n";
                     } else {
                         std::cout << "Usage: andor setTint [milliseconds]\n";
