@@ -168,7 +168,9 @@ public:
     // declare the test functions here so they can be called from ConsoleApp without including private members
     void testAcquireAndSave(float exposureSeconds, const std::string& filename);
     void testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
-    void AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void Savefast(const std::string& foldername, const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void setupfastAcquisition(float exposureSeconds, int numSpectra);
+    void runfastAcquistiontriggered(float exposureSeconds, int numSpectra, std::string filename, std::string foldername);
 
     // wl array function: init array for the wl-array
     void getWLarray(float startWL, float endWL, std::vector<float>& WL);

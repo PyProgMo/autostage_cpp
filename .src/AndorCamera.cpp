@@ -6,6 +6,7 @@
 #include <fstream>
 #include <cstdint>
 #include <chrono>
+#include <thread>
 #include <iomanip>
 #include <sstream>
 
@@ -129,16 +130,20 @@ std::vector<int> subtractBackground(const std::vector<int>& spectra, const std::
     return sigBg;
 }
 
-void saveSpectrumSet(const std::string& measurementFolder,
+void AndorCamera::saveSpectrumSet(const std::string& measurementFolder,
                      const std::string& stem,
                      const std::vector<int>& spectra,
                      const std::vector<float>& WL,
                      int numSpectra,
-                     int pixelsPerSpectrum) {
+                     int pixelsPerSpectrum, 
+                     SpectrumMetadata& specmeta,
+                     bool saveAsPng) {
     int maxVal = 0;
     cv::Mat img = buildSpectrumImage(spectra, numSpectra, pixelsPerSpectrum, maxVal);
-    if (!cv::imwrite(joinPath(measurementFolder, stem) + ".png", img)) {
-        throw std::runtime_error(std::string("Andor: failed to write PNG: ") + stem);
+    if (saveAsPng) {
+        if (!cv::imwrite(joinPath(measurementFolder, stem) + ".png", img)) {
+            throw std::runtime_error(std::string("Andor: failed to write PNG: ") + stem);
+        }
     }
     writeSpectrumTxt(joinPath(measurementFolder, stem) + ".txt", spectra, numSpectra, pixelsPerSpectrum);
 }
@@ -434,6 +439,64 @@ void AndorCamera::testAcquireAndSave(const std::vector<int>& spectra, int numSpe
     std::cout << "Saved kinetic spectra to " << measurementFolder << "\n";
 
 }
+
+void AndorCamera::Savefast(const std::string& foldername, const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+    if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
+        throw std::runtime_error("Andor: invalid spectrum image dimensions");
+    }
+    if (spectra.empty() || spectra.size() < static_cast<size_t>(numSpectra) * static_cast<size_t>(pixelsPerSpectrum)) {
+        throw std::runtime_error("Andor: AcquireAndSavefast requires non-empty spectrum data");
+    }
+
+    const std::string measurementFolder = joinPath(executableDirectory(), foldername);
+    ensureDirectoryExists(measurementFolder);
+    const std::vector<int> background = getBackground();
+    // write spectrum to .txt
+    const std::string txtFilePath = joinPath(measurementFolder, filename + ".txt");
+    writeSpectrumTxt(txtFilePath, spectra, numSpectra, pixelsPerSpectrum);
+}    
+
+void AndorCamera::setupfastAcquisition(float exposureSeconds, int numSpectra) {
+    configureSpectral(ReadMode::FVB, TriggerMode::FastExternal, exposureSeconds, numSpectra);
+}
+
+void AndorCamera::runfastAcquistiontriggered(float exposureSeconds, int numSpectra, std::string filename, std::string foldername) {
+    for (int i = 0; i < numSpectra; ++i) {
+        int timewaited = 0;
+        int finished = 0;
+        int statusMsg = 0;
+        startAcquisition();
+        // waite for integration time + 20 ms to ensure acquisition is complete before next trigger
+        std::chrono::milliseconds waitTime(static_cast<int>(exposureSeconds * 1000) + 20);
+        std::this_thread::sleep_for(waitTime);
+        statusMsg = getStatus();
+        while (statusMsg == 20002 and timewaited > exposureSeconds) { // DRV_ACQUIRING
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            timewaited += 20;
+            if (timewaited > exposureSeconds){
+                finished = 2;
+            }
+            statusMsg = getStatus();
+        }
+        if (finished == 1){
+            // save spectrum
+            const std::vector<int> spectra = getAllSpectra(1, getXPixels());
+            //(const std::string& foldername, const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename)
+            Savefast(foldername, spectra, 1, getXPixels(), filename + "_" + std::to_string(i));
+
+        } else if (finished == 2) {
+            std::cerr << "Andor: warning - acquisition did not finish within expected time after trigger\n";
+        } else if (statusMsg != 20073) { // DRV_IDLE
+            std::cerr << "Andor: warning - acquisition finished with unexpected status: " << statusMsg << "\n";
+        } // here add more cases if needed to handle other status codes
+
+
+
+        
+    }
+    
+}
+
 
 void AndorCamera::measureBackground(float exposureSeconds, const std::string& filename) {
     configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureSeconds);
