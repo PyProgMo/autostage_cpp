@@ -447,9 +447,9 @@ void AndorCamera::setNumberKinetics(int number) {
     check(pSetNumberKinetics(number), "SetNumberKinetics");
 }
 
-void AndorCamera::configureSpectral(ReadMode readMode, TriggerMode trigMode, float exposureSeconds, int numSpectra) {
+void AndorCamera::configureSpectral(ReadMode ReadMode, TriggerMode trigMode, float exposureSeconds, int numSpectra) {
     ensureLoaded();
-    check(pSetReadMode(static_cast<int>(readMode)), "SetReadMode");
+    check(pSetReadMode(static_cast<int>(ReadMode)), "SetReadMode");
     check(pSetAcquisitionMode(numSpectra > 1 ? 3 : 1), "SetAcquisitionMode"); // 3 = kinetic, 1 = single scan
     check(pSetExposureTime(exposureSeconds), "SetExposureTime");
     

@@ -1,5 +1,6 @@
 // AndorCameraProxy.cpp
 #include "AndorCameraProxy.h"
+#include "AndorCamera.h"
 #include "IpcStructs.h"
 #include "Logger.h"
 #include <opencv2/opencv.hpp>
@@ -238,7 +239,7 @@ static void writePlemPlot(const std::string& path,
 }
 
 static void writePlemTxt(const std::string& path,
-                          const SpectrumMetadata& specmeta,
+                          const SpectrumMetadata& specmeta, 
                           const std::vector<int>& spectra,
                           const std::vector<float>& WL,
                           int numSpectra,
@@ -279,16 +280,16 @@ static void writePlemTxt(const std::string& path,
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Short Wavelength (nm): %.4f\n", specmeta.shortWlNm);
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Long Wavelength (nm): %.4f\n", specmeta.longWlNm);
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Background Measurement with Open Shutter\n");
-    pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Readout Mode: %s\n", specmeta.readMode);
+    pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Readout Mode: %s\n", specmeta.ReadMode);
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Microscopy:\n");
-    pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Laser Position  (x,y): (%.3f,%.3f)\n", specmeta.laserPosX, specmeta.laserPosY);
+    pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Laser Position  (x,y): (%.3f,%.3f)\n", specmeta.laserPosX/1000, specmeta.laserPosY/1000);
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "magnification: %.3f\n", specmeta.magnification);
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "Power at Glass Plate (\xc2\xb5W): %.6f\n", specmeta.powerAtGlassUW);
 
     // data rows - tab separated, with header
     pos += std::snprintf(buf + pos, sizeof(buf) - pos, "\nWL\tBG\tPL\n");
     for (int p = 0; p < pixelsPerSpectrum; ++p) {
-        pos += std::snprintf(buf + pos, sizeof(buf) - pos, "%d\t%d\t%d\n",
+        pos += std::snprintf(buf + pos, sizeof(buf) - pos, "%.3f\t%d\t%d\n",
                              WL[p],
                              spectra[0 * pixelsPerSpectrum + p],
                              (numSpectra >= 2) ? spectra[1 * pixelsPerSpectrum + p] : 0);
@@ -565,10 +566,10 @@ void AndorCameraProxy::setNumberKinetics(int numKin) {
     sendCommand(req, res);
 }
 
-void AndorCameraProxy::configureSpectral(AndorCamera::ReadMode readMode, AndorCamera::TriggerMode trigMode, float exposureSeconds, int numSpectra) {
+void AndorCameraProxy::configureSpectral(AndorCamera::ReadMode ReadMode, AndorCamera::TriggerMode trigMode, float exposureSeconds, int numSpectra) {
     IpcMessage req = {};
     req.command = IpcCommand::AndorConfigureSpectral;
-    req.iArgs[0] = static_cast<int>(readMode);
+    req.iArgs[0] = static_cast<int>(ReadMode);
     req.iArgs[1] = static_cast<int>(trigMode);
     req.iArgs[2] = numSpectra;
     req.dArgs[0] = exposureSeconds;

@@ -180,7 +180,7 @@ struct SpectrumMetadata {
         double                       wlFirstPixelNm;   // 458.55
         double                       wlLastPixelNm;    // 1024.00
         double                       deltaWlNm;        // 0.275
-        Andor::ReadMode              readMode;          // FVB
+        Andor::ReadMode              ReadMode;          // FVB
         Andor::TriggerMode           triggerMode;       // External
 
         // ── Nano Stage ────────────────────────────────────────────────────────
@@ -196,8 +196,8 @@ struct SpectrumMetadata {
         float         longWlNm;       // 0
 
         // ── Microscopy ────────────────────────────────────────────────────────
-        int    laserPosX;           // 520
-        int    laserPosY;           // 696
+        double    laserPosX;           // 520
+        double    laserPosY;           // 696
         double magnification;       // 83.333
         double powerAtGlassUW;      // -0.008998
     };
@@ -235,7 +235,7 @@ public:
     void setNumberKinetics(int number);
 
     // Configure for triggered spectral acquisition
-    void configureSpectral(ReadMode   readMode,
+    void configureSpectral(ReadMode   ReadMode,
                            TriggerMode trigMode,
                            float      exposureSeconds,
                            int        numSpectra = 1);

@@ -36,7 +36,7 @@ public:
     void setKineticCycleTime(float time);
     void setNumberKinetics(int number);
 
-    void configureSpectral(AndorCamera::ReadMode readMode,
+    void configureSpectral(AndorCamera::ReadMode ReadMode,
                            AndorCamera::TriggerMode trigMode,
                            float exposureSeconds,
                            int numSpectra = 1);
