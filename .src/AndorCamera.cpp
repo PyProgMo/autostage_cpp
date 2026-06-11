@@ -130,7 +130,7 @@ std::vector<int> subtractBackground(const std::vector<int>& spectra, const std::
     return sigBg;
 }
 
-} // namespace
+
 
 void AndorCamera::saveSpectrumSet(const std::string& measurementFolder,
                      const std::string& stem,
@@ -529,4 +529,4 @@ void AndorCamera::setWLarray(std::vector<float>& WL) {
     
 }
     
-    
+} // namespace
