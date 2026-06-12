@@ -707,7 +707,6 @@ void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& fi
     testAcquireAndSave(spectra, 1, getXPixels(), filename);
 }
 
-
 std::vector<int> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
     IpcMessage req = {};
     req.command = IpcCommand::AndorGetImages16;
@@ -717,7 +716,11 @@ std::vector<int> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerSp
     IpcMessage res = {};
     sendCommand(req, res);
     
-    std::vector<int> obj(res.dataSize / sizeof(int));
+    if (res.dataSize < 0 || (res.dataSize % static_cast<int32_t>(sizeof(int))) != 0) {
+        throw std::runtime_error("AndorCameraProxy: invalid payload size for GetImages16 response");
+    }
+
+    std::vector<int> obj(static_cast<size_t>(res.dataSize) / sizeof(int));
     
     if (res.dataSize > 0) {
         BYTE* inPtr = reinterpret_cast<BYTE*>(obj.data());
@@ -845,7 +848,7 @@ void AndorCameraProxy::AcquireAndSavefast(const std::vector<int>& spectra, int n
         const int* currentFrameSrc = rawSpectraPtr + offset;
 
         // Fast zero-allocation buffer copy
-        std::memcpy(frameDataBuffer.data(), currentFrameSrc, pixelsPerSpectrum * sizeof(WORD));
+        std::memcpy(frameDataBuffer.data(), currentFrameSrc, pixelsPerSpectrum * sizeof(int));
 
         // Update the string directly using fast math instead of std::ostringstream
         int hundred = frame / 100;

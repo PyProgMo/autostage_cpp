@@ -137,7 +137,7 @@ void ProcessClient(HANDLE hPipe) {
                 int pixelsPerSpectrum = req.iArgs[1];
                 AppLogger::instance().info("SpectrometerServer: getAllSpectra");
                 auto data = cam.getAllSpectra(numSpectra, pixelsPerSpectrum);
-                res.dataSize = (int32_t)(data.size() * sizeof(WORD));
+                res.dataSize = (int32_t)(data.size() * sizeof(int));
                 
                 DWORD bytesWritten = 0;
                 if (!WriteFile(hPipe, &res, sizeof(res), &bytesWritten, NULL)) {
