@@ -762,6 +762,8 @@ void AndorCameraProxy::testtenspectime() {
 
     auto start = std::chrono::high_resolution_clock::now();
     configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, numSpectra);
+    startAcquisition();
+    waitForAcquisition();
     std::vector<int> spectra = getAllSpectra(numSpectra, pixelsPerSpectrum);
     auto end = std::chrono::high_resolution_clock::now();
 
