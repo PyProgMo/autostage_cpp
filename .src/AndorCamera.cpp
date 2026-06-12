@@ -494,7 +494,8 @@ std::vector<int> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectru
     std::vector<int> buf(numSpectra * pixelsPerSpectrum);
     long vf, vl;
     check(pGetImages16(1, numSpectra, buf.data(),
-                       (unsigned long)buf.size(), &vf, &vl),
+                       (unsigned long)buf.size(),
+                        &vf, &vl),
           "GetImages16");
     return buf;
 }

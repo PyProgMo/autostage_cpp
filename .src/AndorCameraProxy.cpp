@@ -717,7 +717,7 @@ std::vector<int> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerSp
     IpcMessage res = {};
     sendCommand(req, res);
     
-    std::vector<int> obj(res.dataSize / sizeof(WORD));
+    std::vector<int> obj(res.dataSize / sizeof(int));
     
     if (res.dataSize > 0) {
         BYTE* inPtr = reinterpret_cast<BYTE*>(obj.data());
