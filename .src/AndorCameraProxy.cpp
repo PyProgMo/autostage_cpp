@@ -325,12 +325,22 @@ void AndorCameraProxy::saveSpectrumSet(const std::string& measurementFolder,
                      SpectrumMetadata& specmeta,
                      bool saveAsPng)
 {
+    std::vector<float> fallbackWL;
+    const std::vector<float>* wlToUse = &WL;
+    if (wlToUse->empty() || static_cast<int>(wlToUse->size()) < pixelsPerSpectrum) {
+        fallbackWL.resize(static_cast<size_t>(pixelsPerSpectrum));
+        for (int i = 0; i < pixelsPerSpectrum; ++i) {
+            fallbackWL[static_cast<size_t>(i)] = static_cast<float>(i);
+        }
+        wlToUse = &fallbackWL;
+    }
+
     if (saveAsPng)
         writePlemPlot(joinPath(measurementFolder, stem) + ".png",
-                      spectra, WL, numSpectra, pixelsPerSpectrum);
+                      spectra, *wlToUse, numSpectra, pixelsPerSpectrum);
 
     writePlemTxt(joinPath(measurementFolder, stem) + ".txt",
-                 specmeta, spectra, WL, numSpectra, pixelsPerSpectrum);
+                 specmeta, spectra, *wlToUse, numSpectra, pixelsPerSpectrum);
 }
 
 AndorCameraProxy::AndorCameraProxy() {
