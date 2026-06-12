@@ -243,11 +243,8 @@ int main() {
                     cam->waitForAcquisition();
                     auto data = cam->getAllSpectra(1, cam->getXPixels());
                     std::cout << "Measured spectrum: ";
-                    for (int i = 0; i < std::min(10, cam->getXPixels()); i++) {
-                        std::cout << data[i] << " ";
-                    }
-                    std::cout << "...\n";
                     cam->testAcquireAndSave(data, 1, cam->getXPixels(), "measured_spectrum");
+                    std::cout << "saved spectrum";
                 } else if (action == "setTint") {
                     float tint;
                     if (iss >> tint) {
