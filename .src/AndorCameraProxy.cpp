@@ -687,18 +687,21 @@ void AndorCameraProxy::getMetadata(SpectrumMetadata& meta) {
     IpcMessage res = {};
     sendCommand(req, res, 1000);
 
-    if (res.dataSize < 0) {
+    if (res.dataSize < 0 || res.dataSize > 64 * 1024) {
         throw std::runtime_error("AndorCameraProxy: invalid metadata payload size");
     }
 
-    std::string payload;
-    payload.resize(static_cast<size_t>(res.dataSize));
+    std::string payload(static_cast<size_t>(res.dataSize), '\0');
     if (!payload.empty() && !readExact(hPipe_, &payload[0], payload.size())) {
         throw std::runtime_error("AndorCameraProxy: failed to read metadata payload from pipe");
     }
 
-    SpectrumMetadata parsed = meta;
-    deserializeSpectrumMetadata(payload, parsed);
+    SpectrumMetadata parsed{};
+    try {
+        deserializeSpectrumMetadata(payload, parsed);
+    } catch (const std::exception& e) {
+        throw std::runtime_error(std::string("AndorCameraProxy: failed to parse metadata payload: ") + e.what());
+    }
     meta = parsed;
     specmeta_ = parsed;
     metadataMap_[selectedCameraIndex_] = parsed;

@@ -242,8 +242,8 @@ int main() {
                     auto data = cam->getAllSpectra(1, cam->getXPixels());
                     std::cout << "Measured spectrum: ";
                     //cam->testAcquireAndSave(data, 1, cam->getXPixels(), "measured_spectrum");
-                    cam->getMetadata(cam->specmeta);
-                    cam->savespecfast("measurements", data, 1, cam->getXPixels(), cam->specmeta, "measured_spectrum");
+                    cam->getMetadata(cam->specmeta_);
+                    cam->savespecfast("measurements", data, 1, cam->getXPixels(), cam->specmeta_, "measured_spectrum");
                     std::cout << "saved spectrum";
                 } else if (action == "setTint") {
                     float tint;
