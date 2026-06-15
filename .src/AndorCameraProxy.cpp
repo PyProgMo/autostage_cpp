@@ -528,8 +528,7 @@ std::vector<int> AndorCameraProxy::getBackground() const {
     return it->second;
 }
 
-void AndorCameraProxy::measureBackground(float exposureSeconds, const std::string& filename) {
-    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureSeconds, 1);
+void AndorCameraProxy::measureBackground(const std::string& filename) {
     startAcquisition();
     waitForAcquisition();
 

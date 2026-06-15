@@ -25,7 +25,7 @@ public:
     void setBackground(const std::vector<int>& spectra);
     bool hasBackground() const;
     std::vector<int> getBackground() const;
-    void measureBackground(float exposureSeconds, const std::string& filename = "background");
+    void measureBackground(const std::string& filename = "background");
 
     void setReadMode(int mode);
     void setAcquisitionMode(int mode);

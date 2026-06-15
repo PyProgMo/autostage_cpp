@@ -227,7 +227,7 @@ int main() {
                 } else if (action == "getTemp") {
                     std::cout << "Andor cooling temperature: " << cam->getCoolingTemperature() << " C\n";
                 } else if (action == "measurebg") {
-                    cam->measureBackground(0.1f);
+                    cam->measureBackground();
                     std::cout << "Background captured for the current camera.\n";
                 } else if (action == "disconnect") {
                     cam->shutdown();
@@ -237,8 +237,6 @@ int main() {
                     std::cout << "Acquisition aborted.\n";
                 }
                 else if (action == "measure") {
-                    cam->configureSpectral(AndorCamera::ReadMode::FVB,
-                                           AndorCamera::TriggerMode::Internal, 0.1f, 1);
                     cam->startAcquisition();
                     cam->waitForAcquisition();
                     auto data = cam->getAllSpectra(1, cam->getXPixels());
