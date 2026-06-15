@@ -414,7 +414,7 @@ AndorCameraProxy::~AndorCameraProxy() {
     }
 }
 
-void AndorCameraProxy::sendCommand(const IpcMessage& msg, IpcMessage& response, unsigned int timeout_ms) {
+void AndorCameraProxy::sendCommand(const IpcMessage& msg, IpcMessage& response, unsigned int timeout_ms, bool throwOnError) {
     // todo: add timeout handling: if the server doesn't respond within the timeout, we should throw an exception instead of hanging indefinitely. This would involve using overlapped I/O with ReadFile/WriteFile and WaitForSingleObject on the event, or using a separate thread to perform the read/write and waiting on that thread with a timeout.
     // best practice would be to implement a timeout for both the write and the read operations, and to handle the case where the server becomes unresponsive or takes too long to respond. This would prevent the client from hanging indefinitely if there is an issue with the server or the communication channel.
 
@@ -464,7 +464,7 @@ void AndorCameraProxy::sendCommand(const IpcMessage& msg, IpcMessage& response, 
         }
     }
 
-    if (response.status != 0) {
+    if (throwOnError && response.status != 0) {
         throw std::runtime_error(std::string("AndorCameraProxy: server returned error: ") + response.strArg);
     }
 }
@@ -685,7 +685,11 @@ void AndorCameraProxy::getMetadata(SpectrumMetadata& meta) {
     IpcMessage req = {};
     req.command = IpcCommand::AndorGetMetadata;
     IpcMessage res = {};
-    sendCommand(req, res, 1000);
+    sendCommand(req, res, 1000, false);
+
+    if (res.status != 0) {
+        throw std::runtime_error(std::string("AndorCameraProxy: server returned error for GetMetadata: ") + res.strArg);
+    }
 
     if (res.dataSize < 0 || res.dataSize > 64 * 1024) {
         throw std::runtime_error("AndorCameraProxy: invalid metadata payload size");
@@ -815,7 +819,11 @@ std::vector<int> AndorCameraProxy::getAllSpectra(int numSpectra, int pixelsPerSp
     req.iArgs[1] = pixelsPerSpectrum;
     
     IpcMessage res = {};
-    sendCommand(req, res);
+    sendCommand(req, res, 1000, false);
+
+    if (res.status != 0) {
+        throw std::runtime_error(std::string("AndorCameraProxy: server returned error for GetImages16: ") + res.strArg);
+    }
     
     if (res.dataSize < 0 || (res.dataSize % static_cast<int32_t>(sizeof(int))) != 0) {
         throw std::runtime_error("AndorCameraProxy: invalid payload size for GetImages16 response");

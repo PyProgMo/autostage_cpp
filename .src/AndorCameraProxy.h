@@ -92,7 +92,7 @@ private:
     int selectedCameraIndex_ = 0;
     std::map<int, std::vector<int>> backgrounds_;
 
-    void sendCommand(const IpcMessage& msg, IpcMessage& response, unsigned int timeout_ms = 1000);
+    void sendCommand(const IpcMessage& msg, IpcMessage& response, unsigned int timeout_ms = 1000, bool throwOnError = true);
 
     // hold a copy of the wl array in the proxy for saving metadata, to avoid having to pass it back and forth with every save command
     std::vector<float> wlArray_;

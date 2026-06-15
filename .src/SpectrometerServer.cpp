@@ -68,6 +68,7 @@ void ProcessClient(HANDLE hPipe) {
         IpcMessage res = {};
         res.command = req.command;
         res.status = 0;
+        res.errorCode = 0;
 
         AppLogger::instance().info(std::string("SpectrometerServer: processing command ") + ipcCommandName(req.command));
 
@@ -172,22 +173,30 @@ void ProcessClient(HANDLE hPipe) {
                 int numSpectra = req.iArgs[0];
                 int pixelsPerSpectrum = req.iArgs[1];
                 AppLogger::instance().info("SpectrometerServer: getAllSpectra");
+            try {
                 auto data = cam.getAllSpectra(numSpectra, pixelsPerSpectrum);
                 res.dataSize = (int32_t)(data.size() * sizeof(int));
-                
+                res.errorCode = 0;
+
                 DWORD bytesWritten = 0;
                 if (!WriteFile(hPipe, &res, sizeof(res), &bytesWritten, NULL)) {
                     std::cerr << "Write response header failed\n";
                     break;
                 }
-
                 if (res.dataSize > 0) {
                     if (!WriteFile(hPipe, data.data(), res.dataSize, &bytesWritten, NULL)) {
                         std::cerr << "Write response payload failed\n";
                         break;
                     }
                 }
-                continue; 
+            } catch (const std::exception& e) {
+                AppLogger::instance().error(std::string("SpectrometerServer: exception: ") + e.what());
+                res.dataSize = 0;
+                res.errorCode = -1;  // or a specific error enum value
+                DWORD bytesWritten = 0;
+                WriteFile(hPipe, &res, sizeof(res), &bytesWritten, NULL);
+            }
+            continue;
             }
             case IpcCommand::AndorGetMetadata: {
                 AppLogger::instance().info("SpectrometerServer: getMetadata");

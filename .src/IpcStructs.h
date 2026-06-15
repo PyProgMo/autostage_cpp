@@ -70,6 +70,9 @@ struct IpcMessage {
     double     dArgs[4];
     
     int32_t    dataSize;    // For variable-length data to follow
+    // add errorcodedArgs[0] for more specific error codes if needed
+    int32_t    errorCode;   // More specific error code
+
 };
 
 #pragma pack(pop)
