@@ -73,6 +73,8 @@ inline const char* ipcCommandName(IpcCommand command) {
     case IpcCommand::AndorGetImages16: return "AndorGetImages16";
     case IpcCommand::AndorConfigureSpectral: return "AndorConfigureSpectral";
     case IpcCommand::AndorConfigureFVBKinetic: return "AndorConfigureFVBKinetic";
+    case IpcCommand::AndorGetMetadata: return "AndorGetMetadata";
+    case IpcCommand::AndorSetMetadata: return "AndorSetMetadata";
     default: return "Unknown";
     }
 }

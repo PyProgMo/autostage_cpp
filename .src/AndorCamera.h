@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <sstream>
 
 // Andor SDK2 error codes
 #define DRV_SUCCESS          20002
@@ -203,6 +204,93 @@ struct SpectrumMetadata {
         double magnification;       // 83.333
         double powerAtGlassUW;      // -0.008998
     };
+
+inline std::string serializeSpectrumMetadata(const SpectrumMetadata& metadata) {
+    std::ostringstream oss;
+
+    // Keep format line-oriented and append-only for easy forward compatibility.
+    oss << "date=" << metadata.date << '\n';
+    oss << "userName=" << metadata.userName << '\n';
+    oss << "fileName=" << metadata.fileName << '\n';
+    oss << "slitWidthUm=" << metadata.slitWidthUm << '\n';
+    oss << "grating=" << metadata.grating << '\n';
+    oss << "filter=" << metadata.filter << '\n';
+    oss << "centralWlNm=" << metadata.centralWlNm << '\n';
+    oss << "detector=" << metadata.detector << '\n';
+    oss << "coolingTempC=" << metadata.coolingTempC << '\n';
+    oss << "exposureTimeS=" << metadata.exposureTimeS << '\n';
+    oss << "horizontalBinning=" << metadata.horizontalBinning << '\n';
+    oss << "wlFirstPixelNm=" << metadata.wlFirstPixelNm << '\n';
+    oss << "wlLastPixelNm=" << metadata.wlLastPixelNm << '\n';
+    oss << "deltaWlNm=" << metadata.deltaWlNm << '\n';
+    oss << "ReadMode=" << static_cast<int>(metadata.ReadMode) << '\n';
+    oss << "triggerMode=" << static_cast<int>(metadata.triggerMode) << '\n';
+    oss << "xPos=" << metadata.xPos << '\n';
+    oss << "yPos=" << metadata.yPos << '\n';
+    oss << "zPos=" << metadata.zPos << '\n';
+    oss << "switchUD=" << metadata.switchUD << '\n';
+    oss << "switchLR=" << metadata.switchLR << '\n';
+    oss << "nktSystem=" << metadata.nktSystem << '\n';
+    oss << "operation=" << metadata.operation << '\n';
+    oss << "powerLevelPct=" << metadata.powerLevelPct << '\n';
+    oss << "shortWlNm=" << metadata.shortWlNm << '\n';
+    oss << "longWlNm=" << metadata.longWlNm << '\n';
+    oss << "laserPosX=" << metadata.laserPosX << '\n';
+    oss << "laserPosY=" << metadata.laserPosY << '\n';
+    oss << "magnification=" << metadata.magnification << '\n';
+    oss << "powerAtGlassUW=" << metadata.powerAtGlassUW << '\n';
+
+    return oss.str();
+}
+
+inline bool deserializeSpectrumMetadata(const std::string& payload, SpectrumMetadata& metadata) {
+    std::istringstream iss(payload);
+    std::string line;
+
+    while (std::getline(iss, line)) {
+        const size_t split = line.find('=');
+        if (split == std::string::npos) {
+            continue;
+        }
+
+        const std::string key = line.substr(0, split);
+        const std::string value = line.substr(split + 1);
+
+        if (key == "date") metadata.date = value;
+        else if (key == "userName") metadata.userName = value;
+        else if (key == "fileName") metadata.fileName = value;
+        else if (key == "slitWidthUm") metadata.slitWidthUm = std::stod(value);
+        else if (key == "grating") metadata.grating = value;
+        else if (key == "filter") metadata.filter = value;
+        else if (key == "centralWlNm") metadata.centralWlNm = std::stod(value);
+        else if (key == "detector") metadata.detector = value;
+        else if (key == "coolingTempC") metadata.coolingTempC = std::stod(value);
+        else if (key == "exposureTimeS") metadata.exposureTimeS = std::stod(value);
+        else if (key == "horizontalBinning") metadata.horizontalBinning = std::stoi(value);
+        else if (key == "wlFirstPixelNm") metadata.wlFirstPixelNm = std::stod(value);
+        else if (key == "wlLastPixelNm") metadata.wlLastPixelNm = std::stod(value);
+        else if (key == "deltaWlNm") metadata.deltaWlNm = std::stod(value);
+        else if (key == "ReadMode") metadata.ReadMode = static_cast<Andor::ReadMode>(std::stoi(value));
+        else if (key == "triggerMode") metadata.triggerMode = static_cast<Andor::TriggerMode>(std::stoi(value));
+        else if (key == "xPos") metadata.xPos = std::stod(value);
+        else if (key == "yPos") metadata.yPos = std::stod(value);
+        else if (key == "zPos") metadata.zPos = std::stod(value);
+        else if (key == "switchUD") metadata.switchUD = std::stoi(value);
+        else if (key == "switchLR") metadata.switchLR = std::stoi(value);
+        else if (key == "nktSystem") metadata.nktSystem = value;
+        else if (key == "operation") metadata.operation = value;
+        else if (key == "powerLevelPct") metadata.powerLevelPct = std::stod(value);
+        else if (key == "shortWlNm") metadata.shortWlNm = std::stof(value);
+        else if (key == "longWlNm") metadata.longWlNm = std::stof(value);
+        else if (key == "laserPosX") metadata.laserPosX = std::stod(value);
+        else if (key == "laserPosY") metadata.laserPosY = std::stod(value);
+        else if (key == "magnification") metadata.magnification = std::stod(value);
+        else if (key == "powerAtGlassUW") metadata.powerAtGlassUW = std::stod(value);
+    }
+
+    return true;
+}
+
 class AndorCamera {
 public:
     using TriggerMode = Andor::TriggerMode;
@@ -267,7 +355,8 @@ public:
     // wl array function: init array for the wl-array
     void getWLarray(float startWL, float endWL, std::vector<float>& WL);
     void setWLarray(std::vector<float>& WL);
-    SpectrumMetadata specmeta;
+    SpectrumMetadata getMetadata() const;
+    void setMetadata(const SpectrumMetadata& metadata);
     void saveSpectrumSet(const std::string& measurementFolder,
                       const std::string& stem,
                       const std::vector<int>& spectra,
@@ -295,6 +384,7 @@ private:
     int wlStart_ = 0, wlEnd_ = 1023; // placeholder values for wavelength calibration range
     int wlNumPoints_ = 1024; // placeholder for number of points in wavelength calibration, typically matches pixel count
     std::vector<float> wlArray_; // placeholder for wavelength calibration data, on start initialize with pixel indices, later with real wavelength values
+    std::map<int, SpectrumMetadata> metadataMap_;
     
 
 
@@ -324,6 +414,9 @@ private:
     FP_GetImages16             pGetImages16             = nullptr;
 
     std::map<int, std::vector<int>> backgrounds_;
+
+    SpectrumMetadata& currentMetadata();
+    const SpectrumMetadata& currentMetadata() const;
 
     void ensureLoaded();
     void check(unsigned int ret, const char* context);

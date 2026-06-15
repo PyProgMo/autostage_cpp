@@ -8,6 +8,42 @@
 
 #include <sstream>
 
+namespace {
+bool readExact(HANDLE pipe, void* buffer, size_t totalBytes) {
+    BYTE* ptr = static_cast<BYTE*>(buffer);
+    size_t remaining = totalBytes;
+    DWORD bytesRead = 0;
+    while (remaining > 0) {
+        if (!ReadFile(pipe, ptr, static_cast<DWORD>(remaining), &bytesRead, NULL)) {
+            return false;
+        }
+        if (bytesRead == 0) {
+            return false;
+        }
+        ptr += bytesRead;
+        remaining -= bytesRead;
+    }
+    return true;
+}
+
+bool writeExact(HANDLE pipe, const void* buffer, size_t totalBytes) {
+    const BYTE* ptr = static_cast<const BYTE*>(buffer);
+    size_t remaining = totalBytes;
+    DWORD bytesWritten = 0;
+    while (remaining > 0) {
+        if (!WriteFile(pipe, ptr, static_cast<DWORD>(remaining), &bytesWritten, NULL)) {
+            return false;
+        }
+        if (bytesWritten == 0) {
+            return false;
+        }
+        ptr += bytesWritten;
+        remaining -= bytesWritten;
+    }
+    return true;
+}
+} // namespace
+
 void ProcessClient(HANDLE hPipe) {
     AndorCamera cam;
     bool running = true;
@@ -153,6 +189,40 @@ void ProcessClient(HANDLE hPipe) {
                 }
                 continue; 
             }
+            case IpcCommand::AndorGetMetadata: {
+                AppLogger::instance().info("SpectrometerServer: getMetadata");
+                const SpectrumMetadata metadata = cam.getMetadata();
+                const std::string payload = serializeSpectrumMetadata(metadata);
+                res.dataSize = static_cast<int32_t>(payload.size());
+
+                if (!writeExact(hPipe, &res, sizeof(res))) {
+                    std::cerr << "Write metadata response header failed\n";
+                    break;
+                }
+
+                if (res.dataSize > 0 && !writeExact(hPipe, payload.data(), static_cast<size_t>(res.dataSize))) {
+                    std::cerr << "Write metadata response payload failed\n";
+                    break;
+                }
+                continue;
+            }
+            case IpcCommand::AndorSetMetadata: {
+                AppLogger::instance().info("SpectrometerServer: setMetadata");
+                if (req.dataSize < 0) {
+                    throw std::runtime_error("SpectrometerServer: invalid metadata payload size");
+                }
+
+                std::string payload;
+                payload.resize(static_cast<size_t>(req.dataSize));
+                if (!payload.empty() && !readExact(hPipe, &payload[0], payload.size())) {
+                    throw std::runtime_error("SpectrometerServer: failed to read metadata payload");
+                }
+
+                SpectrumMetadata metadata = cam.getMetadata();
+                deserializeSpectrumMetadata(payload, metadata);
+                cam.setMetadata(metadata);
+                break;
+            }
             case IpcCommand::ExitServer:
                 AppLogger::instance().info("SpectrometerServer: ExitServer received");
                 running = false;
@@ -168,7 +238,7 @@ void ProcessClient(HANDLE hPipe) {
             strncpy(res.strArg, e.what(), sizeof(res.strArg) - 1);
         }
 
-        if (req.command != IpcCommand::AndorGetImages16) {
+        if (req.command != IpcCommand::AndorGetImages16 && req.command != IpcCommand::AndorGetMetadata) {
             DWORD bytesWritten = 0;
             if (!WriteFile(hPipe, &res, sizeof(res), &bytesWritten, NULL)) {
                 AppLogger::instance().error("SpectrometerServer: write response failed");

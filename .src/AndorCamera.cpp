@@ -357,6 +357,11 @@ void AndorCamera::selectCamera(int cameraIndex) {
 
     selectedCameraIndex_ = cameraIndex;
     selectedCameraHandle_ = handle;
+
+    // Keep per-camera metadata available even before any UI updates.
+    if (metadataMap_.find(selectedCameraIndex_) == metadataMap_.end()) {
+        metadataMap_[selectedCameraIndex_] = SpectrumMetadata{};
+    }
 }
 
 void AndorCamera::enableCooling(bool enable) {
@@ -418,11 +423,13 @@ void AndorCamera::setAcquisitionMode(int mode) {
 void AndorCamera::setExposureTime(float time) {
     ensureLoaded();
     check(pSetExposureTime(time), "SetExposureTime");
+    currentMetadata().exposureTimeS = static_cast<double>(time);
 }
 
 void AndorCamera::setTriggerMode(int mode) {
     ensureLoaded();
     check(pSetTriggerMode(mode), "SetTriggerMode");
+    currentMetadata().triggerMode = static_cast<TriggerMode>(mode);
 }
 
 void AndorCamera::setImage(int hbin, int vbin, int hstart, int hend, int vstart, int vend) {
@@ -459,6 +466,11 @@ void AndorCamera::configureSpectral(ReadMode ReadMode, TriggerMode trigMode, flo
     }
     
     check(pSetTriggerMode(static_cast<int>(trigMode)), "SetTriggerMode");
+
+    SpectrumMetadata& meta = currentMetadata();
+    meta.ReadMode = ReadMode;
+    meta.triggerMode = trigMode;
+    meta.exposureTimeS = static_cast<double>(exposureSeconds);
 }
 
 void AndorCamera::configureFVBKinetic(float exposureSeconds, int numLines) {
@@ -472,6 +484,11 @@ void AndorCamera::configureFVBKinetic(float exposureSeconds, int numLines) {
     check(pSetNumberKinetics(numLines), "SetNumberKinetics");
     // Fast External: one TTL rising edge = one acquisition
     check(pSetTriggerMode(7),           "SetTriggerMode FastExternal");
+
+    SpectrumMetadata& meta = currentMetadata();
+    meta.ReadMode = ReadMode::FVB;
+    meta.triggerMode = TriggerMode::FastExternal;
+    meta.exposureTimeS = static_cast<double>(exposureSeconds);
 }
 
 void AndorCamera::startAcquisition() {
@@ -525,14 +542,15 @@ void AndorCamera::testAcquireAndSave(const std::vector<int>& spectra, int numSpe
     std::cout << "OpenCV Build Information:\n" << cv::getBuildInformation() << "\n";
 
     const std::vector<int> background = getBackground();
+    SpectrumMetadata& meta = currentMetadata();
 
     if (numSpectra == 1) {
         const std::string stem = filename.empty() ? "spectrum" : filename;
-        saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, numSpectra, pixelsPerSpectrum, specmeta);
+        saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, numSpectra, pixelsPerSpectrum, meta);
 
         if (!background.empty()) {
             const std::vector<int> sigBg = subtractBackground(spectra, background);
-            saveSpectrumSet(measurementFolder, "sig-bg", sigBg, wlArray_, numSpectra, pixelsPerSpectrum, specmeta);
+            saveSpectrumSet(measurementFolder, "sig-bg", sigBg, wlArray_, numSpectra, pixelsPerSpectrum, meta);
         }
 
         std::cout << "Saved spectrum to " << measurementFolder << "\n";
@@ -545,13 +563,13 @@ void AndorCamera::testAcquireAndSave(const std::vector<int>& spectra, int numSpe
 
         std::ostringstream name;
         name << (filename.empty() ? "frame" : filename) << '_' << std::setw(3) << std::setfill('0') << frame;
-        saveSpectrumSet(measurementFolder, name.str(), frameData, wlArray_, 1, pixelsPerSpectrum, specmeta);
+        saveSpectrumSet(measurementFolder, name.str(), frameData, wlArray_, 1, pixelsPerSpectrum, meta);
 
         if (!background.empty()) {
             std::vector<int> bgFrame(background.begin() + (frame * pixelsPerSpectrum),
                                       background.begin() + ((frame + 1) * pixelsPerSpectrum));
             const std::vector<int> sigBg = subtractBackground(frameData, bgFrame);
-            saveSpectrumSet(measurementFolder, std::string("sig-bg_") + name.str().substr(name.str().find_last_of('_') + 1), sigBg, wlArray_, 1, pixelsPerSpectrum, specmeta);
+            saveSpectrumSet(measurementFolder, std::string("sig-bg_") + name.str().substr(name.str().find_last_of('_') + 1), sigBg, wlArray_, 1, pixelsPerSpectrum, meta);
         }
     }
 
@@ -627,8 +645,33 @@ void AndorCamera::measureBackground(float exposureSeconds, const std::string& fi
 
     const std::string measurementFolder = createMeasurementFolder();
     const std::string stem = filename.empty() ? "background" : filename;
-    saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, 1, getXPixels(), specmeta);
+    saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, 1, getXPixels(), currentMetadata());
     std::cout << "Saved background to " << measurementFolder << "\n";
+}
+
+SpectrumMetadata& AndorCamera::currentMetadata() {
+    auto it = metadataMap_.find(selectedCameraIndex_);
+    if (it == metadataMap_.end()) {
+        it = metadataMap_.emplace(selectedCameraIndex_, SpectrumMetadata{}).first;
+    }
+    return it->second;
+}
+
+const SpectrumMetadata& AndorCamera::currentMetadata() const {
+    auto it = metadataMap_.find(selectedCameraIndex_);
+    if (it == metadataMap_.end()) {
+        static const SpectrumMetadata empty{};
+        return empty;
+    }
+    return it->second;
+}
+
+SpectrumMetadata AndorCamera::getMetadata() const {
+    return currentMetadata();
+}
+
+void AndorCamera::setMetadata(const SpectrumMetadata& metadata) {
+    metadataMap_[selectedCameraIndex_] = metadata;
 }
 
 void AndorCamera::getWLarray(float startWL, float endWL, std::vector<float>& WL) {
@@ -647,5 +690,3 @@ void AndorCamera::setWLarray(std::vector<float>& WL) {
     wlNumPoints_ = static_cast<float>(WL.size());
     
 }
-    
-    

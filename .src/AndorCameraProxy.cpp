@@ -130,6 +130,40 @@ std::vector<int> subtractBackground(const std::vector<int>& spectra, const std::
     }
     return sigBg;
 }
+
+bool readExact(HANDLE pipe, void* buffer, size_t totalBytes) {
+    BYTE* ptr = static_cast<BYTE*>(buffer);
+    size_t remaining = totalBytes;
+    DWORD bytesRead = 0;
+    while (remaining > 0) {
+        if (!ReadFile(pipe, ptr, static_cast<DWORD>(remaining), &bytesRead, NULL)) {
+            return false;
+        }
+        if (bytesRead == 0) {
+            return false;
+        }
+        ptr += bytesRead;
+        remaining -= bytesRead;
+    }
+    return true;
+}
+
+bool writeExact(HANDLE pipe, const void* buffer, size_t totalBytes) {
+    const BYTE* ptr = static_cast<const BYTE*>(buffer);
+    size_t remaining = totalBytes;
+    DWORD bytesWritten = 0;
+    while (remaining > 0) {
+        if (!WriteFile(pipe, ptr, static_cast<DWORD>(remaining), &bytesWritten, NULL)) {
+            return false;
+        }
+        if (bytesWritten == 0) {
+            return false;
+        }
+        ptr += bytesWritten;
+        remaining -= bytesWritten;
+    }
+    return true;
+}
 } // namespace
 
 // save spectrum
@@ -322,7 +356,7 @@ void AndorCameraProxy::saveSpectrumSet(const std::string& measurementFolder,
                      const std::vector<float>& WL,
                      int numSpectra,
                      int pixelsPerSpectrum,
-                     SpectrumMetadata& specmeta,
+                     SpectrumMetadata& meta,
                      bool saveAsPng)
 {
     std::vector<float> fallbackWL;
@@ -340,7 +374,7 @@ void AndorCameraProxy::saveSpectrumSet(const std::string& measurementFolder,
                       spectra, *wlToUse, numSpectra, pixelsPerSpectrum);
 
     writePlemTxt(joinPath(measurementFolder, stem) + ".txt",
-                 specmeta, spectra, *wlToUse, numSpectra, pixelsPerSpectrum);
+                 meta, spectra, *wlToUse, numSpectra, pixelsPerSpectrum);
 }
 
 AndorCameraProxy::AndorCameraProxy() {
@@ -473,6 +507,9 @@ void AndorCameraProxy::selectCamera(int cameraIndex) {
     IpcMessage res = {};
     sendCommand(req, res, 5000);
     selectedCameraIndex_ = cameraIndex;
+
+    SpectrumMetadata metadata;
+    getMetadata(metadata);
 }
 
 void AndorCameraProxy::enableCooling(bool enable) {
@@ -642,6 +679,58 @@ void AndorCameraProxy::waitForAcquisition() {
     IpcMessage res = {};
     sendCommand(req, res, 300000); // 5 minute timeout for acquisition to complete
 }
+
+// get the metadata
+void AndorCameraProxy::getMetadata(SpectrumMetadata& meta) {
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorGetMetadata;
+    IpcMessage res = {};
+    sendCommand(req, res, 1000);
+
+    if (res.dataSize < 0) {
+        throw std::runtime_error("AndorCameraProxy: invalid metadata payload size");
+    }
+
+    std::string payload;
+    payload.resize(static_cast<size_t>(res.dataSize));
+    if (!payload.empty() && !readExact(hPipe_, &payload[0], payload.size())) {
+        throw std::runtime_error("AndorCameraProxy: failed to read metadata payload from pipe");
+    }
+
+    SpectrumMetadata parsed = meta;
+    deserializeSpectrumMetadata(payload, parsed);
+    meta = parsed;
+    specmeta_ = parsed;
+    metadataMap_[selectedCameraIndex_] = parsed;
+}
+
+void AndorCameraProxy::setMetadata(const SpectrumMetadata& metadata) {
+    const std::string payload = serializeSpectrumMetadata(metadata);
+
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorSetMetadata;
+    req.dataSize = static_cast<int32_t>(payload.size());
+
+    IpcMessage res = {};
+
+    if (!writeExact(hPipe_, &req, sizeof(req))) {
+        throw std::runtime_error("AndorCameraProxy: failed to write metadata command");
+    }
+    if (!payload.empty() && !writeExact(hPipe_, payload.data(), payload.size())) {
+        throw std::runtime_error("AndorCameraProxy: failed to write metadata payload");
+    }
+
+    if (!readExact(hPipe_, &res, sizeof(res))) {
+        throw std::runtime_error("AndorCameraProxy: failed to read metadata response");
+    }
+    if (res.status != 0) {
+        throw std::runtime_error(std::string("AndorCameraProxy: server returned error: ") + res.strArg);
+    }
+
+    specmeta_ = metadata;
+    metadataMap_[selectedCameraIndex_] = metadata;
+}
+
 
 // new test function: 
 void AndorCameraProxy::testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {

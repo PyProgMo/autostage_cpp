@@ -54,7 +54,9 @@ enum class IpcCommand : int32_t {
     AndorSetNumberKinetics,
     AndorGetImages16,
     AndorConfigureSpectral,
-    AndorConfigureFVBKinetic
+    AndorConfigureFVBKinetic, 
+    AndorGetMetadata,
+    AndorSetMetadata,
 };
 
 #pragma pack(push, 1)

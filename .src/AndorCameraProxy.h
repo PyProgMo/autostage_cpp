@@ -50,6 +50,8 @@ public:
     void testAcquireAndSave(float exposureSeconds, const std::string& filename);
     void testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
     std::vector<int> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
+
+
     
     // AcquireAndSavefast function
     void AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
@@ -73,7 +75,12 @@ public:
 
     // wl array function: init array for the wl-array
     void getWLarray(float startWL, float endWL, std::vector<int>& WL);
-
+    // void that returns a reference to the medadata map of the proxy, so that it can be updated from ConsoleApp when metadata is entered by the user, and then saved with each spectrum without having to pass it back and forth with every save command
+    SpectrumMetadata specmeta_;
+    std::map<int, SpectrumMetadata>& getMetadataMap() { return metadataMap_; }
+    // functions to request metadata over the pipe
+    void getMetadata(SpectrumMetadata& metadata);
+    void setMetadata(const SpectrumMetadata& metadata);
 
     // add test function for sanity checks
     // acquire 10 spectra with 0.1 s exposure and print the first 10 pixels of each to console, also save them to disk, important: print how loong it took
