@@ -15,7 +15,10 @@ bool readExact(HANDLE pipe, void* buffer, size_t totalBytes) {
     DWORD bytesRead = 0;
     while (remaining > 0) {
         if (!ReadFile(pipe, ptr, static_cast<DWORD>(remaining), &bytesRead, NULL)) {
-            return false;
+            const DWORD gle = GetLastError();
+            if (gle != ERROR_MORE_DATA || bytesRead == 0) {
+                return false;
+            }
         }
         if (bytesRead == 0) {
             return false;
@@ -52,10 +55,7 @@ void ProcessClient(HANDLE hPipe) {
 
     while (running) {
         IpcMessage req = {};
-        DWORD bytesRead = 0;
-        BOOL result = ReadFile(hPipe, &req, sizeof(req), &bytesRead, NULL);
-
-        if (!result || bytesRead == 0) {
+        if (!readExact(hPipe, &req, sizeof(req))) {
             DWORD gle = GetLastError();
             if (gle == ERROR_BROKEN_PIPE) {
                 AppLogger::instance().info("SpectrometerServer: client disconnected");

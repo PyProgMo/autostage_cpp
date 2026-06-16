@@ -137,7 +137,10 @@ bool readExact(HANDLE pipe, void* buffer, size_t totalBytes) {
     DWORD bytesRead = 0;
     while (remaining > 0) {
         if (!ReadFile(pipe, ptr, static_cast<DWORD>(remaining), &bytesRead, NULL)) {
-            return false;
+            const DWORD gle = GetLastError();
+            if (gle != ERROR_MORE_DATA || bytesRead == 0) {
+                return false;
+            }
         }
         if (bytesRead == 0) {
             return false;

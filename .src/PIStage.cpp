@@ -65,17 +65,43 @@ void PIStage::loadDLL(const std::string& dllPath) {
 }
 
 void PIStage::connect(const std::string& serialNum) {
-    id_ = pConnectUSB(serialNum.c_str());
+    int lastId = -1;
+    int lastErr = 0;
+    char lastMsg[256] = {};
+
+    for (int attempt = 1; attempt <= 3; ++attempt) {
+        id_ = pConnectUSB(serialNum.c_str());
+        if (id_ >= 0) {
+            break;
+        }
+
+        lastId = id_;
+        lastErr = pGetError ? pGetError(id_) : 0;
+        lastMsg[0] = '\0';
+        if (pTranslateError) {
+            pTranslateError(lastErr, lastMsg, sizeof(lastMsg));
+        }
+
+        AppLogger::instance().warn(
+            std::string("PI stage connection attempt ") + std::to_string(attempt) +
+            " failed: id=" + std::to_string(lastId) +
+            " code=" + std::to_string(lastErr) +
+            " msg=" + lastMsg +
+            " serial=" + serialNum);
+
+        if (attempt < 3) {
+            Sleep(50);
+        }
+    }
+
     if (id_ < 0) {
-        int err = pGetError ? pGetError(id_) : 0;
-        char msg[256] = {};
-        if (pTranslateError) pTranslateError(err, msg, sizeof(msg));
         std::string message = std::string("PI stage connection failed: code=") +
-                              std::to_string(err) + " msg=" + msg +
+                              std::to_string(lastErr) + " msg=" + lastMsg +
                               " serial=" + serialNum;
         AppLogger::instance().error(message);
         throw std::runtime_error(message);
     }
+
     // enable servo on all axes to ensure stage is responsive to commands immediately after connection (some controllers require this before accepting other commands)
     enableServo("1", true);
     enableServo("2", true);
