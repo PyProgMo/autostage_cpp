@@ -330,6 +330,13 @@ int main() {
                     std::cout << "andor testfunctions:\n";
                     std::cout << "  andor test -> testmeasurement\n";
                     std::cout << "  andor testtiming -> measure 100 spectra with 0.1 s exposure, also save them to disk, important: print how loong it took\n (important: timing uses windows chorono)\n"; 
+                    std::cout << " andor printmeta -> print the current metadata stored in the proxy\n";
+                } else if (action == "printmeta") {
+                    SpectrumMetadata meta;
+                    cam->getMetadata(meta);
+                    std::cout << "Current metadata in proxy:\n";
+                    std::cout << "  ExposureTime: " << meta.date << " s\n";
+                    std::cout << "  ReadMode: " << meta.userName << "\n";
                 } else if (action == "test") {
                     cam->testAcquireAndSave(0.1f, "test_spectrum");
                     std::cout << "Measured spectrum and sig-bg saved under the timestamped measurements folder when a background is available.\n";

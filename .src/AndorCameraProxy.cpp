@@ -688,7 +688,10 @@ void AndorCameraProxy::getMetadata(SpectrumMetadata& meta) {
     IpcMessage req = {};
     req.command = IpcCommand::AndorGetMetadata;
     IpcMessage res = {};
+    // test: print sending command and receiving response with timestamps
+    AppLogger::instance().info("AndorCameraProxy: sending GetMetadata command to server for camera index " + std::to_string(selectedCameraIndex_));
     sendCommand(req, res, 1000, false);
+    AppLogger::instance().info("AndorCameraProxy: received GetMetadata response from server with status " + std::to_string(res.status) + " and dataSize " + std::to_string(res.dataSize));
 
     if (res.status != 0) {
         throw std::runtime_error(std::string("AndorCameraProxy: server returned error for GetMetadata: ") + res.strArg);
