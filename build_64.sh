@@ -34,39 +34,6 @@ compile_if_changed() {
 }
 
 # ==============================================================================
-# TARGET 1: SpectrometerServer.exe
-# ==============================================================================
-echo "Checking dependencies for SpectrometerServer.exe..."
-NEEDS_LINKING=false
-
-SERVER_EXE="$SCRIPT_DIR/build/SpectrometerServer.exe"
-SERVER_SRCS=(
-    "$SCRIPT_DIR/.src/SpectrometerServer.cpp"
-    "$SCRIPT_DIR/.src/Logger.cpp"
-    "$SCRIPT_DIR/.src/AndorCamera.cpp"
-)
-SERVER_OBJS=()
-
-# Process object files for Server
-for src in "${SERVER_SRCS[@]}"; do
-    filename=$(basename "${src%.cpp}")
-    obj="$SCRIPT_DIR/build/${filename}_server.o" # Distinct suffix to prevent collision
-    SERVER_OBJS+=("$obj")
-    compile_if_changed "$src" "$obj"
-done
-
-# Link Server if required
-if [ "$NEEDS_LINKING" = true ] || [ ! -f "$SERVER_EXE" ]; then
-    echo "Linking $SERVER_EXE..."
-    "$CXX" -m64 "${SERVER_OBJS[@]}" -o "$SERVER_EXE" $LDFLAGS
-    echo "Successfully built build/SpectrometerServer.exe"
-else
-    echo "SpectrometerServer.exe is up to date."
-fi
-
-echo "----------------------------------------------------"
-
-# ==============================================================================
 # TARGET 2: ConsoleApp.exe
 # ==============================================================================
 echo "Checking dependencies for ConsoleApp.exe..."
@@ -77,8 +44,8 @@ CONSOLE_SRCS=(
     "$SCRIPT_DIR/.src/ConsoleApp.cpp"
     "$SCRIPT_DIR/.src/RasterScan.cpp"
     "$SCRIPT_DIR/.src/PIStageProxy.cpp"
-    "$SCRIPT_DIR/.src/AndorCameraProxy.cpp"
     "$SCRIPT_DIR/.src/Logger.cpp"
+    "$SCRIPT_DIR/.src/AndorCamera.cpp"
 )
 CONSOLE_OBJS=()
 

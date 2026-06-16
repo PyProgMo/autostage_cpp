@@ -371,6 +371,7 @@ public:
     static const char* CameraNtoName(int cameraN);
     std::string TranslateCameraErrorToString(int status);
 
+    std::map<int, SpectrumMetadata> metadataMap;
 
 
 private:
@@ -384,9 +385,6 @@ private:
     int wlStart_ = 0, wlEnd_ = 1023; // placeholder values for wavelength calibration range
     int wlNumPoints_ = 1024; // placeholder for number of points in wavelength calibration, typically matches pixel count
     std::vector<float> wlArray_; // placeholder for wavelength calibration data, on start initialize with pixel indices, later with real wavelength values
-    std::map<int, SpectrumMetadata> metadataMap_;
-    
-
 
     FP_Initialize              pInitialize              = nullptr;
     FP_GetAvailableCameras      pGetAvailableCameras     = nullptr;

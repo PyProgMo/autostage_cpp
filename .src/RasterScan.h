@@ -1,7 +1,7 @@
 // RasterScan.h
 #pragma once
 #include "PIStageProxy.h"
-#include "AndorCameraProxy.h"
+#include "AndorCamera.h"
 #include <vector>
 #include <string>
 #include <atomic>
@@ -66,14 +66,14 @@ struct ScanResult {
 // ── RasterScan class ───────────────────────────────────────────────────────
 class RasterScan {
 public:
-    RasterScan(PIStageProxy& stage, AndorCameraProxy& cam);
+    RasterScan(PIStageProxy& stage, AndorCamera& cam);
 
     // Diagnostic one-row test scan used by the console velocitytest command.
-    static void runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double velocityNmPerS, double xDistanceNm);
+    static void runOneRowTest(PIStageProxy& stage, AndorCamera& cam, double velocityNmPerS, double xDistanceNm);
 
     // Corrected one-row scan that follows a fixed duration target and can optionally log to a file.
     static void runRowCorrected(PIStageProxy& stage,
-                                AndorCameraProxy& cam,
+                                AndorCamera& cam,
                                 double durationS,
                                 double xDistanceNm,
                                 bool logImportant = false,
@@ -82,7 +82,7 @@ public:
     // Configure area scan, that scans an area looping over runRowCorrected for each line. This will validate the config and pre-calculate nX/nY.
     static void runAreaScan(ScanConfig& cfg, 
                         PIStageProxy& stage,
-                        AndorCameraProxy& cam,
+                        AndorCamera& cam,
                         bool logImportant = true,
                         const std::string& logPathPrefix = "build/rowcorrected_line_", 
                         const std::string& outputCubePath = "build/scan_cube.raw", 
@@ -119,7 +119,7 @@ public:
 
 private:
     PIStageProxy& stage_;
-    AndorCameraProxy& cam_;
+    AndorCamera& cam_;
     ScanConfig   cfg_;
 
     int nX_ = 0;

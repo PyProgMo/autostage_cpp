@@ -3,7 +3,6 @@
 #include <stdint.h>
 
 #define PIPE_NAME "\\\\.\\pipe\\PIStageIpcPipe"
-#define ANDOR_PIPE_NAME "\\\\.\\pipe\\AndorIpcPipe"
 
 enum class IpcCommand : int32_t {
     Connect = 1,
@@ -29,34 +28,7 @@ enum class IpcCommand : int32_t {
     // Scan Commands
     RunVelocitySweep,
     UploadZProfile,
-    
-    // Andor commands
-    AndorLoadDLL,
-    AndorInitialize,
-    AndorGetAvailableCameras,
-    AndorSelectCamera,
-    AndorEnableCooling,
-    AndorSetCoolingTemperature,
-    AndorGetCoolingTemperature,
-    AndorIsCoolingEnabled,
-    AndorSetReadMode,
-    AndorSetAcquisitionMode,
-    AndorSetExposureTime,
-    AndorSetTriggerMode,
-    AndorSetImage,
-    AndorStartAcquisition,
-    AndorAbortAcquisition,
-    AndorWaitForAcquisition,
-    AndorGetAcquiredData16,
-    AndorGetStatus,
-    AndorShutDown,
-    AndorSetKineticCycleTime,
-    AndorSetNumberKinetics,
-    AndorGetImages16,
-    AndorConfigureSpectral,
-    AndorConfigureFVBKinetic, 
-    AndorGetMetadata,
-    AndorSetMetadata,
+
 };
 
 #pragma pack(push, 1)

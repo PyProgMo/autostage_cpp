@@ -1,2 +1,2 @@
-added timeouts to IPC commands in AndorCameraProxy.cpp to prevent hanging if the camera process becomes unresponsive.
+added timeouts to IPC commands in AndorCamera.cpp to prevent hanging if the camera process becomes unresponsive.
 usually only a few hunderets of ms but for waitForAcquisition, which waits for the acquisition to complete, I set it to 5 minutes (300000 ms) to allow for long acquisitions. Adjust as needed based on typical acquisition times.

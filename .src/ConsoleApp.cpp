@@ -1,6 +1,6 @@
 // ConsoleApp.cpp
 #include "PIStageProxy.h"
-#include "AndorCameraProxy.h"
+#include "AndorCamera.h"
 #include "RasterScan.h"
 #include "Logger.h"
 #include <iostream>
@@ -13,7 +13,6 @@
 #include <sstream>
 #include <memory>
 #include <thread>
-
 
 void startProcess(const std::string& cmdLine) {
     STARTUPINFOA si = { sizeof(si) };
@@ -31,22 +30,19 @@ void startProcess(const std::string& cmdLine) {
 int main() {
     std::cout << "--- Master Console ---\n";
     std::cout << "Starting 32-bit StageServer...\n";
-    startProcess("build\\StageServer.exe");
-    
-    std::cout << "Starting 64-bit SpectrometerServer...\n";
-    startProcess("build\\SpectrometerServer.exe");
+    //startProcess("build\\StageServer.exe");
 
     Sleep(1000); // Give servers time to bind to pipes
 
     std::unique_ptr<PIStageProxy> stage;
-    std::unique_ptr<AndorCameraProxy> cam;
+    std::unique_ptr<AndorCamera> cam;
 
     // init empty metadata in the camera proxy, so that it can be updated from the console app when the user enters metadata, and then saved with each spectrum without having to pass it back and forth with every save command
-    cam->specmeta_ = SpectrumMetadata();
+    cam->metadataMap[0] = SpectrumMetadata();
 
     try {
         stage = std::make_unique<PIStageProxy>();
-        cam = std::make_unique<AndorCameraProxy>();
+        cam = std::make_unique<AndorCamera>();
     } catch (const std::exception& e) {
         std::cerr << "Failed to connect to IPC pipes: " << e.what() << "\n";
         return 1;
@@ -231,7 +227,7 @@ int main() {
                 } else if (action == "getTemp") {
                     std::cout << "Andor cooling temperature: " << cam->getCoolingTemperature() << " C\n";
                 } else if (action == "measurebg") {
-                    cam->measureBackground();
+                    cam->measureBackground(0.1f, "background");
                     std::cout << "Background captured for the current camera.\n";
                 } else if (action == "disconnect") {
                     cam->shutdown();
@@ -245,8 +241,8 @@ int main() {
                     auto data = cam->getAllSpectra(1, cam->getXPixels());
                     std::cout << "Measured spectrum: \n";
                     //cam->testAcquireAndSave(data, 1, cam->getXPixels(), "measured_spectrum");
-                    cam->getMetadata(cam->specmeta_);
-                    cam->savespecfast("measurements", data, 1, cam->getXPixels(), cam->specmeta_, "measured_spectrum");
+                    SpectrumMetadata metadata = cam->getMetadata();
+                    cam->Savefast("measurements", data, 1, cam->getXPixels(), "measured_spectrum");
                     std::cout << "saved spectrum";
                 } else if (action == "initspec") {
                     // set integration time to 100 ms, set read mode to FVB, set trigger mode to external, and start acquisition, but do not wait for it to finish, so that the camera is ready and waiting for the trigger when the user is ready to measure
@@ -335,15 +331,23 @@ int main() {
                     std::cout << "  andor testtiming -> measure 100 spectra with 0.1 s exposure, also save them to disk, important: print how loong it took\n (important: timing uses windows chorono)\n"; 
                     std::cout << " andor printmeta -> print the current metadata stored in the proxy\n";
                 } else if (action == "printmeta") {
-                    cam->getMetadata(cam->specmeta_);
+                    SpectrumMetadata metadata = cam->getMetadata();
                     std::cout << "Current metadata in proxy:\n";
-                    std::cout << "  ExposureTime: " << cam->specmeta_.date << " s\n";
-                    std::cout << "  Temperature: " << cam->specmeta_.userName << " C\n";
+                    std::cout << "  ExposureTime: " << metadata.date << " s\n";
+                    std::cout << "  Temperature: " << metadata.userName << " C\n";
                 } else if (action == "test") {
                     cam->testAcquireAndSave(0.1f, "test_spectrum");
                     std::cout << "Measured spectrum and sig-bg saved under the timestamped measurements folder when a background is available.\n";
                 } else if (action == "testtiming") {
-                    cam->testtenspectime();
+                    cam->setupfastAcquisition(0.1f, 100);
+                    auto start = std::chrono::high_resolution_clock::now();
+                    for (int i = 0; i < 100; i++) {
+                        cam->runfastAcquistiontriggered(0.1f, 100, "timing_spectrum", "measurements");
+                    }
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+                    std::cout << "Timing test completed in " << duration.count() << " ms.\n";
+
                 }
                 else {
                     std::cout << "Unknown andor action: " << action << "\n";

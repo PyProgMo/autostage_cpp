@@ -359,8 +359,8 @@ void AndorCamera::selectCamera(int cameraIndex) {
     selectedCameraHandle_ = handle;
 
     // Keep per-camera metadata available even before any UI updates.
-    if (metadataMap_.find(selectedCameraIndex_) == metadataMap_.end()) {
-        metadataMap_[selectedCameraIndex_] = SpectrumMetadata{};
+    if (metadataMap.find(selectedCameraIndex_) == metadataMap.end()) {
+        metadataMap[selectedCameraIndex_] = SpectrumMetadata{};
     }
 }
 
@@ -650,16 +650,16 @@ void AndorCamera::measureBackground(float exposureSeconds, const std::string& fi
 }
 
 SpectrumMetadata& AndorCamera::currentMetadata() {
-    auto it = metadataMap_.find(selectedCameraIndex_);
-    if (it == metadataMap_.end()) {
-        it = metadataMap_.emplace(selectedCameraIndex_, SpectrumMetadata{}).first;
+    auto it = metadataMap.find(selectedCameraIndex_);
+    if (it == metadataMap.end()) {
+        it = metadataMap.emplace(selectedCameraIndex_, SpectrumMetadata{}).first;
     }
     return it->second;
 }
 
 const SpectrumMetadata& AndorCamera::currentMetadata() const {
-    auto it = metadataMap_.find(selectedCameraIndex_);
-    if (it == metadataMap_.end()) {
+    auto it = metadataMap.find(selectedCameraIndex_);
+    if (it == metadataMap.end()) {
         static const SpectrumMetadata empty{};
         return empty;
     }
@@ -671,7 +671,7 @@ SpectrumMetadata AndorCamera::getMetadata() const {
 }
 
 void AndorCamera::setMetadata(const SpectrumMetadata& metadata) {
-    metadataMap_[selectedCameraIndex_] = metadata;
+    metadataMap[selectedCameraIndex_] = metadata;
 }
 
 void AndorCamera::getWLarray(float startWL, float endWL, std::vector<float>& WL) {

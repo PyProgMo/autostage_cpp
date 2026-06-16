@@ -54,28 +54,6 @@ inline const char* ipcCommandName(IpcCommand command) {
     case IpcCommand::ReadRecorder: return "ReadRecorder";
     case IpcCommand::LoadDLL: return "LoadDLL";
     case IpcCommand::ExitServer: return "ExitServer";
-        
-    case IpcCommand::AndorLoadDLL: return "AndorLoadDLL";
-    case IpcCommand::AndorInitialize: return "AndorInitialize";
-    case IpcCommand::AndorSetReadMode: return "AndorSetReadMode";
-    case IpcCommand::AndorSetAcquisitionMode: return "AndorSetAcquisitionMode";
-    case IpcCommand::AndorSetExposureTime: return "AndorSetExposureTime";
-    case IpcCommand::AndorSetTriggerMode: return "AndorSetTriggerMode";
-    case IpcCommand::AndorSetImage: return "AndorSetImage";
-    case IpcCommand::AndorStartAcquisition: return "AndorStartAcquisition";
-    case IpcCommand::AndorAbortAcquisition: return "AndorAbortAcquisition";
-    case IpcCommand::AndorWaitForAcquisition: return "AndorWaitForAcquisition";
-    case IpcCommand::AndorGetAcquiredData16: return "AndorGetAcquiredData16";
-    case IpcCommand::AndorGetStatus: return "AndorGetStatus";
-    case IpcCommand::AndorShutDown: return "AndorShutDown";
-    case IpcCommand::AndorSetKineticCycleTime: return "AndorSetKineticCycleTime";
-    case IpcCommand::AndorSetNumberKinetics: return "AndorSetNumberKinetics";
-    case IpcCommand::AndorGetImages16: return "AndorGetImages16";
-    case IpcCommand::AndorConfigureSpectral: return "AndorConfigureSpectral";
-    case IpcCommand::AndorConfigureFVBKinetic: return "AndorConfigureFVBKinetic";
-    case IpcCommand::AndorGetMetadata: return "AndorGetMetadata";
-    case IpcCommand::AndorSetMetadata: return "AndorSetMetadata";
-    default: return "Unknown";
     }
 }
 
