@@ -10,6 +10,8 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <future>
+#include <vector>
 
 namespace {
 
@@ -857,8 +859,10 @@ void AndorCameraProxy::savespecfast(const std::string& measurementFolder,
 }
 
 // overload that acquires data and calls the above test function
-void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& filename) {
-    configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, 1);
+void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& filename, bool configure) {
+    if (configure) {
+        configureSpectral(AndorCamera::ReadMode::FVB, AndorCamera::TriggerMode::Internal, exposureS, 1);
+    }
     startAcquisition();
     waitForAcquisition();
 
@@ -1042,6 +1046,86 @@ void AndorCameraProxy::AcquireAndSavefast(const std::vector<int>& spectra, int n
 
             saveSpectrumSet(measurementFolder, bgName, sigBgBuffer, wlArray_, 1, pixelsPerSpectrum, metadataMap_[selectedCameraIndex_]);
         }
+    }
+}
+
+void AndorCameraProxy::savefast1(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+    if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
+        throw std::runtime_error("AndorCameraProxy: invalid spectrum image dimensions");
+    }
+    
+    const size_t totalPixels = static_cast<size_t>(numSpectra) * static_cast<size_t>(pixelsPerSpectrum);
+    if (spectra.empty() || spectra.size() < totalPixels) {
+        throw std::runtime_error("AndorCameraProxy: AcquireAndSavefast requires non-empty spectrum data");
+    }
+
+    const std::string measurementFolder = createMeasurementFolder();
+    const std::vector<int>& background = getBackground(); 
+    const bool hasBackground = !background.empty() && (background.size() >= totalPixels);
+    const std::string baseName = filename.empty() ? "frame" : filename;
+
+    // 1. Keep track of all background tasks so we can wait for completion at the very end
+    std::vector<std::future<void>> asyncTasks;
+    asyncTasks.reserve(numSpectra * (hasBackground ? 2 : 1));
+
+    // Handle single spectrum case quickly
+    if (numSpectra == 1) {
+        const std::string stem = filename.empty() ? "spectrum" : filename;
+        saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, numSpectra, pixelsPerSpectrum, metadataMap_[selectedCameraIndex_]);
+        if (hasBackground) {
+            const std::vector<int> sigBg = subtractBackground(spectra, background);
+            saveSpectrumSet(measurementFolder, stem, sigBg, wlArray_, numSpectra, pixelsPerSpectrum, metadataMap_[selectedCameraIndex_]);
+        }
+        return;
+    }
+
+    // Pre-calculate raw data pointers
+    const int* rawSpectraPtr = spectra.data();
+    const int* rawBgPtr = hasBackground ? background.data() : nullptr;
+
+    for (int frame = 0; frame < numSpectra; ++frame) {
+        const size_t offset = static_cast<size_t>(frame) * pixelsPerSpectrum;
+        
+        // 2. Instead of a single shared buffer (which would cause data races),
+        // we allocate a dedicated buffer per frame that moves into the thread.
+        std::vector<int> frameDataBuffer(rawSpectraPtr + offset, rawSpectraPtr + offset + pixelsPerSpectrum);
+
+        // Fast string construction
+        std::string nameCache = baseName + "_" + std::to_string(frame);
+
+        // 3. Offload raw frame saving to the background thread pool
+        // 'std::move' ensures zero memory overhead when passing the vector into the thread
+        asyncTasks.push_back(std::async(std::launch::async, 
+            [this, measurementFolder, nameCache, pixelsPerSpectrum](std::vector<int> data) {
+                this->saveSpectrumSet(measurementFolder, nameCache, data, this->wlArray_, 1, pixelsPerSpectrum, this->metadataMap_[this->selectedCameraIndex_]);
+            }, std::move(frameDataBuffer)
+        ));
+
+        if (hasBackground) {
+            const int* currentBgSrc = rawBgPtr + offset;
+            const int* currentFrameSrc = rawSpectraPtr + offset;
+            
+            std::vector<int> sigBgBuffer(pixelsPerSpectrum);
+            int* dst = sigBgBuffer.data();
+            for (int i = 0; i < pixelsPerSpectrum; ++i) {
+                dst[i] = (currentFrameSrc[i] > currentBgSrc[i]) ? (currentFrameSrc[i] - currentBgSrc[i]) : 0;
+            }
+
+            std::string bgName = "sig-bg_" + std::to_string(frame);
+
+            // 4. Offload background-subtracted frame saving to a background thread
+            asyncTasks.push_back(std::async(std::launch::async, 
+                [this, measurementFolder, bgName, pixelsPerSpectrum](std::vector<int> data) {
+                    this->saveSpectrumSet(measurementFolder, bgName, data, this->wlArray_, 1, pixelsPerSpectrum, this->metadataMap_[this->selectedCameraIndex_]);
+                }, std::move(sigBgBuffer)
+            ));
+        }
+    }
+
+    // 5. CRITICAL: The function will now wait here for all background disk tasks to finish writing 
+    // before exiting. Your core loop is unblocked while the threads handle your storage device.
+    for (auto& task : asyncTasks) {
+        task.wait();
     }
 }
 
