@@ -40,15 +40,21 @@ int main() {
     std::unique_ptr<PIStageProxy> stage;
     std::unique_ptr<AndorCameraProxy> cam;
 
-    // init empty metadata in the camera proxy, so that it can be updated from the console app when the user enters metadata, and then saved with each spectrum without having to pass it back and forth with every save command
-    cam->specmeta_ = SpectrumMetadata();
-
     try {
         stage = std::make_unique<PIStageProxy>();
         cam = std::make_unique<AndorCameraProxy>();
     } catch (const std::exception& e) {
         std::cerr << "Failed to connect to IPC pipes: " << e.what() << "\n";
         return 1;
+    }
+
+    // init empty metadata in the camera proxy, so that it can be updated from the console app when the user enters metadata, and then saved with each spectrum without having to pass it back and forth with every save command
+    try{
+        cam->specmeta_ = cam->getMetadata();
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to get initial metadata from camera proxy: " << e.what() << "\n";
+        // initialize with empty metadata if we can't get it from the proxy
+        cam->specmeta_ = SpectrumMetadata();
     }
 
     std::string cmd;
@@ -243,8 +249,7 @@ int main() {
                     cam->waitForAcquisition();
                     auto data = cam->getAllSpectra(1, cam->getXPixels());
                     std::cout << "Measured spectrum: \n";
-                    //cam->testAcquireAndSave(data, 1, cam->getXPixels(), "measured_spectrum");
-                    cam->getMetadata(cam->specmeta_);
+                    SpectrumMetadata meta = cam->specmeta_; // get current metadata from the proxy
                     cam->savespecfast("measurements", data, 1, cam->getXPixels(), cam->specmeta_, "measured_spectrum");
                     std::cout << "saved spectrum";
                 } else if (action == "initspec") {
@@ -334,12 +339,17 @@ int main() {
                     std::cout << "  andor testtiming -> measure 100 spectra with 0.1 s exposure, also save them to disk, important: print how loong it took\n (important: timing uses windows chorono)\n"; 
                     std::cout << " andor printmeta -> print the current metadata stored in the proxy\n";
                 } else if (action == "printmeta") {
-                    cam->getMetadata(cam->specmeta_);
-                    // deserialize the metadata
-                    
-                    std::cout << "Current metadata in proxy:\n";
-                    std::cout << "  ExposureTime: " << cam->specmeta_.date << " s\n";
-                    std::cout << "  Temperature: " << cam->specmeta_.userName << " C\n";
+                    try {
+                        SpectrumMetadata meta = cam->getMetadata();
+                        // deserialize the metadata
+                        std::cout << "Current metadata in proxy:\n";
+                        std::cout << "  ExposureTime: " << meta.date << " s\n";
+                        std::cout << "  Temperature: " << meta.userName << " C\n";
+                        std::cout << "  SlitWidth: " << meta.slitWidthUm << " um\n";
+                        std::cout << "  Grating: " << meta.grating << "\n";}
+                    catch (const std::exception& e) {
+                        std::cout << "Error retrieving metadata: " << e.what() << "\n";
+                    }
                 } else if (action == "test") {
                     cam->testAcquireAndSave(0.1f, "test_spectrum");
                     std::cout << "Measured spectrum and sig-bg saved under the timestamped measurements folder when a background is available.\n";

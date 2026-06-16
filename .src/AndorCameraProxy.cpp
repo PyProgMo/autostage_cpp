@@ -512,7 +512,7 @@ void AndorCameraProxy::selectCamera(int cameraIndex) {
     selectedCameraIndex_ = cameraIndex;
 
     SpectrumMetadata metadata;
-    getMetadata(metadata);
+    getMetadata();
 }
 
 void AndorCameraProxy::enableCooling(bool enable) {
@@ -684,17 +684,16 @@ void AndorCameraProxy::waitForAcquisition() {
 }
 
 // get the metadata
-void AndorCameraProxy::getMetadata(SpectrumMetadata& meta) {
+SpectrumMetadata AndorCameraProxy::getMetadata() {
     IpcMessage req = {};
     req.command = IpcCommand::AndorGetMetadata;
     IpcMessage res = {};
-    // test: print sending command and receiving response with timestamps
-    AppLogger::instance().info("AndorCameraProxy: sending GetMetadata command to server for camera index " + std::to_string(selectedCameraIndex_));
-    sendCommand(req, res, 1000, false);
-    AppLogger::instance().info("AndorCameraProxy: received GetMetadata response from server with status " + std::to_string(res.status) + " and dataSize " + std::to_string(res.dataSize));
-
+    
+    AppLogger::instance().info("AndorCameraProxy: sending GetMetadata command...");
+    sendCommand(req, res, 1000, false); 
+    
     if (res.status != 0) {
-        throw std::runtime_error(std::string("AndorCameraProxy: server returned error for GetMetadata: ") + res.strArg);
+        throw std::runtime_error("Server error: " + std::string(res.strArg));
     }
 
     if (res.dataSize < 0 || res.dataSize > 64 * 1024) {
@@ -710,11 +709,14 @@ void AndorCameraProxy::getMetadata(SpectrumMetadata& meta) {
     try {
         deserializeSpectrumMetadata(payload, parsed);
     } catch (const std::exception& e) {
-        throw std::runtime_error(std::string("AndorCameraProxy: failed to parse metadata payload: ") + e.what());
+        throw std::runtime_error("AndorCameraProxy: parse failed: " + std::string(e.what()));
     }
-    meta = parsed;
+
+    // Keep your internal state synchronized cleanly
     specmeta_ = parsed;
     metadataMap_[selectedCameraIndex_] = parsed;
+
+    return parsed; // Return it so the console app can use it immediately!
 }
 
 void AndorCameraProxy::setMetadata(const SpectrumMetadata& metadata) {

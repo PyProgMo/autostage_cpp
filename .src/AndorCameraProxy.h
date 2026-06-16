@@ -79,7 +79,7 @@ public:
     SpectrumMetadata specmeta_;
     std::map<int, SpectrumMetadata>& getMetadataMap() { return metadataMap_; }
     // functions to request metadata over the pipe
-    void getMetadata(SpectrumMetadata& metadata);
+    SpectrumMetadata getMetadata();
     void setMetadata(const SpectrumMetadata& metadata);
 
     // add test function for sanity checks
