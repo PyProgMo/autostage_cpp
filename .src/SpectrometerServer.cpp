@@ -213,7 +213,7 @@ void ProcessClient(HANDLE hPipe) {
                     std::cerr << "Write metadata response payload failed\n";
                     break;
                 }
-                continue;
+            continue;
             }
             case IpcCommand::AndorSetMetadata: {
                 AppLogger::instance().info("SpectrometerServer: setMetadata");

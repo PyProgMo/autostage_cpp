@@ -14,7 +14,6 @@
 #include <memory>
 #include <thread>
 
-
 void startProcess(const std::string& cmdLine) {
     STARTUPINFOA si = { sizeof(si) };
     PROCESS_INFORMATION pi;
@@ -336,6 +335,8 @@ int main() {
                     std::cout << " andor printmeta -> print the current metadata stored in the proxy\n";
                 } else if (action == "printmeta") {
                     cam->getMetadata(cam->specmeta_);
+                    // deserialize the metadata
+                    
                     std::cout << "Current metadata in proxy:\n";
                     std::cout << "  ExposureTime: " << cam->specmeta_.date << " s\n";
                     std::cout << "  Temperature: " << cam->specmeta_.userName << " C\n";
