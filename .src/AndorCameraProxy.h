@@ -50,8 +50,6 @@ public:
     void testAcquireAndSave(float exposureSeconds, const std::string& filename);
     void testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
     std::vector<int> getAllSpectra(int numSpectra, int pixelsPerSpectrum);
-
-
     
     // AcquireAndSavefast function
     void AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
@@ -61,13 +59,13 @@ public:
                       const std::vector<float>& WL,
                       int numSpectra,
                       int pixelsPerSpectrum,
-                      SpectrumMetadata& meta,
+                      const SpectrumMetadata& meta,
                       bool saveAsPng = false);
     void savespecfast(const std::string& measurementFolder,
          const std::vector<int>& spectra, 
          int numSpectra, 
          int pixelsPerSpectrum, 
-         SpectrumMetadata& meta,
+         const SpectrumMetadata& meta,
          const std::string& filename);
 
     int getXPixels() const { return xpix_; }

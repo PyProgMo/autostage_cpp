@@ -363,7 +363,7 @@ public:
                       const std::vector<float>& WL,
                       int numSpectra,
                       int pixelsPerSpectrum,
-                      SpectrumMetadata& specmeta,
+                      const SpectrumMetadata& specmeta,
                       bool saveAsPng = false);
     
     static const char* readModeToString(Andor::ReadMode mode);

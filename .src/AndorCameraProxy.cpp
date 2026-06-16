@@ -359,7 +359,7 @@ void AndorCameraProxy::saveSpectrumSet(const std::string& measurementFolder,
                      const std::vector<float>& WL,
                      int numSpectra,
                      int pixelsPerSpectrum,
-                     SpectrumMetadata& meta,
+                     const SpectrumMetadata& meta,
                      bool saveAsPng)
 {
     std::vector<float> fallbackWL;
@@ -788,6 +788,7 @@ void AndorCameraProxy::testAcquireAndSave(const std::vector<int>& spectra, int n
 }
 
 // savefast function: save spectrum
+/* old version 
 void AndorCameraProxy::savespecfast(const std::string& measurementFolder,
          const std::vector<int>& spectra, 
          int numSpectra, 
@@ -805,10 +806,55 @@ void AndorCameraProxy::savespecfast(const std::string& measurementFolder,
     const std::vector<int> background = getBackground();
     const std::vector<float> WL; // placeholder for future wavelength data
 
+    try {
     writePlemTxt(joinPath(measurementFolder, filename) + ".txt",
                  specmeta, spectra, WL, numSpectra, pixelsPerSpectrum);
+    } catch (const std::exception& e) {
+        throw std::runtime_error(std::string("AndorCameraProxy: savespecfast failed: ") + e.what());
+    }
 }
+*/
+void AndorCameraProxy::savespecfast(const std::string& measurementFolder,
+         const std::vector<int>& spectra, 
+         int numSpectra, 
+         int pixelsPerSpectrum, 
+         const SpectrumMetadata& specmeta, // Remember to keep this const reference!
+         const std::string& filename)
+{
+    if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
+        throw std::runtime_error("AndorCameraProxy: invalid spectrum image dimensions");
+    }
+    if (spectra.empty() || spectra.size() < static_cast<size_t>(numSpectra) * static_cast<size_t>(pixelsPerSpectrum)) {
+        throw std::runtime_error("AndorCameraProxy: savespecfast requires non-empty spectrum data");
+    }
 
+    // 1. Fetch background
+    std::vector<int> background = getBackground();
+    
+    // FALLBACK: If no background was measured, fill it with zeros so writePlemTxt doesn't crash!
+    if (background.empty()) {
+        background.assign(static_cast<size_t>(pixelsPerSpectrum), 0);
+    }
+
+    // 2. Fetch or create Wavelengths
+    std::vector<float> WL = wlArray_; // Use your proxy's internal wlArray_ if it exists
+    
+    // FALLBACK: If wavelengths are empty, make a dummy index array (0, 1, 2, 3...)
+    if (WL.empty()) {
+        WL.resize(static_cast<size_t>(pixelsPerSpectrum));
+        for (int i = 0; i < pixelsPerSpectrum; ++i) {
+            WL[i] = static_cast<float>(i);
+        }
+    }
+
+    // 3. Now it is 100% safe to write the file!
+    try {
+        writePlemTxt(joinPath(measurementFolder, filename) + ".txt",
+                     specmeta, spectra, WL, numSpectra, pixelsPerSpectrum);
+    } catch (const std::exception& e) {
+        throw std::runtime_error(std::string("AndorCameraProxy: savespecfast failed: ") + e.what());
+    }
+}
 
 // overload that acquires data and calls the above test function
 void AndorCameraProxy::testAcquireAndSave(float exposureS, const std::string& filename) {

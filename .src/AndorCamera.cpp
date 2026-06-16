@@ -256,7 +256,7 @@ void AndorCamera::saveSpectrumSet(const std::string& measurementFolder,
                      const std::vector<float>& WL,
                      int numSpectra,
                      int pixelsPerSpectrum, 
-                     SpectrumMetadata& specmeta,
+                     const SpectrumMetadata& specmeta,
                      bool saveAsPng) {
     int maxVal = 0;
     cv::Mat img = buildSpectrumImage(spectra, numSpectra, pixelsPerSpectrum, maxVal);
