@@ -373,14 +373,13 @@ int main() {
                     }
                 } else if (action == "test") {
                     // run test
-                    cam->testAcquireAndSave(0.1f, "test_spectrum");
-                    
-                    std::string foldername = "test_measurements"+ std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
+                    // foldername: start DD.MM.YYYY_HH-MM-SS, end with a backslash, and save all spectra from this test in that folder, so we can easily compare the results of different tests by looking at the folders
+                    std::string foldername = "test_measurement_" + std::to_string(std::time(nullptr)) + "\\";
                     // measure time to acruire and save 100 spectra with 0.1 s exposure, using the testAcquireAndSave function, and print how long it took
                     auto start = std::chrono::high_resolution_clock::now();
                     for (int i = 0; i < 100; i++) {
                         //cam->testAcquireAndSave(0.1f, "test_spectrum_" + std::to_string(i));
-                        cam->savefast1(cam->getAllSpectra(1, cam->getXPixels()), 1, cam->getXPixels(), foldername + "\\test_spectrum_" + std::to_string(i)); // this is the faster version that doesn't use the proxy's metadata map, so we have to pass the metadata back and forth with each save command, which is less efficient but allows us to test just the saving speed without the overhead of getting metadata from the proxy for each spectrum
+                        cam->savefast1(cam->getAllSpectra(1, cam->getXPixels()), 1, cam->getXPixels(), foldername + "\\test_spectrum_" + std::to_string(i), foldername); // this is the faster version that doesn't use the proxy's metadata map, so we have to pass the metadata back and forth with each save command, which is less efficient but allows us to test just the saving speed without the overhead of getting metadata from the proxy for each spectrum
                     }
                     auto end = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double> elapsed = end - start;
