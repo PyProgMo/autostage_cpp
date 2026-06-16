@@ -377,16 +377,38 @@ int main() {
                     std::string foldername = "test_measurement_" + std::to_string(std::time(nullptr)) + "\\";
                     // measure time to acruire and save 100 spectra with 0.1 s exposure, using the testAcquireAndSave function, and print how long it took
                     auto start = std::chrono::high_resolution_clock::now();
+                    // set tint to 10 ms for faster testing
+                    cam->configureSpectral(AndorCamera::ReadMode::FVB,
+                                           AndorCamera::TriggerMode::Internal, 0.01f, 1);
                     for (int i = 0; i < 100; i++) {
-                        //cam->testAcquireAndSave(0.1f, "test_spectrum_" + std::to_string(i));
-                        cam->savefast1(cam->getAllSpectra(1, cam->getXPixels()), 1, cam->getXPixels(), foldername + "\\test_spectrum_" + std::to_string(i), foldername); // this is the faster version that doesn't use the proxy's metadata map, so we have to pass the metadata back and forth with each save command, which is less efficient but allows us to test just the saving speed without the overhead of getting metadata from the proxy for each spectrum
-                    }
+{
+                        cam->startAcquisition();
+                        cam->waitForAcquisition();
+                        auto data = cam->getAllSpectra(1, cam->getXPixels());
+                        SpectrumMetadata meta = cam->specmeta_; // get current metadata from the proxy
+                        cam-> savespecfast("measurements", data, 1, cam->getXPixels(), cam->specmeta_, "measured_spectrum");
+                
+                        }
+
+                        /* this one is really trash
+                        // 1. Tell the server/hardware to physically start a new exposure
+                        cam->startAcquisition(); 
+                        
+                        // 2. CRITICAL: This blocks the loop for exactly 100ms while the camera integrates light!
+                        cam->waitForAcquisition(); 
+                        
+                        // 3. Now that the exposure is physically done, fetch the valid frame data
+                        std::vector<int> currentFrame = cam->getAllSpectra(1, cam->getXPixels());
+                        
+                        // 4. Hand it off to the lightning-fast asynchronous saver we built
+                        cam->savefast1(currentFrame, 1, cam->getXPixels(), foldername + "measurement_folder");*/
+                    
                     auto end = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double> elapsed = end - start;
                     std::cout << "Time to acquire and save 100 spectra: " << elapsed.count() << " seconds\n";
                     // calculate the average time per spectrum
                     std::cout << "Average time per spectrum: " << (elapsed.count() / 100.0) << " seconds\n";
-                    
+                    }
                 } else if (action == "testtiming") {
                     cam->testtenspectime(); // this crashes the program
                 }
