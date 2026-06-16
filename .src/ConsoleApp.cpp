@@ -75,6 +75,7 @@ int main() {
             std::cout << "  andor cooling on|off\n";
             std::cout << "  andor setTemp [celsius]\n";
             std::cout << "  andor getTemp\n";
+            std::cout << "  andor initspec\n"; 
             std::cout << "  andor measurebg\n";
             std::cout << "  andor measure\n";
             std::cout << "  andor setTint [milliseconds]\n";
@@ -235,17 +236,21 @@ int main() {
                 } else if (action == "abort") {
                     cam->abortAcquisition();
                     std::cout << "Acquisition aborted.\n";
-                }
-                else if (action == "measure") {
+                } else if (action == "measure") {
                     cam->startAcquisition();
                     cam->waitForAcquisition();
                     auto data = cam->getAllSpectra(1, cam->getXPixels());
-                    std::cout << "Measured spectrum: ";
+                    std::cout << "Measured spectrum: \n";
                     //cam->testAcquireAndSave(data, 1, cam->getXPixels(), "measured_spectrum");
                     cam->getMetadata(cam->specmeta_);
                     cam->savespecfast("measurements", data, 1, cam->getXPixels(), cam->specmeta_, "measured_spectrum");
                     std::cout << "saved spectrum";
-                } else if (action == "setTint") {
+                } else if (action == "initspec") {
+                    // set integration time to 100 ms, set read mode to FVB, set trigger mode to external, and start acquisition, but do not wait for it to finish, so that the camera is ready and waiting for the trigger when the user is ready to measure
+                    cam->configureSpectral(AndorCamera::ReadMode::FVB,
+                                           AndorCamera::TriggerMode::Internal, 0.1f, 1);
+                }
+                else if (action == "setTint") {
                     float tint;
                     if (iss >> tint) {
                         // check if tint is between 1 ms and 10 s

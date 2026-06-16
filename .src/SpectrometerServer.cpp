@@ -247,7 +247,9 @@ void ProcessClient(HANDLE hPipe) {
             strncpy(res.strArg, e.what(), sizeof(res.strArg) - 1);
         }
 
-        if (req.command != IpcCommand::AndorGetImages16 && req.command != IpcCommand::AndorGetMetadata) {
+        // After the switch block:
+        if (req.command != IpcCommand::AndorGetImages16 &&
+            req.command != IpcCommand::AndorGetMetadata) {
             DWORD bytesWritten = 0;
             if (!WriteFile(hPipe, &res, sizeof(res), &bytesWritten, NULL)) {
                 AppLogger::instance().error("SpectrometerServer: write response failed");
