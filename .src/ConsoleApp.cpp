@@ -249,9 +249,20 @@ int main() {
                     cam->waitForAcquisition();
                     auto data = cam->getAllSpectra(1, cam->getXPixels());
                     std::cout << "Measured spectrum: \n";
-                    SpectrumMetadata meta = cam->specmeta_; // get current metadata from the proxy
-                    cam->savespecfast("measurements", data, 1, cam->getXPixels(), cam->specmeta_, "measured_spectrum");
+                    try {
+                        SpectrumMetadata meta = cam->specmeta_; // get current metadata from the proxy
+                    }
+                        catch (const std::exception& e) {
+                            std::cerr << "Failed to get metadata from proxy: " << e.what() << "\n";
+                            SpectrumMetadata meta; // use empty metadata if we can't get it
+                        }
+                    try {
+                        cam-> savespecfast("measurements", data, 1, cam->getXPixels(), cam->specmeta_, "measured_spectrum");
+                    } catch (const std::exception& e) {
+                        std::cerr << "Failed to save spectrum: " << e.what() << "\n";
+                    }
                     std::cout << "saved spectrum";
+
                 } else if (action == "initspec") {
                     // set integration time to 100 ms, set read mode to FVB, set trigger mode to external, and start acquisition, but do not wait for it to finish, so that the camera is ready and waiting for the trigger when the user is ready to measure
                     cam->configureSpectral(AndorCamera::ReadMode::FVB,
