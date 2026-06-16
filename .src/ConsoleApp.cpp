@@ -41,6 +41,9 @@ int main() {
     std::unique_ptr<PIStageProxy> stage;
     std::unique_ptr<AndorCameraProxy> cam;
 
+    // init empty metadata in the camera proxy, so that it can be updated from the console app when the user enters metadata, and then saved with each spectrum without having to pass it back and forth with every save command
+    cam->specmeta_ = SpectrumMetadata();
+
     try {
         stage = std::make_unique<PIStageProxy>();
         cam = std::make_unique<AndorCameraProxy>();
@@ -332,11 +335,10 @@ int main() {
                     std::cout << "  andor testtiming -> measure 100 spectra with 0.1 s exposure, also save them to disk, important: print how loong it took\n (important: timing uses windows chorono)\n"; 
                     std::cout << " andor printmeta -> print the current metadata stored in the proxy\n";
                 } else if (action == "printmeta") {
-                    SpectrumMetadata meta;
-                    cam->getMetadata(meta);
+                    cam->getMetadata(cam->specmeta_);
                     std::cout << "Current metadata in proxy:\n";
-                    std::cout << "  ExposureTime: " << meta.date << " s\n";
-                    std::cout << "  ReadMode: " << meta.userName << "\n";
+                    std::cout << "  ExposureTime: " << cam->specmeta_.date << " s\n";
+                    std::cout << "  Temperature: " << cam->specmeta_.userName << " C\n";
                 } else if (action == "test") {
                     cam->testAcquireAndSave(0.1f, "test_spectrum");
                     std::cout << "Measured spectrum and sig-bg saved under the timestamped measurements folder when a background is available.\n";
@@ -351,7 +353,7 @@ int main() {
                 // defaults are in nanometres (nm)
                 double xStart = 0.0, xStop = 2000000.0, xStep = 2000.0; // 2.0 mm -> 2000000 nm, 0.002 mm -> 2000 nm
                 double yStart = 0.0, yStop = 2000000.0, yStep = 2000.0;
-                float exposureS = 0.002f;
+                float exposureS = 0.1f;
                 int trigCh = 1, pulseUs = 50;
 
                 int nX = (int)std::round((xStop - xStart) / xStep) + 1;
