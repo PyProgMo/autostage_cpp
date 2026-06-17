@@ -75,6 +75,7 @@ inline const char* ipcCommandName(IpcCommand command) {
     case IpcCommand::AndorConfigureFVBKinetic: return "AndorConfigureFVBKinetic";
     case IpcCommand::AndorGetMetadata: return "AndorGetMetadata";
     case IpcCommand::AndorSetMetadata: return "AndorSetMetadata";
+    case IpcCommand::AcquireAndFetchSingle: return "AcquireAndFetchSingle";
     default: return "Unknown";
     }
 }

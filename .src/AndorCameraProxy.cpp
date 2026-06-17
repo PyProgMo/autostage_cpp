@@ -1119,7 +1119,7 @@ void AndorCameraProxy::savefast1(
     }
 }
 
-void AndorCameraProxy::acquireAndFetchSingle(int pixelsPerSpectrum, std::vector<int>& data, SpectrumMetadata& meta) {
+void AndorCameraProxy::AcquireAndFetchSingle(int pixelsPerSpectrum, std::vector<int>& data, SpectrumMetadata& meta) {
     IpcMessage req = {};
     req.command = IpcCommand::AcquireAndFetchSingle; 
     req.iArgs[0] = 1; // numSpectra

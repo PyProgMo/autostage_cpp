@@ -415,7 +415,9 @@ int main() {
                         SpectrumMetadata meta = cam->specmeta_; // get current metadata from the proxy
                         */
                         // The function will modify 'data' and 'meta' directly in place!
+                        std::cout << "Acquiring spectrum " << (i+1) << "/" << num_spectra << "...\n";
                         cam->AcquireAndFetchSingle(cam->getXPixels(), data, meta);
+                        std::cout << "Acquired spectrum " << (i+1) << "/" << num_spectra << ".\n";
 
                         if (boolSave) {
                             filename = "spectrum_" + std::to_string(i) + ".txt";
