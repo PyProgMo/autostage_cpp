@@ -215,32 +215,6 @@ void ProcessClient(HANDLE hPipe) {
                 }
             continue;
             }
-            case IpcCommand::AndorSetMetadata: {
-                AppLogger::instance().info("SpectrometerServer: setMetadata");
-                if (req.dataSize < 0) {
-                    throw std::runtime_error("SpectrometerServer: invalid metadata payload size");
-                }
-
-                std::string payload;
-                payload.resize(static_cast<size_t>(req.dataSize));
-                if (!payload.empty() && !readExact(hPipe, &payload[0], payload.size())) {
-                    throw std::runtime_error("SpectrometerServer: failed to read metadata payload");
-                }
-
-                SpectrumMetadata metadata = cam.getMetadata();
-                deserializeSpectrumMetadata(payload, metadata);
-                cam.setMetadata(metadata);
-                break;
-            }
-            case IpcCommand::ExitServer:
-                AppLogger::instance().info("SpectrometerServer: ExitServer received");
-                running = false;
-                break;
-            default:
-                AppLogger::instance().error(std::string("SpectrometerServer: unknown command ID"));
-                res.status = -1;
-                break;
-            }
             case IpcCommand::AcquireAndFetchSingle: {
                 AppLogger::instance().info("SpectrometerServer: acquireAndFetchSingle");
                 std::vector<int> data;
@@ -273,6 +247,34 @@ void ProcessClient(HANDLE hPipe) {
                     std::cerr << "Write spectrum response payload failed\n";
                     break;
                 }
+            continue;
+            }
+            case IpcCommand::AndorSetMetadata: {
+                AppLogger::instance().info("SpectrometerServer: setMetadata");
+                if (req.dataSize < 0) {
+                    throw std::runtime_error("SpectrometerServer: invalid metadata payload size");
+                }
+
+                std::string payload;
+                payload.resize(static_cast<size_t>(req.dataSize));
+                if (!payload.empty() && !readExact(hPipe, &payload[0], payload.size())) {
+                    throw std::runtime_error("SpectrometerServer: failed to read metadata payload");
+                }
+
+                SpectrumMetadata metadata = cam.getMetadata();
+                deserializeSpectrumMetadata(payload, metadata);
+                cam.setMetadata(metadata);
+                break;
+            }
+            case IpcCommand::ExitServer:
+                AppLogger::instance().info("SpectrometerServer: ExitServer received");
+                running = false;
+                break;
+            default:
+                AppLogger::instance().error(std::string("SpectrometerServer: unknown command ID"));
+                res.status = -1;
+                break;
+            }
         } catch (const std::exception& e) {
             AppLogger::instance().error(std::string("SpectrometerServer: exception: ") + e.what());
             res.status = -1;
