@@ -356,8 +356,9 @@ int main() {
                     }
                 } else if (action == "testfunctions") {
                     std::cout << "andor testfunctions:\n";
-                    std::cout << "  andor test -> testmeasurement\n";
+                    std::cout << "  andor test [bool_save] [num_spectra] -> testmeasurement\n";
                     std::cout << "  andor testtiming -> measure 100 spectra with 0.1 s exposure, also save them to disk, important: print how loong it took\n (important: timing uses windows chorono)\n"; 
+                    std::cout << " andor setuptest [tint_ms] -> measure num_spectra spectra and save if bool_save is true\n";
                     std::cout << " andor printmeta -> print the current metadata stored in the proxy\n";
                 } else if (action == "printmeta") {
                     try {
@@ -371,24 +372,65 @@ int main() {
                     catch (const std::exception& e) {
                         std::cout << "Error retrieving metadata: " << e.what() << "\n";
                     }
+                } else if (action == "setuptest"){
+                    float tint;
+                    if (iss >> tint) {
+                        cam->configureSpectral(AndorCamera::ReadMode::FVB,
+                                               AndorCamera::TriggerMode::Internal, tint/1000.0f, 1);
+                        std::cout << "Test setup: Tint=" << tint << " ms" << "\n";
+                    } else {
+                        std::cout << "Usage: andor setuptest [tint_ms]\n";
+                    }
                 } else if (action == "test") {
+                    bool boolSave = false; // set to false to disable saving and just test acquisition speed without disk writing influence
+                    int num_spectra = 10; // default to 10 spectra if not specified
+                    if (iss >> boolSave >> num_spectra) {
+                        std::cout << "Test: boolSave=" << boolSave << ", num_spectra=" << num_spectra << "\n";
+                    } else {
+                        std::cout << "Usage: andor test [bool_save] [num_spectra], default is false\n";
+                        boolSave = false;
+                        num_spectra = 10;
+                    }
+
+                    // print if spectrum saving is enabled or not, and where the spectra will be saved if it is enabled
+                    std::cout << "Spectrum saving is " << (boolSave ? "enabled" : "disabled") << ".\n";
                     // run test
                     // foldername: start DD.MM.YYYY_HH-MM-SS, end with a backslash, and save all spectra from this test in that folder, so we can easily compare the results of different tests by looking at the folders
-                    std::string foldername = "test_measurement_" + std::to_string(std::time(nullptr)) + "\\";
+                    std::string foldername = "measurements/test_measurement_" + std::to_string(std::time(nullptr)) + "\\";
+                    // create the folder if it doesn't exist
+                    CreateDirectoryA(foldername.c_str(), NULL);
+                    std::cout << "Spectra from this test will be saved in folder: " << foldername << "\n";
                     // measure time to acruire and save 100 spectra with 0.1 s exposure, using the testAcquireAndSave function, and print how long it took
                     auto start = std::chrono::high_resolution_clock::now();
+                    std::string filename;
+                    std::vector<int> data;
+                    SpectrumMetadata meta;
                     // set tint to 10 ms for faster testing
-                    cam->configureSpectral(AndorCamera::ReadMode::FVB,
-                                           AndorCamera::TriggerMode::Internal, 0.01f, 1);
-                    for (int i = 0; i < 100; i++) {
-{
+                    for (int i = 0; i < num_spectra; i++) {
+
+                        /* we put this 2 calls into one single one
                         cam->startAcquisition();
                         cam->waitForAcquisition();
                         auto data = cam->getAllSpectra(1, cam->getXPixels());
                         SpectrumMetadata meta = cam->specmeta_; // get current metadata from the proxy
-                        cam-> savespecfast("measurements", data, 1, cam->getXPixels(), cam->specmeta_, "measured_spectrum");
-                
+                        */
+                        // The function will modify 'data' and 'meta' directly in place!
+                        cam->acquireAndFetchSingle(cam->getXPixels(), data, meta);
+
+                        if (boolSave) {
+                            filename = "spectrum_" + std::to_string(i) + ".txt";
+                            //cam-> savespecfast(foldername, data, 1, cam->getXPixels(), cam->specmeta_, filename); <- run this one assync
+                            std::thread saveThread([cam=cam.get(), data, foldername, meta, filename]() {
+                                try {
+                                    cam->savespecfast(foldername, data, 1, cam->getXPixels(), meta, filename);
+                                    std::cout << "Saved " << filename << "\n";
+                                } catch (const std::exception& e) {
+                                    std::cerr << "Failed to save " << filename << ": " << e.what() << "\n";
+                                }
+                            });
+                            saveThread.join(); // Wait for the save operation to complete
                         }
+                        // disable saving to test the acquisition speed without the influence of disk writing, and just save the last spectrum after the loop to verify that saving still works
 
                         /* this one is really trash
                         // 1. Tell the server/hardware to physically start a new exposure
@@ -402,13 +444,13 @@ int main() {
                         
                         // 4. Hand it off to the lightning-fast asynchronous saver we built
                         cam->savefast1(currentFrame, 1, cam->getXPixels(), foldername + "measurement_folder");*/
-                    
+                        }
                     auto end = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double> elapsed = end - start;
-                    std::cout << "Time to acquire and save 100 spectra: " << elapsed.count() << " seconds\n";
+                    std::cout << "Time to acquire and save " << num_spectra << " spectra: " << elapsed.count() << " seconds\n";
                     // calculate the average time per spectrum
-                    std::cout << "Average time per spectrum: " << (elapsed.count() / 100.0) << " seconds\n";
-                    }
+                    std::cout << "Average time per spectrum: " << (elapsed.count() / static_cast<double>(num_spectra)) << " seconds\n";
+
                 } else if (action == "testtiming") {
                     cam->testtenspectime(); // this crashes the program
                 }

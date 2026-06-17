@@ -1120,6 +1120,46 @@ void AndorCameraProxy::savefast1(
     }
 }
 
+void AndorCameraProxy::acquireAndFetchSingle(int pixelsPerSpectrum, std::vector<int>& data, SpectrumMetadata& meta) {
+    IpcMessage req = {};
+    req.command = IpcCommand::AcquireAndFetchSingle; 
+    req.iArgs[0] = 1; // numSpectra
+    req.iArgs[1] = pixelsPerSpectrum;
+    
+    IpcMessage res = {};
+    sendCommand(req, res, 2000, false); 
+
+    if (res.status != 0) {
+        throw std::runtime_error(std::string("AndorCameraProxy: combined acquisition failed: ") + res.strArg);
+    }
+    
+    if (res.dataSize < 0 || (res.dataSize % static_cast<int32_t>(sizeof(int))) != 0) {
+        throw std::runtime_error("AndorCameraProxy: invalid combined payload size");
+    }
+
+    // 1. Assign the metadata returned in the header directly to your out parameter
+    // (Assuming your IpcMessage 'res' contains or can populate your metadata status)
+    outMeta = this->specmeta_; // Or extract directly from 'res' if your server packs it there
+
+    // 2. Resize your target vector directly to fit the incoming payload
+    size_t numElements = static_cast<size_t>(res.dataSize) / sizeof(int);
+    outData.resize(numElements);
+    
+    // 3. Stream the raw bytes directly into your outData's underlying memory array
+    if (res.dataSize > 0) {
+        BYTE* inPtr = reinterpret_cast<BYTE*>(outData.data());
+        size_t toRead = res.dataSize;
+        DWORD bytesRead = 0;
+        while (toRead > 0) {
+            if (!ReadFile(hPipe_, inPtr, (DWORD)toRead, &bytesRead, NULL)) {
+                throw std::runtime_error("AndorCameraProxy: failed to read payload from pipe");
+            }
+            if (bytesRead == 0) throw std::runtime_error("AndorCameraProxy: pipe closed mid-transfer");
+            inPtr += bytesRead;
+            toRead -= bytesRead;
+        }
+    }
+}
 // wl function: init array for the wl-array, for now just return 1024 pixels from 0 to 1023, later we can implement a real calibration
 void AndorCameraProxy::getWLarray(float startWL, float endWL, std::vector<int>& WL) {
     // placeholder for future wavelength calibration data, for now return 1024 pixels from 0 to 1023

@@ -57,6 +57,7 @@ enum class IpcCommand : int32_t {
     AndorConfigureFVBKinetic, 
     AndorGetMetadata,
     AndorSetMetadata,
+    AcquireAndFetchSingle,
 };
 
 #pragma pack(push, 1)

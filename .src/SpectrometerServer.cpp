@@ -241,6 +241,38 @@ void ProcessClient(HANDLE hPipe) {
                 res.status = -1;
                 break;
             }
+            case IpcCommand::AcquireAndFetchSingle: {
+                AppLogger::instance().info("SpectrometerServer: acquireAndFetchSingle");
+                std::vector<int> data;
+                SpectrumMetadata meta;
+                cam.acquireAndFetchSingle(req.iArgs[0], data, meta);
+
+                // Send metadata first as a separate message
+                const std::string metaPayload = serializeSpectrumMetadata(meta);
+                IpcMessage metaRes = {};
+                metaRes.command = IpcCommand::AndorGetMetadata; // reuse the same command for metadata response
+                metaRes.dataSize = static_cast<int32_t>(metaPayload.size());
+                if (!writeExact(hPipe, &metaRes, sizeof(metaRes))) {
+                    std::cerr << "Write metadata response header failed\n";
+                    break;
+                }
+                if (metaRes.dataSize > 0 && !writeExact(hPipe, metaPayload.data(), static_cast<size_t>(metaRes.dataSize))) {
+                    std::cerr << "Write metadata response payload failed\n";
+                    break;
+                }
+
+                // Then send the spectrum data
+                IpcMessage dataRes = {};
+                dataRes.command = req.command; // same command for spectrum data response
+                dataRes.dataSize = static_cast<int32_t>(data.size() * sizeof(int));
+                if (!writeExact(hPipe, &dataRes, sizeof(dataRes))) {
+                    std::cerr << "Write spectrum response header failed\n";
+                    break;
+                }
+                if (dataRes.dataSize > 0 && !writeExact(hPipe, data.data(), static_cast<size_t>(dataRes.dataSize))) {
+                    std::cerr << "Write spectrum response payload failed\n";
+                    break;
+                }
         } catch (const std::exception& e) {
             AppLogger::instance().error(std::string("SpectrometerServer: exception: ") + e.what());
             res.status = -1;
