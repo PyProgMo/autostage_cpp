@@ -708,3 +708,34 @@ void AndorCamera::setWLarray(std::vector<float>& WL) {
     wlNumPoints_ = static_cast<float>(WL.size());
     wlArray_.assign(WL.begin(), WL.end());
 }
+
+void AndorCamera::measureandsave100specs(const std::string& foldername, const std::string& filename, int nspecs) {    
+    const std::string measurementFolder = joinPath(executableDirectory(), foldername);
+    ensureDirectoryExists(measurementFolder);
+
+    // save startingtime as tstart
+    const auto tstart = std::chrono::steady_clock::now();        
+
+    // this test: measure and save in a for loop
+    for (int i = 0; i < nspecs; ++i) {
+        startAcquisition();
+        waitForAcquisition();
+
+        // save spectrum in seperate thread to avoid blocking acquisition of next spectrum
+        // pass mearuement folder, filename, and spectrum data to thread, so each spec is saved in the same folder
+        std::thread saveThread([this, foldername, filename, i, measurementFolder]()        {
+            const std::vector<int> spectra = getAllSpectra(1, getXPixels());
+            const std::string stem = filename.empty() ? "spectrum" : filename + "_" + std::to_string(i);
+            saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, 1, getXPixels(), currentMetadata());
+            
+        });
+        saveThread.join();
+    }
+
+    std::chrono::steady_clock::time_point tend = std::chrono::steady_clock::now();
+    auto acquisitionTime = std::chrono::duration_cast<std::chrono::milliseconds>(tend - tstart);
+
+    std::cout << "Saved " << nspecs << " spectra to " << measurementFolder << "\n";
+    std::cout << "Total acquisition time: " << acquisitionTime.count() << " ms\n";
+    std::cout << "Average acquisition time per spectrum: " << acquisitionTime.count() / static_cast<float>(nspecs) << " ms\n";
+}

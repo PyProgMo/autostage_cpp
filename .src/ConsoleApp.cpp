@@ -415,9 +415,9 @@ int main() {
                         SpectrumMetadata meta = cam->specmeta_; // get current metadata from the proxy
                         */
                         // The function will modify 'data' and 'meta' directly in place!
-                        std::cout << "Acquiring spectrum " << (i+1) << "/" << num_spectra << "...\n";
+                        //std::cout << "Acquiring spectrum " << (i+1) << "/" << num_spectra << "...\n";
                         cam->AcquireAndFetchSingle(cam->getXPixels(), data, meta);
-                        std::cout << "Acquired spectrum " << (i+1) << "/" << num_spectra << ".\n";
+                        //std::cout << "Acquired spectrum " << (i+1) << "/" << num_spectra << ".\n";
 
                         if (boolSave) {
                             filename = "spectrum_" + std::to_string(i) + ".txt";
@@ -425,7 +425,6 @@ int main() {
                             std::thread saveThread([cam=cam.get(), data, foldername, meta, filename]() {
                                 try {
                                     cam->savespecfast(foldername, data, 1, cam->getXPixels(), meta, filename);
-                                    std::cout << "Saved " << filename << "\n";
                                 } catch (const std::exception& e) {
                                     std::cerr << "Failed to save " << filename << ": " << e.what() << "\n";
                                 }

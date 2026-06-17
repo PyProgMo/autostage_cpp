@@ -374,6 +374,8 @@ public:
     static const char* CameraNtoName(int cameraN);
     std::string TranslateCameraErrorToString(int status);
 
+    void measureandsave100specs(const std::string& foldername, const std::string& filename, int nspecs);
+
 private:
     HMODULE hDll_ = nullptr;
     int xpix_ = 0, ypix_ = 0;

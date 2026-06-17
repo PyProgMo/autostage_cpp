@@ -215,6 +215,24 @@ void ProcessClient(HANDLE hPipe) {
                 }
             continue;
             }
+            case IpcCommand::AndorSetMetadata: {
+                AppLogger::instance().info("SpectrometerServer: setMetadata");
+                if (req.dataSize < 0) {
+                    throw std::runtime_error("SpectrometerServer: invalid metadata payload size");
+                }
+
+                std::string payload;
+                payload.resize(static_cast<size_t>(req.dataSize));
+                if (!payload.empty() && !readExact(hPipe, &payload[0], payload.size())) {
+                    throw std::runtime_error("SpectrometerServer: failed to read metadata payload");
+                }
+
+                SpectrumMetadata metadata = cam.getMetadata();
+                deserializeSpectrumMetadata(payload, metadata);
+                cam.setMetadata(metadata);
+                
+            continue;
+            }
             case IpcCommand::AcquireAndFetchSingle: {
                 AppLogger::instance().info("SpectrometerServer: AcquireAndFetchSingle");
                 std::vector<int> data;
@@ -249,23 +267,11 @@ void ProcessClient(HANDLE hPipe) {
                 }
             continue;
             }
-            case IpcCommand::AndorSetMetadata: {
-                AppLogger::instance().info("SpectrometerServer: setMetadata");
-                if (req.dataSize < 0) {
-                    throw std::runtime_error("SpectrometerServer: invalid metadata payload size");
-                }
-
-                std::string payload;
-                payload.resize(static_cast<size_t>(req.dataSize));
-                if (!payload.empty() && !readExact(hPipe, &payload[0], payload.size())) {
-                    throw std::runtime_error("SpectrometerServer: failed to read metadata payload");
-                }
-
-                SpectrumMetadata metadata = cam.getMetadata();
-                deserializeSpectrumMetadata(payload, metadata);
-                cam.setMetadata(metadata);
+            case IpcCommand::MeasureAndSaveNSpecs:
+                AppLogger::instance().info("SpectrometerServer: MeasureAndSaveNSpecs");
+                // continue here
+                
                 break;
-            }
             case IpcCommand::ExitServer:
                 AppLogger::instance().info("SpectrometerServer: ExitServer received");
                 running = false;

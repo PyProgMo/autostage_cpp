@@ -1122,8 +1122,8 @@ void AndorCameraProxy::savefast1(
 void AndorCameraProxy::AcquireAndFetchSingle(int pixelsPerSpectrum, std::vector<int>& data, SpectrumMetadata& meta) {
     IpcMessage req = {};
     req.command = IpcCommand::AcquireAndFetchSingle; 
-    req.iArgs[0] = 1; // numSpectra
-    req.iArgs[1] = pixelsPerSpectrum;
+    req.iArgs[0] = pixelsPerSpectrum; // Tell the server how many pixels we expect in the spectrum
+    req.iArgs[1] = 1; // numSpectra = 1 for single spectrum acquisition
     
     IpcMessage res = {};
     sendCommand(req, res, 5000, false); 
