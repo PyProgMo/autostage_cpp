@@ -1127,7 +1127,7 @@ void AndorCameraProxy::acquireAndFetchSingle(int pixelsPerSpectrum, std::vector<
     req.iArgs[1] = pixelsPerSpectrum;
     
     IpcMessage res = {};
-    sendCommand(req, res, 2000, false); 
+    sendCommand(req, res, 5000, false); 
 
     if (res.status != 0) {
         throw std::runtime_error(std::string("AndorCameraProxy: combined acquisition failed: ") + res.strArg);
