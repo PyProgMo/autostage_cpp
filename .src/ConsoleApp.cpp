@@ -460,8 +460,8 @@ int main() {
             } else if (target == "scan") {
                 // Here we replicate runRasterScan using proxies!
                 // defaults are in nanometres (nm)
-                double xStart = 0.0, xStop = 2000000.0, xStep = 2000.0; // 2.0 mm -> 2000000 nm, 0.002 mm -> 2000 nm
-                double yStart = 0.0, yStop = 2000000.0, yStep = 2000.0;
+                double xStart = 0.0, xStop = 200000.0, xStep = 2000.0; // 2.0 mm -> 2000000 nm, 0.002 mm -> 2000 nm
+                double yStart = 0.0, yStop = 200000.0, yStep = 2000.0;
                 float exposureS = 0.1f;
                 int trigCh = 1, pulseUs = 50;
 
@@ -514,7 +514,23 @@ int main() {
                 }
 
                 stage->enableTriggerOutput(trigCh, false);
-                std::cout << "Scan finished.\n";
+                std::cout << "Scan finished.Save data...\n";
+                // save each spectrum as a separate file in a folder named "scan_data" with filenames "spectrum_N.txt" write position and time into the metadata for each spectrum, where N is a running number starting from 0
+                std::string foldername = "scan_data/scan_" + std::to_string(std::time(nullptr)) + "\\";
+                CreateDirectoryA(foldername.c_str(), NULL);
+                SpectrumMetadata meta; // create a single metadata object that we will update with the correct position and time for each spectrum, and then pass it to the save function, so we don't have to create a new metadata object for each spectrum
+                for (int iy = 0; iy < nY; iy++) {
+                    for (int ix = 0; ix < nX; ix++) {
+                        std::string filename = foldername + "spectrum_" + std::to_string(iy * nX + ix) + ".txt";
+                        // update metadata with position and time
+                        SpectrumMetadata meta;
+                        meta.xPosNm = xStart + ix * xStep;
+                        meta.yPosNm = yStart + iy * yStep;
+                        meta.date = exposureS; // just to have some value in there, since we don't have a real timestamp for each spectrum in this scan
+                        cam->savespecfast(foldername, cube[iy][ix], 1, nPix, meta, "spectrum_" + std::to_string(iy * nX + ix) + ".txt");
+                    }
+                }
+
             } else {
                 std::cout << "Unknown target: " << target << "\n";
             }

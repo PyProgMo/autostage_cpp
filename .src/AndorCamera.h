@@ -34,7 +34,7 @@ typedef unsigned int (__stdcall *FP_StartAcquisition)   ();
 typedef unsigned int (__stdcall *FP_AbortAcquisition)   ();
 typedef unsigned int (__stdcall *FP_WaitForAcquisition) ();
 typedef unsigned int (__stdcall *FP_GetAcquiredData)    (long* arr, unsigned long size);
-typedef unsigned int (__stdcall *FP_GetAcquiredData16)  (int* arr, unsigned long size);
+typedef unsigned int (__stdcall *FP_GetAcquiredData16)  (unsigned short* arr, unsigned long size);
 typedef unsigned int (__stdcall *FP_GetStatus)          (int* status);
 typedef unsigned int (__stdcall *FP_ShutDown)           ();
 typedef unsigned int (__stdcall *FP_SetSpool)           (int active, int method,
@@ -43,7 +43,7 @@ typedef unsigned int (__stdcall *FP_SetKineticCycleTime)(float seconds);
 typedef unsigned int (__stdcall *FP_SetNumberKinetics)  (int numKin);
 typedef unsigned int (__stdcall *FP_GetNumberNewImages) (long* first, long* last);
 typedef unsigned int (__stdcall *FP_GetImages16)        (long first, long last,
-                                                          int* arr, unsigned long size,
+                                                          unsigned short* arr, unsigned long size,
                                                           long* validfirst, long* validlast);
 
 namespace Andor {
@@ -188,8 +188,10 @@ struct SpectrumMetadata {
 
         // ── Nano Stage ────────────────────────────────────────────────────────
         double xPos, yPos, zPos;    // 150.000, 150.000, 263.000
+        double xPosNm, yPosNm, zPosNm; // 150000, 150000, 263000
         int    switchUD;            // 1
         int    switchLR;            // 1
+        double xstartNm, xendNm, ystartNm, yendNm, zstartNm, zendNm; // if measuring while moving
 
         // ── Light Source ──────────────────────────────────────────────────────
         std::string nktSystem;      // "SuperK Varia (VIS)"

@@ -1132,39 +1132,34 @@ void AndorCameraProxy::acquireAndFetchSingle(int pixelsPerSpectrum, std::vector<
     if (res.status != 0) {
         throw std::runtime_error(std::string("AndorCameraProxy: combined acquisition failed: ") + res.strArg);
     }
-    
-    if (res.dataSize < 0 || (res.dataSize % static_cast<int32_t>(sizeof(int))) != 0) {
-        throw std::runtime_error("AndorCameraProxy: invalid combined payload size");
-    }
 
-    // 1. Read the spectrum data
-    data.resize(static_cast<size_t>(res.dataSize) / sizeof(int));
+    // 1. res IS the metadata header — read metadata payload using res.dataSize
     if (res.dataSize > 0) {
-        BYTE* inPtr = reinterpret_cast<BYTE*>(data.data());
-        size_t toRead = res.dataSize;
-        DWORD bytesRead = 0;
-        while (toRead > 0) {
-            if (!ReadFile(hPipe_, inPtr, (DWORD)toRead, &bytesRead, NULL)) {
-                throw std::runtime_error("AndorCameraProxy: failed to read combined payload from pipe");
-            }
-            if (bytesRead == 0) throw std::runtime_error("AndorCameraProxy: zero bytes read on combined payload");
-            inPtr += bytesRead;
-            toRead -= bytesRead;
-        }
-    }
-    // 2. Read the metadata payload
-    std::string payload(static_cast<size_t>(res.dataSize), '\0');
-    if (!payload.empty() && !readExact(hPipe_, &payload[0], payload.size())) {
-        throw std::runtime_error("AndorCameraProxy: failed to read combined metadata payload from pipe");
-    } else if (!payload.empty()) {
+        std::string metaPayload(static_cast<size_t>(res.dataSize), '\0');
+        if (!readExact(hPipe_, metaPayload.data(), metaPayload.size()))
+            throw std::runtime_error("AndorCameraProxy: failed to read metadata payload");
         try {
-            deserializeSpectrumMetadata(payload, meta);
+            deserializeSpectrumMetadata(metaPayload, meta);
         } catch (const std::exception& e) {
-            throw std::runtime_error("AndorCameraProxy: failed to parse combined metadata payload: " + std::string(e.what()));
-            // if failed, just use the metadata we already have in memory, which may be slightly out of date but better than nothing
+            throw std::runtime_error("AndorCameraProxy: failed to parse metadata payload: " + std::string(e.what()));
         }
+    } else {
+        throw std::runtime_error("AndorCameraProxy: no metadata payload received");
     }
+    // 2. Now read the spectrum header (was never read in original code)
+    IpcMessage dataHeader = {};
+    if (!readExact(hPipe_, &dataHeader, sizeof(dataHeader)))
+        throw std::runtime_error("AndorCameraProxy: failed to read spectrum header");
 
+    if (dataHeader.dataSize < 0 || (dataHeader.dataSize % static_cast<int32_t>(sizeof(int))) != 0)
+        throw std::runtime_error("AndorCameraProxy: invalid spectrum payload size");
+
+    // 3. Read spectrum payload using dataHeader.dataSize (not res.dataSize)
+    data.resize(static_cast<size_t>(dataHeader.dataSize) / sizeof(int));
+    if (dataHeader.dataSize > 0) {
+        if (!readExact(hPipe_, data.data(), static_cast<size_t>(dataHeader.dataSize)))
+            throw std::runtime_error("AndorCameraProxy: failed to read spectrum data");
+    }
 }
 
 // wl function: init array for the wl-array, for now just return 1024 pixels from 0 to 1023, later we can implement a real calibration

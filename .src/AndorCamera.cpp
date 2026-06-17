@@ -506,6 +506,7 @@ void AndorCamera::waitForAcquisition() {
     check(pWaitForAcquisition(), "WaitForAcquisition");
 }
 
+/* old version of getAllSpectra 
 std::vector<int> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
     ensureLoaded();
     std::vector<int> buf(numSpectra * pixelsPerSpectrum);
@@ -515,6 +516,17 @@ std::vector<int> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectru
                         &vf, &vl),
           "GetImages16");
     return buf;
+}*/
+std::vector<int> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
+    ensureLoaded();
+    const size_t totalPixels = static_cast<size_t>(numSpectra) * pixelsPerSpectrum;
+    std::vector<unsigned short> buf(totalPixels);  // 2 bytes per slot, matches SDK
+    long vf, vl;
+    check(pGetImages16(1, numSpectra, buf.data(),  // unsigned short* — fix typedef to match
+                       (unsigned long)totalPixels,
+                       &vf, &vl),
+          "GetImages16");
+    return std::vector<int>(buf.begin(), buf.end()); // widen to int after
 }
 
 void AndorCamera::shutdown() {
