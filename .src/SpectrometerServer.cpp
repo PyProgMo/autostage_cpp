@@ -216,10 +216,10 @@ void ProcessClient(HANDLE hPipe) {
             continue;
             }
             case IpcCommand::AcquireAndFetchSingle: {
-                AppLogger::instance().info("SpectrometerServer: acquireAndFetchSingle");
+                AppLogger::instance().info("SpectrometerServer: AcquireAndFetchSingle");
                 std::vector<int> data;
                 SpectrumMetadata meta;
-                cam.acquireAndFetchSingle(req.iArgs[0], data, meta);
+                cam.AcquireAndFetchSingle(req.iArgs[0], data, meta);
 
                 // Send metadata first as a separate message
                 const std::string metaPayload = serializeSpectrumMetadata(meta);

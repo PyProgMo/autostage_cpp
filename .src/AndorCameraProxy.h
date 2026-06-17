@@ -62,7 +62,7 @@ public:
                       const SpectrumMetadata& meta,
                       bool saveAsPng = false);
     void savefast1(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& measurementFolder);
-    void acquireAndFetchSingle(int pixelsPerSpectrum, std::vector<int>& data, SpectrumMetadata& meta);
+    void AcquireAndFetchSingle(int pixelsPerSpectrum, std::vector<int>& data, SpectrumMetadata& meta);
     void savespecfast(const std::string& measurementFolder,
          const std::vector<int>& spectra, 
          int numSpectra, 

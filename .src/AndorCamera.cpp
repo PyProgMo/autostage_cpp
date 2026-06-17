@@ -695,7 +695,7 @@ void AndorCamera::getWLarray(float startWL, float endWL, std::vector<float>& WL)
     }
 }
 
-void AndorCamera::acquireAndFetchSingle(int numPixels, std::vector<int>& spectrum, SpectrumMetadata& metadata) {
+void AndorCamera::AcquireAndFetchSingle(int numPixels, std::vector<int>& spectrum, SpectrumMetadata& metadata) {
     startAcquisition();
     waitForAcquisition();
     spectrum = getAllSpectra(1, numPixels);

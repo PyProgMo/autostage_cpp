@@ -367,7 +367,7 @@ public:
                       int pixelsPerSpectrum,
                       const SpectrumMetadata& specmeta,
                       bool saveAsPng = false);
-    void acquireAndFetchSingle(int pixelsPerSpectrum, std::vector<int>& data, SpectrumMetadata& meta);
+    void AcquireAndFetchSingle(int pixelsPerSpectrum, std::vector<int>& data, SpectrumMetadata& meta);
     
     static const char* readModeToString(Andor::ReadMode mode);
     static const char* triggerModeToString(Andor::TriggerMode mode);

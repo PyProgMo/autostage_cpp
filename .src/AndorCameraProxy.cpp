@@ -960,7 +960,6 @@ void AndorCameraProxy::testtenspectime() {
     std::cout << "Average time per spectrum for testAcquireAndSave: " << measuretimeone / numSpectra << " ms\n";
     std::cout << "Average time per spectrum for AcquireAndSavefast: " << measuretimefast / numSpectra << " ms\n";
     std::cout << "saved time per spectrum: " << (measuretimeone - measuretimefast) / numSpectra << " ms\n";
-
 }
 
 void AndorCameraProxy::AcquireAndSavefast(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
