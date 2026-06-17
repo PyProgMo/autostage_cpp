@@ -681,12 +681,18 @@ void AndorCamera::getWLarray(float startWL, float endWL, std::vector<float>& WL)
     for (int i = 0; i < numPixels; ++i) {
         WL.push_back(static_cast<int>(i));
     }
+}
 
+void AndorCamera::acquireAndFetchSingle(int numPixels, std::vector<int>& spectrum, SpectrumMetadata& metadata) {
+    startAcquisition();
+    waitForAcquisition();
+    spectrum = getAllSpectra(1, numPixels);
+    metadata = currentMetadata();
 }
 
 void AndorCamera::setWLarray(std::vector<float>& WL) {
     wlStart_ = WL.empty() ? 0 : WL.front();
     wlEnd_ = WL.empty() ? 0 : WL.back();
     wlNumPoints_ = static_cast<float>(WL.size());
-    
+    wlArray_.assign(WL.begin(), WL.end());
 }
