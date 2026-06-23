@@ -1,6 +1,6 @@
-========================================================================
+
 HARDWARE CONTROL SYSTEM (CLI) - PROJECT README
-========================================================================
+=
 
 Overview
 --------
@@ -10,7 +10,8 @@ scientific imaging workflows.
 
 The software acts as a unified control hub, interfacing simultaneously with:
 1. High-precision nano-positioning translation stages (X, Y, Z axes).
-2. Advanced scientific Andor CCD/EMCCD/sCMOS imaging detectors.
+2. Advanced scientific Andor CCD imaging detectors to detect spectrum and image.
+3. Spectral and spacial resolution. 
 
 Features & Subsystems
 ---------------------
@@ -47,4 +48,3 @@ the following standard subsystem prefixes to execute hardware parameters:
 Refer to the complete 'ConsoleApp_doc.md' inside this repository for the 
 full syntactical command manual, expected arguments, and usage examples.
 
-========================================================================
