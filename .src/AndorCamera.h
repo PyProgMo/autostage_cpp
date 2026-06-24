@@ -324,7 +324,7 @@ public:
     void setTriggerMode(int mode);
     void setImage(int hbin, int vbin, int hstart, int hend, int vstart, int vend);
     int getStatus();
-    int getTotalNumberImagesAcquired();
+    int getTotalNumberImagesAcquired(int& total);
     void setKineticCycleTime(float time);
     void setNumberKinetics(int number);
 

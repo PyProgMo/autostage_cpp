@@ -74,6 +74,7 @@ public:
     int getYPixels() const { return ypix_; }
 
     void MeasureAndSaveNSpecs(const std::string& foldername, int nspecs);
+    void getTotalNumberImagesAcquired(int& nk);
 
     // wl array function: init array for the wl-array
     void getWLarray(float startWL, float endWL, std::vector<int>& WL);

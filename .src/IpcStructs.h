@@ -59,6 +59,7 @@ enum class IpcCommand : int32_t {
     AndorSetMetadata,
     AcquireAndFetchSingle,
     MeasureAndSaveNSpecs,
+    getTotalNumberImagesAcquired,
 };
 
 #pragma pack(push, 1)

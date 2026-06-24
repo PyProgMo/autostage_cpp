@@ -87,6 +87,7 @@ int main() {
             std::cout << "  andor measurebg\n";
             std::cout << "  andor measure\n";
             std::cout << "  andor measureandsave [foldername] [nspecs]\n";
+            std::cout << "  andor measurekinetic\n";
             std::cout << "  andor setTint [milliseconds]\n";
             std::cout << "  andor setReadMode [mode] (FVB, MultiTrack, RandomTrack, SingleTrack, FullImage)\n";
             std::cout << "  andor setAcquisitionMode [mode] (Single, Continuous, Kinetic)\n";
@@ -275,6 +276,30 @@ int main() {
                         std::cout << "Measured and saved " << nspecs << " spectra to folder: " << foldername << "\n";
                     } else {
                         std::cout << "Usage: andor measureandsave [foldername] [nspecs]\n";
+                    }
+                } else if (action == "measurekinetic") {
+                    int nspecs = 2; // default to 2 spectra if not specified
+                    if (iss >> nspecs) {
+                        // set mode to kinetic, set trigger to internal, and acquire nspecs spectra
+                        cam->setAcquisitionMode(3); // 3 = kinetic
+                        cam->setTriggerMode(0); // 0 = internal trigger
+                        cam->setKineticCycleTime(0.000f); // minimum cycle time
+                        cam->setNumberKinetics(nspecs);
+                        cam->setExposureTime(0.1f); // 100 ms exposure time
+                        cam->setReadMode(4); // 4 = FVB
+                        cam->startAcquisition();
+                        cam->waitForAcquisition();
+
+                        int acquired = 0;
+                        cam->getTotalNumberImagesAcquired(acquired); // sanity checkd
+                        std::cout << "Frames acquired: " << acquired << " (expected " << nspecs << ")\n";
+
+                        auto data = cam->getAllSpectra(nspecs, cam->getXPixels());
+                        SpectrumMetadata meta = cam->specmeta_; // get current metadata from the proxy
+                        cam-> savespecfast("measurements", data, nspecs, cam->getXPixels(), cam->specmeta_, "measured_spectrum");
+                        std::cout << "Measured " << nspecs << " spectra in kinetic mode.\n";
+                    } else {
+                        std::cout << "Usage: andor measurekinetic [nspecs]\n";
                     }
                 }
                 else if (action == "1") {

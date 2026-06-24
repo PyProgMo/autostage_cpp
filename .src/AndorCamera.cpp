@@ -445,11 +445,12 @@ int AndorCamera::getStatus() {
     return status;
 }
 
-int AndorCamera::getTotalNumberImagesAcquired() {
+int AndorCamera::getTotalNumberImagesAcquired(int& total) {
     ensureLoaded();
-    long total = 0;
-    check(pGetTotalNumberImagesAcquired(&total), "GetTotalNumberImagesAcquired");
-    return static_cast<int>(total);
+    long totalLong = 0;
+    check(pGetTotalNumberImagesAcquired(&totalLong), "GetTotalNumberImagesAcquired");
+    total = static_cast<int>(totalLong);
+    return total;
 }
 
 void AndorCamera::setKineticCycleTime(float time) {
@@ -792,14 +793,20 @@ void AndorCamera::measureandsaveNspecs(const std::string& foldername, int nspecs
     */
 
     // set the trigger to internal and the mode to kinetic, then we can trigger the acquisition and save the data in a separate thread. This way we can start the next acquisition while the previous one is being saved.
-
+    
     configureSpectral(ReadMode::FVB, TriggerMode::Internal, 0.1f, nspecs);
-    // set integration time to 100 ms
-    setExposureTime(0.1f);
+    setKineticCycleTime(0.000f); // minimum cycle time
+    setTriggerMode(0); // 0 = internal trigger
+    setAcquisitionMode(3); // 3 = kinetic
+    
+    long nk = 0;
+    check(pGetTotalNumberImagesAcquired(&nk), "GetTotalNumberImagesAcquired");
+    // set the measurement mode to kinetic
 
     // waite until the acquisition is complete before saving the data
     startAcquisition();
     waitForAcquisition();
+    std::cout << "Acquiring " << nspecs << " spectra in mode: " << static_cast<int>(TriggerMode::Internal) << " (nk=" << nk << ")\n";
 
         // read the entire kinetics buffer in one call
     std::vector<int> spectra = getAllSpectra(nspecs, getXPixels());

@@ -678,6 +678,14 @@ void AndorCameraProxy::abortAcquisition() {
     sendCommand(req, res, 1000);
 }
 
+void AndorCameraProxy::getTotalNumberImagesAcquired(int& totalImages) {
+    IpcMessage req = {};
+    req.command = IpcCommand::getTotalNumberImagesAcquired;
+    IpcMessage res = {};
+    sendCommand(req, res, 1000);
+    totalImages = res.iArgs[0];
+}
+
 void AndorCameraProxy::waitForAcquisition() {
     IpcMessage req = {};
     req.command = IpcCommand::AndorWaitForAcquisition;

@@ -165,6 +165,13 @@ void ProcessClient(HANDLE hPipe) {
                 AppLogger::instance().info("SpectrometerServer: AbortAcquisition");
                 cam.abortAcquisition();
                 break;
+            case IpcCommand::getTotalNumberImagesAcquired: {
+                AppLogger::instance().info("SpectrometerServer: GetTotalNumberImagesAcquired");
+                int totalImages = 0;
+                cam.getTotalNumberImagesAcquired(totalImages);
+                res.iArgs[0] = static_cast<int>(totalImages);
+                break;
+            }
             case IpcCommand::AndorWaitForAcquisition:
                 AppLogger::instance().info("SpectrometerServer: WaitForAcquisition");
                 cam.waitForAcquisition();
