@@ -318,6 +318,7 @@ void AndorCamera::loadDLL(const std::string& dllPath) {
     pSetKineticCycleTime = loadProc<FP_SetKineticCycleTime>("SetKineticCycleTime");
     pSetNumberKinetics   = loadProc<FP_SetNumberKinetics>  ("SetNumberKinetics");
     pGetImages16         = loadProc<FP_GetImages16>        ("GetImages16");
+    pGetTotalNumberImagesAcquired = loadProc<FP_GetTotalNumberImagesAcquired>("GetTotalNumberImagesAcquired");
 }
 
 void AndorCamera::initialize(const std::string& iniDir) {
@@ -444,6 +445,13 @@ int AndorCamera::getStatus() {
     return status;
 }
 
+int AndorCamera::getTotalNumberImagesAcquired() {
+    ensureLoaded();
+    long total = 0;
+    check(pGetTotalNumberImagesAcquired(&total), "GetTotalNumberImagesAcquired");
+    return static_cast<int>(total);
+}
+
 void AndorCamera::setKineticCycleTime(float time) {
     ensureLoaded();
     check(pSetKineticCycleTime(time), "SetKineticCycleTime");
@@ -519,14 +527,32 @@ std::vector<int> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectru
 }*/
 std::vector<int> AndorCamera::getAllSpectra(int numSpectra, int pixelsPerSpectrum) {
     ensureLoaded();
+
+    // Guard: confirm all frames actually arrived
+    long acquired = 0;
+    pGetTotalNumberImagesAcquired(&acquired);
+    if (acquired < numSpectra) {
+        throw std::runtime_error(
+            "GetImages16: only " + std::to_string(acquired) +
+            " of " + std::to_string(numSpectra) + " frames acquired");
+    }
+
     const size_t totalPixels = static_cast<size_t>(numSpectra) * pixelsPerSpectrum;
-    std::vector<unsigned short> buf(totalPixels);  // 2 bytes per slot, matches SDK
-    long vf, vl;
-    check(pGetImages16(1, numSpectra, buf.data(),  // unsigned short* — fix typedef to match
-                       (unsigned long)totalPixels,
+    std::vector<unsigned short> buf(totalPixels);
+    long vf = 0, vl = 0;
+    check(pGetImages16(1, numSpectra, buf.data(),
+                       static_cast<unsigned long>(totalPixels),
                        &vf, &vl),
           "GetImages16");
-    return std::vector<int>(buf.begin(), buf.end()); // widen to int after
+
+    // Warn if SDK returned fewer valid frames than requested
+    if (vf != 1 || vl != numSpectra) {
+        throw std::runtime_error(
+            "GetImages16: requested frames 1-" + std::to_string(numSpectra) +
+            " but got valid range " + std::to_string(vf) + "-" + std::to_string(vl));
+    }
+
+    return std::vector<int>(buf.begin(), buf.end());
 }
 
 void AndorCamera::shutdown() {

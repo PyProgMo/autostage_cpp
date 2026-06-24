@@ -45,6 +45,7 @@ typedef unsigned int (__stdcall *FP_GetNumberNewImages) (long* first, long* last
 typedef unsigned int (__stdcall *FP_GetImages16)        (long first, long last,
                                                           unsigned short* arr, unsigned long size,
                                                           long* validfirst, long* validlast);
+typedef unsigned int (__stdcall *FP_GetTotalNumberImagesAcquired)(long* total);                                                          
 
 namespace Andor {
     enum class TriggerMode {
@@ -323,6 +324,7 @@ public:
     void setTriggerMode(int mode);
     void setImage(int hbin, int vbin, int hstart, int hend, int vstart, int vend);
     int getStatus();
+    int getTotalNumberImagesAcquired();
     void setKineticCycleTime(float time);
     void setNumberKinetics(int number);
 
@@ -413,6 +415,7 @@ private:
     FP_SetKineticCycleTime     pSetKineticCycleTime     = nullptr;
     FP_SetNumberKinetics       pSetNumberKinetics       = nullptr;
     FP_GetImages16             pGetImages16             = nullptr;
+    FP_GetTotalNumberImagesAcquired pGetTotalNumberImagesAcquired = nullptr;
 
     std::map<int, std::vector<int>> backgrounds_;
 
