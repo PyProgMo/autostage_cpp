@@ -462,7 +462,7 @@ void AndorCamera::configureSpectral(ReadMode ReadMode, TriggerMode trigMode, flo
     
     if (numSpectra > 1) {
         check(pSetNumberKinetics(numSpectra), "SetNumberKinetics");
-        check(pSetKineticCycleTime(0.0f), "SetKineticCycleTime");
+        check(pSetKineticCycleTime(0.000f), "SetKineticCycleTime");
     }
     
     check(pSetTriggerMode(static_cast<int>(trigMode)), "SetTriggerMode");
@@ -480,7 +480,7 @@ void AndorCamera::configureFVBKinetic(float exposureSeconds, int numLines) {
     check(pSetReadMode(0),              "SetReadMode FVB");
     check(pSetAcquisitionMode(3),       "SetAcquisitionMode Kinetic");
     check(pSetExposureTime(exposureSeconds), "SetExposureTime");
-    check(pSetKineticCycleTime(0.0f),   "SetKineticCycleTime 0=min");
+    check(pSetKineticCycleTime(0.00000f),   "SetKineticCycleTime 0=min");
     check(pSetNumberKinetics(numLines), "SetNumberKinetics");
     // Fast External: one TTL rising edge = one acquisition
     check(pSetTriggerMode(7),           "SetTriggerMode FastExternal");
@@ -717,6 +717,7 @@ void AndorCamera::measureandsaveNspecs(const std::string& foldername, int nspecs
     const auto tstart = std::chrono::steady_clock::now();   
     std::cout << "Starting acquisition of " << nspecs << " spectra...\n";     
 
+    /* we can do this faster 93 ms is too slow
     // this test: measure and save in a for loop
     for (int i = 0; i < nspecs; ++i) {
         startAcquisition();
@@ -731,6 +732,58 @@ void AndorCamera::measureandsaveNspecs(const std::string& foldername, int nspecs
             
         });
         saveThread.join();
+    }*/
+   /*still too slow, this takes 93 ms overhead. lets to this: set the trigger to internal and the mode do kinetic, then we can trigger the acquisition and save the data in a separate thread. This way we can start the next acquisition while the previous one is being saved.
+    
+    std::thread prevSaveThread;  // declare before the loop
+
+    for (int i = 0; i < nspecs; ++i) {
+        // wait for previous save to finish before overwriting the buffer
+        if (prevSaveThread.joinable())
+            prevSaveThread.join();
+
+        startAcquisition();
+        waitForAcquisition();
+
+        // capture data immediately into a local copy
+        std::vector<int> spectra = getAllSpectra(1, getXPixels());
+        std::string stem = "HSI_" + std::to_string(i);
+        std::string folder = measurementFolder;
+        std::vector<float> wl = wlArray_;
+        SpectrumMetadata meta = currentMetadata();
+
+        // launch save in background — next acquisition starts immediately
+        prevSaveThread = std::thread([this, folder, stem, spectra, wl, meta]() {
+            saveSpectrumSet(folder, stem, spectra, wl, 1, getXPixels(), meta);
+        });
+
+        // next loop iteration: startAcquisition() runs while prevSaveThread is saving
+    }
+
+    // join the last save after the loop
+    if (prevSaveThread.joinable())
+        prevSaveThread.join();
+    */
+
+    // set the trigger to internal and the mode to kinetic, then we can trigger the acquisition and save the data in a separate thread. This way we can start the next acquisition while the previous one is being saved.
+
+    configureSpectral(ReadMode::FVB, TriggerMode::Internal, 0.1f, nspecs);
+    // set integration time to 100 ms
+    setExposureTime(0.1f);
+
+    // waite until the acquisition is complete before saving the data
+    startAcquisition();
+    waitForAcquisition();
+
+        // read the entire kinetics buffer in one call
+    std::vector<int> spectra = getAllSpectra(nspecs, getXPixels());
+
+    // save all spectra
+    for (int i = 0; i < nspecs; ++i) {
+        std::vector<int> single(spectra.begin() + i * getXPixels(),
+                                spectra.begin() + (i + 1) * getXPixels());
+        const std::string stem = "HSI_" + std::to_string(i);
+        saveSpectrumSet(foldername, stem, single, wlArray_, 1, getXPixels(), currentMetadata());
     }
 
     std::chrono::steady_clock::time_point tend = std::chrono::steady_clock::now();

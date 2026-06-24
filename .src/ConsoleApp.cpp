@@ -417,6 +417,8 @@ int main() {
                     std::vector<int> data;
                     SpectrumMetadata meta;
                     // set tint to 10 ms for faster testing
+                    cam->configureSpectral(AndorCamera::ReadMode::FVB,
+                                           AndorCamera::TriggerMode::Internal, 0.01f, 1);
                     for (int i = 0; i < num_spectra; i++) {
 
                         /* we put this 2 calls into one single one

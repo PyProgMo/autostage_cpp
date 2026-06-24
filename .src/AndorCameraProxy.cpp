@@ -751,6 +751,8 @@ void AndorCameraProxy::setMetadata(const SpectrumMetadata& metadata) {
 
 // new test function: 
 void AndorCameraProxy::testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+    // check if triggermode is set to internal
+    AndorCameraProxy::setTriggerMode(0); // 0 = internal trigger mode
     if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
         throw std::runtime_error("AndorCameraProxy: invalid spectrum image dimensions");
     }
