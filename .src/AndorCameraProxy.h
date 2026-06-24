@@ -69,9 +69,11 @@ public:
          int pixelsPerSpectrum, 
          const SpectrumMetadata& meta,
          const std::string& filename);
-
+    
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }
+
+    void MeasureAndSaveNSpecs(const std::string& foldername, int nspecs);
 
     // wl array function: init array for the wl-array
     void getWLarray(float startWL, float endWL, std::vector<int>& WL);

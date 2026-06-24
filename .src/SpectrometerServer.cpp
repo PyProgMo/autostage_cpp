@@ -269,7 +269,18 @@ void ProcessClient(HANDLE hPipe) {
             }
             case IpcCommand::MeasureAndSaveNSpecs:
                 AppLogger::instance().info("SpectrometerServer: MeasureAndSaveNSpecs");
-                // continue here
+                // For this command, we will read the payload containing the spectra and metadata
+                if (req.dataSize < 0) {
+                    throw std::runtime_error("SpectrometerServer: invalid spectra payload size");
+                } else {
+                    AppLogger::instance().info("SpectrometerServer: MeasureAndSaveNSpecs to measure and save " + std::to_string(req.iArgs[0]) + " spectra");
+                    // AndorCamera::MeasureAndSaveNSpecs will handle reading the payload and saving the spectra.
+                    // args: const std::string& foldername, const std::string& filename, int nspecs
+                    std::string foldername(req.strArg);
+                    int nspecs = req.iArgs[0];
+                    cam.measureandsaveNspecs(foldername, nspecs);
+                }
+                
                 
                 break;
             case IpcCommand::ExitServer:

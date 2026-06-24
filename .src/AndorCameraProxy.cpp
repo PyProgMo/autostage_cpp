@@ -1161,6 +1161,20 @@ void AndorCameraProxy::AcquireAndFetchSingle(int pixelsPerSpectrum, std::vector<
     }
 }
 
+void AndorCameraProxy::MeasureAndSaveNSpecs(const std::string& foldername, int nspecs) {
+    if (nspecs <= 0) {
+        throw std::runtime_error("AndorCameraProxy: MeasureAndSaveNSpecs requires nspecs > 0");
+    }
+    // call SpectrometerServer to run the MeasureAndSaveNSpecs command, which will acquire nspecs spectra and save them to disk in the specified folder with the specified filename
+    IpcMessage req = {};
+    req.command = IpcCommand::MeasureAndSaveNSpecs;
+    req.iArgs[0] = nspecs;
+    std::strncpy(req.strArg, foldername.c_str(), sizeof(req.strArg) - 1);
+    // get foldername from req.strArg
+    IpcMessage res = {};
+    sendCommand(req, res, 10000, false);
+}
+
 // wl function: init array for the wl-array, for now just return 1024 pixels from 0 to 1023, later we can implement a real calibration
 void AndorCameraProxy::getWLarray(float startWL, float endWL, std::vector<int>& WL) {
     // placeholder for future wavelength calibration data, for now return 1024 pixels from 0 to 1023

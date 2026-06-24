@@ -86,6 +86,7 @@ int main() {
             std::cout << "  andor initspec\n"; 
             std::cout << "  andor measurebg\n";
             std::cout << "  andor measure\n";
+            std::cout << "  andor measureandsave [foldername] [nspecs]\n";
             std::cout << "  andor setTint [milliseconds]\n";
             std::cout << "  andor setReadMode [mode] (FVB, MultiTrack, RandomTrack, SingleTrack, FullImage)\n";
             std::cout << "  andor setAcquisitionMode [mode] (Single, Continuous, Kinetic)\n";
@@ -266,7 +267,17 @@ int main() {
                     }
                     std::cout << "saved spectrum";
 
-                } else if (action == "1") {
+                } else if (action == "measureandsave") {
+                    std::string foldername;
+                    int nspecs;
+                    if (iss >> foldername >> nspecs) {
+                        cam->MeasureAndSaveNSpecs(foldername, nspecs);
+                        std::cout << "Measured and saved " << nspecs << " spectra to folder: " << foldername << "\n";
+                    } else {
+                        std::cout << "Usage: andor measureandsave [foldername] [nspecs]\n";
+                    }
+                }
+                else if (action == "1") {
                     cam->startAcquisition();
                     cam->waitForAcquisition();
                     auto data = cam->getAllSpectra(1, cam->getXPixels());

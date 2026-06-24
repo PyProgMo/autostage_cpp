@@ -709,12 +709,13 @@ void AndorCamera::setWLarray(std::vector<float>& WL) {
     wlArray_.assign(WL.begin(), WL.end());
 }
 
-void AndorCamera::measureandsave100specs(const std::string& foldername, const std::string& filename, int nspecs) {    
+void AndorCamera::measureandsaveNspecs(const std::string& foldername, int nspecs) {    
     const std::string measurementFolder = joinPath(executableDirectory(), foldername);
     ensureDirectoryExists(measurementFolder);
 
     // save startingtime as tstart
-    const auto tstart = std::chrono::steady_clock::now();        
+    const auto tstart = std::chrono::steady_clock::now();   
+    std::cout << "Starting acquisition of " << nspecs << " spectra...\n";     
 
     // this test: measure and save in a for loop
     for (int i = 0; i < nspecs; ++i) {
@@ -723,9 +724,9 @@ void AndorCamera::measureandsave100specs(const std::string& foldername, const st
 
         // save spectrum in seperate thread to avoid blocking acquisition of next spectrum
         // pass mearuement folder, filename, and spectrum data to thread, so each spec is saved in the same folder
-        std::thread saveThread([this, foldername, filename, i, measurementFolder]()        {
+        std::thread saveThread([this, measurementFolder, i]()        {
             const std::vector<int> spectra = getAllSpectra(1, getXPixels());
-            const std::string stem = filename.empty() ? "spectrum" : filename + "_" + std::to_string(i);
+            const std::string stem = "HSI_" + std::to_string(i);
             saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, 1, getXPixels(), currentMetadata());
             
         });
