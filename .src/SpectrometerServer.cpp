@@ -142,10 +142,16 @@ void ProcessClient(HANDLE hPipe) {
                 AppLogger::instance().info("SpectrometerServer: setKineticCycleTime");
                 cam.setKineticCycleTime(static_cast<float>(req.dArgs[0]));
                 break;
-            case IpcCommand::AndorSetNumberKinetics:
+            case IpcCommand::AndorSetNumberKinetics:{
                 AppLogger::instance().info("SpectrometerServer: setNumberKinetics");
-                cam.setNumberKinetics(req.iArgs[0]);
+                int kn = req.iArgs[0];
+                cam.setNumberKinetics(kn);
+                int actualTotal = 0;
+                cam.getTotalNumberImagesAcquired(actualTotal);
+                res.iArgs[0] = static_cast<int>(actualTotal);
+                std::cout << "SetNumberKinetics(" << kn << ") -> readback: " << actualTotal << "\n";
                 break;
+            }
             case IpcCommand::AndorConfigureSpectral:
                 AppLogger::instance().info("SpectrometerServer: configureSpectral");
                 cam.configureSpectral(static_cast<AndorCamera::ReadMode>(req.iArgs[0]),

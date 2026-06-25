@@ -77,6 +77,7 @@ inline const char* ipcCommandName(IpcCommand command) {
     case IpcCommand::AndorSetMetadata: return "AndorSetMetadata";
     case IpcCommand::AcquireAndFetchSingle: return "AcquireAndFetchSingle";
     case IpcCommand::MeasureAndSaveNSpecs: return "MeasureAndSaveNSpecs";
+    case IpcCommand::getTotalNumberImagesAcquired: return "getTotalNumberImagesAcquired";
     default: return "Unknown (logger)";
     }
 }

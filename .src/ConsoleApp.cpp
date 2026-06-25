@@ -281,12 +281,22 @@ int main() {
                     int nspecs = 2; // default to 2 spectra if not specified
                     if (iss >> nspecs) {
                         // set mode to kinetic, set trigger to internal, and acquire nspecs spectra
+                        /* old order:
+                        cam->setReadMode(0); // 0 = FVB
                         cam->setAcquisitionMode(3); // 3 = kinetic
                         cam->setTriggerMode(0); // 0 = internal trigger
                         cam->setKineticCycleTime(0.000f); // minimum cycle time
                         cam->setNumberKinetics(nspecs);
                         cam->setExposureTime(0.1f); // 100 ms exposure time
-                        cam->setReadMode(4); // 4 = FVB
+                        cam->startAcquisition();
+                        cam->waitForAcquisition();
+                        new order: */
+                        cam->setAcquisitionMode(3);       // FIRST - must be before everything
+                        cam->setReadMode(0);              // FVB
+                        cam->setNumberKinetics(nspecs);   // before cycle time
+                        cam->setKineticCycleTime(0.0f);   // after number kinetics
+                        cam->setExposureTime(0.1f);
+                        cam->setTriggerMode(0);           // last
                         cam->startAcquisition();
                         cam->waitForAcquisition();
 
