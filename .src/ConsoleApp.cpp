@@ -87,7 +87,7 @@ int main() {
             std::cout << "  andor measurebg\n";
             std::cout << "  andor measure\n";
             std::cout << "  andor measureandsave [foldername] [nspecs]\n";
-            std::cout << "  andor measurekinetic\n";
+            std::cout << "  andor measurekinetic [nspecs]\n";
             std::cout << "  andor setTint [milliseconds]\n";
             std::cout << "  andor setReadMode [mode] (FVB, MultiTrack, RandomTrack, SingleTrack, FullImage)\n";
             std::cout << "  andor setAcquisitionMode [mode] (Single, Continuous, Kinetic)\n";
