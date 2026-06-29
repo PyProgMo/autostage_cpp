@@ -73,7 +73,7 @@ int main() {
             std::cout << "  stage moveto [x] [y] [z] (in nm)\n";
             std::cout << "  stage adda [vx] [vy] [vz] (in nm/s)\n";
             std::cout << "  stage halt\n";
-            std::cout << "  stage velocitytest [t_measure] [x_distance_nm] [stepsize_nm] [log 0|1] [tdead_ms]\n";
+            std::cout << "  stage velocitytest [spec_int_ms] [x_distance_nm] [stepsize_nm] [log 0|1] [tdead_ms]\n";
             std::cout << "  stage rowcorrected [duration_s] [x_distance_nm] [log 0|1]\n";
             std::cout << "  stage m [axis] [pos] (in nm)\n";
             std::cout << "  stage wait [axis]\n";
@@ -141,7 +141,7 @@ int main() {
                         RasterScan::runOneRowTest(*stage, *cam, t_measure, xDistanceNm, stepsize_nm, logFlag, tdead);
                         std::cout << "Velocity test completed.\n";
                     } else {
-                        std::cout << "Usage: stage velocitytest [t_measure] [x_distance_nm] [stepsize_nm] [log 0|1] [tdead_ms]\n";
+                        std::cout << "Usage: stage velocitytest [spec_int_ms] [x_distance_nm] [stepsize_nm] [log 0|1] [tdead_ms]\n";
                     }
                 } else if (action == "rowcorrected") {
                     double durationS;

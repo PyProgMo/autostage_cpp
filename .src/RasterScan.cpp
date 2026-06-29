@@ -428,7 +428,7 @@ void RasterScan::startrasterscan() {
 
 void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double t_measure, double xDistanceNm, double stepsize_nm, bool logImportant, int tdead_perspec) {
     //velocity v = x/t, x=stepsize_nm, t = t_measure+tdead_perspec*1.2; // add 20% margin to dead time
-    const double velocityNmPerS = xDistanceNm / (t_measure + tdead_perspec * 1.2);
+    const double velocityNmPerS = stepsize_nm / (t_measure + tdead_perspec * 1.2); // velocity in nm/s with 20% margin to dead time
     if (velocityNmPerS < 10.0 || velocityNmPerS > 10000.0) {
         throw std::runtime_error("Velocity must be between 10 and 10000 nm/s");
     }
