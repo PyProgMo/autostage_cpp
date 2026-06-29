@@ -73,7 +73,7 @@ int main() {
             std::cout << "  stage moveto [x] [y] [z] (in nm)\n";
             std::cout << "  stage adda [vx] [vy] [vz] (in nm/s)\n";
             std::cout << "  stage halt\n";
-            std::cout << "  stage velocitytest [velocity_nm_s] [x_distance_nm]\n";
+            std::cout << "  stage velocitytest [t_measure] [x_distance_nm] [stepsize_nm] [log 0|1] [tdead_ms]\n";
             std::cout << "  stage rowcorrected [duration_s] [x_distance_nm] [log 0|1]\n";
             std::cout << "  stage m [axis] [pos] (in nm)\n";
             std::cout << "  stage wait [axis]\n";
@@ -132,31 +132,29 @@ int main() {
                     stage->halt();
                     std::cout << "Stage halt requested.\n";
                 } else if (action == "velocitytest") {
-                    double velocityNmPerS;
+                    double t_measure;
+                    double tdead=60; // default dead time in ms
                     double xDistanceNm;
                     double stepsize_nm;
                     bool logFlag = false;
-                    if (iss >> velocityNmPerS >> xDistanceNm >> stepsize_nm >> logFlag) {
-                        RasterScan::runOneRowTest(*stage, *cam, velocityNmPerS, xDistanceNm, stepsize_nm, logFlag);
+                    if (iss >> t_measure >> xDistanceNm >> stepsize_nm >> logFlag >> tdead) {
+                        RasterScan::runOneRowTest(*stage, *cam, t_measure, xDistanceNm, stepsize_nm, logFlag, tdead);
                         std::cout << "Velocity test completed.\n";
                     } else {
-                        std::cout << "Usage: stage velocitytest [t_measure] [x_distance_nm] [stepsize_nm] [log 0|1]\n";
+                        std::cout << "Usage: stage velocitytest [t_measure] [x_distance_nm] [stepsize_nm] [log 0|1] [tdead_ms]\n";
                     }
                 } else if (action == "rowcorrected") {
                     double durationS;
                     double xDistanceNm;
                     double stepsize_nm;
-                    int logFlag = 0;
-                    if (iss >> durationS >> xDistanceNm >> stepsize_nm) {
-                        if (!(iss >> logFlag)) {
-                            logFlag = 0;
-                        }
+                    bool logFlag = false;
+                    if (iss >> durationS >> xDistanceNm >> stepsize_nm >> logFlag) {
                         RasterScan::runRowCorrected(*stage, 
                                                      *cam, 
                                                      durationS,
                                                      xDistanceNm,
                                                      stepsize_nm,
-                                                     logFlag != 0);
+                                                     logFlag);
                         std::cout << "Row corrected test completed.\n";
                     } else {
                         std::cout << "Usage: stage rowcorrected [duration_s] [x_distance_nm] [stepsize_nm] [log 0|1]\n";

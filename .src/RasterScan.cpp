@@ -332,6 +332,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
                    std::abs(row.commandedVelocityNmPerS[2]));
 
         // if traveled by DS trigger the spectrometer here (optional optimization for very long lines, but adds complexity to the loop and timing)
+        // 
 
         // Break at the bottom of the iteration to avoid skipping the final adda call
         if (elapsedS >= durationS) {
@@ -425,7 +426,9 @@ void RasterScan::startrasterscan() {
     throw std::runtime_error("RasterScan::startrasterscan is legacy and not implemented");
 }
 
-void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double velocityNmPerS, double xDistanceNm, double stepsize_nm, bool logImportant) {
+void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double t_measure, double xDistanceNm, double stepsize_nm, bool logImportant, int tdead_perspec) {
+    //velocity v = x/t, x=stepsize_nm, t = t_measure+tdead_perspec*1.2; // add 20% margin to dead time
+    const double velocityNmPerS = xDistanceNm / (t_measure + tdead_perspec * 1.2);
     if (velocityNmPerS < 10.0 || velocityNmPerS > 10000.0) {
         throw std::runtime_error("Velocity must be between 10 and 10000 nm/s");
     }
@@ -469,9 +472,7 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     //oss << filename;
     oss << filename;//_" << std::put_time(&tm, "%Y%m%d_%H%M%S") << ".csv";
 
-    // setup 
-    double stepsize_nm;
-    int measurementtime_ms; 
+    double measurementtime_ms = t_measure+tdead_perspec*1.2; // add 20% margin to dead time
 
     runRowCorrectedLoop(stage, cam, startPos, targetPos, stepsize_nm, measurementtime_ms, durationS, logImportant, oss.str());
 }
@@ -507,8 +508,7 @@ void RasterScan::runRowCorrected(PIStageProxy& stage,
 
     stage.adda(std::abs(xDistanceNm) / durationS, 0.0, 0.0);
 
-    double stepsize_nm;
-    int measurementtime_ms;
+    int measurementtime_ms = durationS;
 
     runRowCorrectedLoop(stage, cam, startPos, targetPos, stepsize_nm, measurementtime_ms, durationS, logImportant, logPath);
 }

@@ -69,7 +69,7 @@ public:
     RasterScan(PIStageProxy& stage, AndorCameraProxy& cam);
 
     // Diagnostic one-row test scan used by the console velocitytest command.
-    static void runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double velocityNmPerS, double xDistanceNm, double stepsize_nm, bool logImportant = false);
+    static void runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double velocityNmPerS, double xDistanceNm, double stepsize_nm, bool logImportant = false, int tdead_perspec = 60);
 
     // Corrected one-row scan that follows a fixed duration target and can optionally log to a file.
     static void runRowCorrected(PIStageProxy& stage,
