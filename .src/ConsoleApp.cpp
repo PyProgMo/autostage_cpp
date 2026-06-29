@@ -134,17 +134,20 @@ int main() {
                 } else if (action == "velocitytest") {
                     double velocityNmPerS;
                     double xDistanceNm;
-                    if (iss >> velocityNmPerS >> xDistanceNm) {
-                        RasterScan::runOneRowTest(*stage, *cam, velocityNmPerS, xDistanceNm);
+                    double stepsize_nm;
+                    bool logFlag = false;
+                    if (iss >> velocityNmPerS >> xDistanceNm >> stepsize_nm >> logFlag) {
+                        RasterScan::runOneRowTest(*stage, *cam, velocityNmPerS, xDistanceNm, stepsize_nm, logFlag);
                         std::cout << "Velocity test completed.\n";
                     } else {
-                        std::cout << "Usage: stage velocitytest [velocity_nm_s] [x_distance_nm]\n";
+                        std::cout << "Usage: stage velocitytest [t_measure] [x_distance_nm] [stepsize_nm] [log 0|1]\n";
                     }
                 } else if (action == "rowcorrected") {
                     double durationS;
                     double xDistanceNm;
+                    double stepsize_nm;
                     int logFlag = 0;
-                    if (iss >> durationS >> xDistanceNm) {
+                    if (iss >> durationS >> xDistanceNm >> stepsize_nm) {
                         if (!(iss >> logFlag)) {
                             logFlag = 0;
                         }
@@ -152,10 +155,11 @@ int main() {
                                                      *cam, 
                                                      durationS,
                                                      xDistanceNm,
+                                                     stepsize_nm,
                                                      logFlag != 0);
                         std::cout << "Row corrected test completed.\n";
                     } else {
-                        std::cout << "Usage: stage rowcorrected [duration_s] [x_distance_nm] [log 0|1]\n";
+                        std::cout << "Usage: stage rowcorrected [duration_s] [x_distance_nm] [stepsize_nm] [log 0|1]\n";
                     }
                 } else if (action == "moveto") {
                     double x, y, z;

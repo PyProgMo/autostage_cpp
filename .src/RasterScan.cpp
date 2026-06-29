@@ -147,6 +147,8 @@ void runRowCorrectedLoop(PIStageProxy& stage,
                          AndorCameraProxy& cam,
                          const std::array<double, 3>& startPos,
                          const std::array<double, 3>& targetPos,
+                         double stepsize_nm,
+                         int measurementtime_ms, 
                          double durationS,
                          bool logImportant,
                          const std::string& logPath) 
@@ -423,7 +425,7 @@ void RasterScan::startrasterscan() {
     throw std::runtime_error("RasterScan::startrasterscan is legacy and not implemented");
 }
 
-void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double velocityNmPerS, double xDistanceNm) {
+void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double velocityNmPerS, double xDistanceNm, double stepsize_nm, bool logImportant) {
     if (velocityNmPerS < 10.0 || velocityNmPerS > 10000.0) {
         throw std::runtime_error("Velocity must be between 10 and 10000 nm/s");
     }
@@ -458,21 +460,27 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     const auto t = std::time(nullptr);
     const auto tm = *std::localtime(&t);
     std::ostringstream oss;
-    std::string filename = "rowcorrected_log_" + std::to_string(tm.tm_year + 1900) +
+    std::string filename = "build/rowcorrected_log_" + std::to_string(tm.tm_year + 1900) +
         std::to_string(tm.tm_mon + 1) +
         std::to_string(tm.tm_mday) + "_" +
         std::to_string(tm.tm_hour) +
         std::to_string(tm.tm_min) +
         std::to_string(tm.tm_sec) + ".csv";
-    oss << "build/" << filename;
+    //oss << filename;
+    oss << filename;//_" << std::put_time(&tm, "%Y%m%d_%H%M%S") << ".csv";
 
-    runRowCorrectedLoop(stage, cam, startPos, targetPos, durationS, false, oss.str());
+    // setup 
+    double stepsize_nm;
+    int measurementtime_ms; 
+
+    runRowCorrectedLoop(stage, cam, startPos, targetPos, stepsize_nm, measurementtime_ms, durationS, logImportant, oss.str());
 }
 
 void RasterScan::runRowCorrected(PIStageProxy& stage,
                                  AndorCameraProxy& cam,
                                  double durationS,
-                                 double xDistanceNm,
+                                 double xDistanceNm, 
+                                 double stepsize_nm,
                                  bool logImportant,
                                  const std::string& logPath) {
     if (durationS <= 0.0) {
@@ -499,7 +507,10 @@ void RasterScan::runRowCorrected(PIStageProxy& stage,
 
     stage.adda(std::abs(xDistanceNm) / durationS, 0.0, 0.0);
 
-    runRowCorrectedLoop(stage, cam, startPos, targetPos, durationS, logImportant, logPath);
+    double stepsize_nm;
+    int measurementtime_ms;
+
+    runRowCorrectedLoop(stage, cam, startPos, targetPos, stepsize_nm, measurementtime_ms, durationS, logImportant, logPath);
 }
 
 void RasterScan::runAreaScan(
@@ -557,7 +568,10 @@ void RasterScan::runAreaScan(
         stage.waitOnTarget("2");
         stage.waitOnTarget("3");
 
-        runRowCorrectedLoop(stage, cam, lineStartPos, lineTargetPos, durationSPerLine, logImportant, logPath);
+        double stepsize_nm = 10.0; // Example value, replace with actual step size
+        int measurementtime_ms = 150; // Example value, replace with actual measurement time
+
+        runRowCorrectedLoop(stage, cam, lineStartPos, lineTargetPos, stepsize_nm, measurementtime_ms, durationSPerLine, logImportant, logPath);
     }
 
     }
