@@ -100,7 +100,8 @@ int main() {
             std::cout << "  andor testfunctions\n";
             std::cout << "  andor disconnect\n";
             std::cout << "  andor 1 (measure on specified camera with current settings)\n";
-            std::cout << "  scan\n";
+            std::cout << "  scan1\n";
+            std::cout << "  scan2\n";
             continue;
         }
 
@@ -506,7 +507,7 @@ int main() {
                 else {
                     std::cout << "Unknown andor action: " << action << "\n";
                 }
-            } else if (target == "scan") {
+            } else if (target == "scan1") {
                 // Here we replicate runRasterScan using proxies!
                 // defaults are in nanometres (nm)
                 double xStart = 0.0, xStop = 200000.0, xStep = 2000.0; // 2.0 mm -> 2000000 nm, 0.002 mm -> 2000 nm
