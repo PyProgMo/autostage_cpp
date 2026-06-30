@@ -66,6 +66,7 @@ int main() {
         // if cmd == "help" print user guidance
         if (cmd == "help") {
             std::cout << "Commands:\n";
+            std::cout << "  init\n";
             std::cout << "  stage connect\n";
             std::cout << "  stage disconnect\n";
             std::cout << "  stage pos [axis] \n";
@@ -110,8 +111,28 @@ int main() {
         iss >> target >> action;
 
         try {
+            if (target == "init") {
+                // Initialize both stage and camera
+                // 1. connect to stage
+                stage->loadDLL("E7XX_GCS2_DLL.dll");
+                stage->connect("109021162");
+                std::cout << "Stage connected.\n";
+                // 2. connect to camera
+                int cameraIndex = 0;
+                cam->loadDLL("atmcd64d.dll");
+                cam->selectCamera(cameraIndex);
+                cam->initialize("");
+                std::cout << "Andor initialized using camera " << cameraIndex << ". X=" << cam->getXPixels() << ", Y=" << cam->getYPixels() << "\n";
+                // 3. initialize empty metadata in the camera proxy and run andor initspec
+                cam->specmeta_ = cam->getMetadata(); 
+                cam->configureSpectral(AndorCamera::ReadMode::FVB,
+                        AndorCamera::TriggerMode::Internal, 0.1f, 1);
+                // 4. measure background
+                std::string bgFilename = "background.txt";
+                cam->measureBackground(bgFilename);
 
-            if (target == "stage") {
+            }
+            else if (target == "stage") {
                 if (action == "connect") {
                     stage->loadDLL("E7XX_GCS2_DLL.dll");
                     stage->connect("109021162");

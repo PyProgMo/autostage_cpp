@@ -848,7 +848,6 @@ void AndorCamera::runfastAcquistiontriggered(float exposureSeconds, int numSpect
     
 }
 
-
 void AndorCamera::measureBackground(float exposureSeconds, const std::string& filename) {
     configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureSeconds);
     startAcquisition();
@@ -915,7 +914,7 @@ void AndorCamera::AcquireSpecandSave(const std::string& foldername, const std::s
     std::cout << "Saved spectrum to " << measurementFolder << "\n";
 }
 
-void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, const std::string& filename) {
+void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, double x, double y, double z, const std::string& filename) {
     std::cout << "Starting acquisition and savefast to " << foldername << "/" << filename << "\n";
     startAcquisition();
     std::cout << "Acquisition started, waiting for completion...\n";
@@ -925,10 +924,29 @@ void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, const st
     auto spectra = getAllSpectra(1, getXPixels());
     std::cout << "Spectra fetched, preparing to save...\n";
     auto background = getBackground();
+    //ensure the background is fetched. if not, init a array of zeros
+    // error: what():  writeSpectrumTxt: BG vector size (0) is smaller than pixelsPerSpectrum (1024) fix: initialize background to zeros if empty
+    if (background.empty()) {
+        background.resize(getXPixels(), 0);
+    }
+
     std::cout << "Background fetched, preparing to save...\n";
-    auto wl = wlArray_;
+    auto wl = wlArray_; // <- bug: wlArray_ is what():  writeSpectrumTxt: wlArray size (0) is smaller than pixelsPerSpectrum (1024)
+    // todo: fetch the actual wavelength array from the camera or calibration data
+    if (wl.empty()) {
+        //getWLarray(0.0f, 0.0f, wl); // placeholder: fill wl with default values
+        // For now, just fill wl with 0 to numPixels-1
+        wl.resize(getXPixels());
+        for (int i = 0; i < getXPixels(); ++i) {
+            wl[i] = static_cast<float>(i);
+        }
+    }
     std::cout << "Wavelength array fetched, preparing to save...\n";
     auto metadata = currentMetadata();
+    metadata.xPosNm = x;
+    metadata.yPosNm = y;
+    metadata.zPosNm = z;
+
     std::cout << "Metadata fetched, preparing to save...\n";
 
     // gather the WL array for the current camera

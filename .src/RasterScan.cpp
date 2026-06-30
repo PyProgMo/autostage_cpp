@@ -165,7 +165,11 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     const double refVy = deltaY / durationS;
     const double refVz = deltaZ / durationS;
     const std::array<double, 3> referenceVelocity = {{refVx, refVy, refVz}};
-    int lastspecX=0;
+    double lastspecX = startPos[0];
+    double lastspecY = startPos[1];
+    double lastspecZ = startPos[2];
+    double currentpos[3] = {startPos[0], startPos[1], startPos[2]};
+
 
     std::ofstream rowLog;
     if (logImportant) {
@@ -227,8 +231,10 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     std::string filename = "spec_" + std::to_string(specNum);
 
     // tell the spectrometer to measure by calling cam->AcquireSpecandSave(measurementFolder, filename);
-    cam.AcquireSpecandSave(measurementFolder, filename);
-    lastspecX = stage.getPos("1")*1000; // Convert to nanometers
+    auto pos = stage.qpos();
+
+    cam.AcquireSpecandSave(measurementFolder, pos[0], pos[1], pos[2], filename);
+    lastspecX = stage.getPos("1"); // Convert to nanometers
     specNum++;
 
     while (true) {
@@ -345,8 +351,12 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         // if traveled by DS trigger the spectrometer here (optional optimization for very long lines, but adds complexity to the loop and timing)
         if (std::abs(actual[0] - lastspecX) >= stepsize_nm) {
             lastspecX = actual[0];
+            // update metadata: call stage.qpos() and put result into double xPosNm, yPosNm, zPosNm; 
+            std::array<double, 3> posNm = stage.qpos();
+            // put posNm into metadata: xPosNm, yPosNm, zPosNm
+
             // Trigger spectrometer acquisition here
-            cam.AcquireSpecandSave(measurementFolder, "spec_" + std::to_string(specNum) + ".txt");
+            cam.AcquireSpecandSave(measurementFolder, posNm[0], posNm[1], posNm[2], "spec_" + std::to_string(specNum) + ".txt");
             specNum++;
             lastspecX = actual[0];
         }
