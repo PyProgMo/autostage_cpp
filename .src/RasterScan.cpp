@@ -223,8 +223,8 @@ void runRowCorrectedLoop(PIStageProxy& stage,
 
     int specNum = 0;
 
-    std::string measurementFolder = logPath;
-    std::string filename = "spec_" + std::to_string(specNum) + ".txt";
+    std::string measurementFolder = "build/measurement_" + std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
+    std::string filename = "spec_" + std::to_string(specNum);
 
     // tell the spectrometer to measure by calling cam->AcquireSpecandSave(measurementFolder, filename);
     cam.AcquireSpecandSave(measurementFolder, filename);
