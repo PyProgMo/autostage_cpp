@@ -132,7 +132,7 @@ void ProcessClient(HANDLE hPipe) {
                 }
                 std::string filename = combined.substr(0, sepPos);
                 std::string foldername = combined.substr(sepPos + 1);
-                cam.AcquireSpecandSave(foldername, filename);
+                cam.AcquireSpecandSavefast(foldername, filename);
                 break;
             }
             case IpcCommand::AndorSetExposureTime:

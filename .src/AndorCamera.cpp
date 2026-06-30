@@ -112,7 +112,6 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<int>& spect
     if (!outFile) {
         throw std::runtime_error(std::string("Andor: failed to write TXT: ") + filePath);
     }
-
     for (int i = 0; i < numSpectra; ++i) {
         for (int j = 0; j < pixelsPerSpectrum; ++j) {
             outFile << spectra[i * pixelsPerSpectrum + j] << ' ';
@@ -259,8 +258,8 @@ void AndorCamera::saveSpectrumSet(const std::string& measurementFolder,
                      const SpectrumMetadata& specmeta,
                      bool saveAsPng) {
     int maxVal = 0;
-    cv::Mat img = buildSpectrumImage(spectra, numSpectra, pixelsPerSpectrum, maxVal);
     if (saveAsPng) {
+        cv::Mat img = buildSpectrumImage(spectra, numSpectra, pixelsPerSpectrum, maxVal);
         if (!cv::imwrite(joinPath(measurementFolder, stem) + ".png", img)) {
             throw std::runtime_error(std::string("Andor: failed to write PNG: ") + stem);
         }
@@ -623,7 +622,6 @@ void AndorCamera::Savefast(const std::string& foldername, const std::vector<int>
     if (spectra.empty() || spectra.size() < static_cast<size_t>(numSpectra) * static_cast<size_t>(pixelsPerSpectrum)) {
         throw std::runtime_error("Andor: AcquireAndSavefast requires non-empty spectrum data");
     }
-
     const std::string measurementFolder = joinPath(executableDirectory(), foldername);
     ensureDirectoryExists(measurementFolder);
     const std::vector<int> background = getBackground();
@@ -738,6 +736,13 @@ void AndorCamera::AcquireSpecandSave(const std::string& foldername, const std::s
     const std::string stem = filename.empty() ? "spectrum" : filename;
     saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, 1, getXPixels(), currentMetadata());
     std::cout << "Saved spectrum to " << measurementFolder << "\n";
+}
+
+void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, const std::string& filename) {
+    startAcquisition();
+    waitForAcquisition();
+    const std::vector<int> spectra = getAllSpectra(1, getXPixels());
+    Savefast(foldername, spectra, 1, getXPixels(), filename);
 }
 
 void AndorCamera::setWLarray(std::vector<float>& WL) {
