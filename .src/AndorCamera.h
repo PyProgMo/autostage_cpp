@@ -294,6 +294,18 @@ inline bool deserializeSpectrumMetadata(const std::string& payload, SpectrumMeta
     return true;
 }
 
+// Adapt this to your actual Andor::ReadMode enum values.
+inline const char* readModeToString(Andor::ReadMode mode) {
+    switch (mode) {
+        case Andor::ReadMode::FVB:         return "Full Vertical Binning";
+        case Andor::ReadMode::SingleTrack: return "Single Track";
+        case Andor::ReadMode::MultiTrack:  return "Multi Track";
+        case Andor::ReadMode::FullImage:       return "Full Image";
+        default:                           return "Unknown";
+    }
+}
+
+
 class AndorCamera {
 public:
     using TriggerMode = Andor::TriggerMode;
@@ -355,7 +367,7 @@ public:
     // declare the test functions here so they can be called from ConsoleApp without including private members
     void testAcquireAndSave(float exposureSeconds, const std::string& filename);
     void testAcquireAndSave(const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
-    void Savefast(const std::string& foldername, const std::vector<int>& spectra, const std::vector<float>& wlArray, int numSpectra, int pixelsPerSpectrum, const std::string& filename);
+    void Savefast(const std::string& foldername, const std::vector<int>& spectra, const std::vector<int>& background, const std::vector<float>& wlArray, int numSpectra, int pixelsPerSpectrum, const std::string& filename, const SpectrumMetadata& metadata);
     void setupfastAcquisition(float exposureSeconds, int numSpectra);
     void runfastAcquistiontriggered(float exposureSeconds, int numSpectra, std::string filename, std::string foldername);
 
