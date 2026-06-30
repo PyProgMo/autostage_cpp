@@ -139,7 +139,7 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<int>& spect
     put("Central Wavelength (nm): %.2f\n", meta.centralWlNm);
     out += "Detector Settings\n";
     put("Detector: %s\n",                  meta.detector.c_str());
-    put("Cooling Temperature (\xC2\xB0C): %.0f\n", meta.coolingTempC);
+    put("Cooling Temperature (\xC2\xB0" "C): %.0f\n", meta.coolingTempC);
     put("Exposure Time (s): %.2f\n",       meta.exposureTimeS);
     put("Horizontal Binning: %dx\n",       meta.horizontalBinning);
     put("Wavelength First Pixel (nm): %.2f\n", meta.wlFirstPixelNm);
@@ -688,7 +688,6 @@ void AndorCamera::Savefast(const std::string& foldername, const std::vector<int>
     }
     const std::string measurementFolder = joinPath(executableDirectory(), foldername);
     ensureDirectoryExists(measurementFolder);
-    const std::vector<int> background = getBackground();
     // write spectrum to .txt
     const std::string txtFilePath = joinPath(measurementFolder, filename + ".txt");
     writeSpectrumTxt(txtFilePath, spectra, background, wlArray, numSpectra, pixelsPerSpectrum, metadata);
@@ -805,9 +804,18 @@ void AndorCamera::AcquireSpecandSave(const std::string& foldername, const std::s
 void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, const std::string& filename) {
     startAcquisition();
     waitForAcquisition();
-    const std::vector<int> spectra = getAllSpectra(1, getXPixels());
+
+    auto spectra = getAllSpectra(1, getXPixels());
+    auto background = getBackground();
+    auto wl = wlArray_;
+    auto metadata = currentMetadata();
+
     // gather the WL array for the current camera
-    Savefast(foldername, spectra, getBackground(), wlArray_,  1, getXPixels(), filename, currentMetadata());
+    // Savefast(foldername, spectra, getBackground(), wlArray_,  1, getXPixels(), filename, currentMetadata());
+    std::thread saveThread([this, foldername, spectra, background, wl, filename, metadata]() {
+        Savefast(foldername, spectra, background, wl, 1, getXPixels(), filename, metadata);
+    });
+    saveThread.join();
 }
 
 void AndorCamera::setWLarray(std::vector<float>& WL) {
