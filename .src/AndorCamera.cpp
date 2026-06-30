@@ -615,7 +615,7 @@ void AndorCamera::testAcquireAndSave(const std::vector<int>& spectra, int numSpe
 
 }
 
-void AndorCamera::Savefast(const std::string& foldername, const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
+void AndorCamera::Savefast(const std::string& foldername, const std::vector<int>& spectra, const std::vector<float>& wlArray, int numSpectra, int pixelsPerSpectrum, const std::string& filename) {
     if (numSpectra <= 0 || pixelsPerSpectrum <= 0) {
         throw std::runtime_error("Andor: invalid spectrum image dimensions");
     }
@@ -655,8 +655,8 @@ void AndorCamera::runfastAcquistiontriggered(float exposureSeconds, int numSpect
         if (finished == 1){
             // save spectrum
             const std::vector<int> spectra = getAllSpectra(1, getXPixels());
-            //(const std::string& foldername, const std::vector<int>& spectra, int numSpectra, int pixelsPerSpectrum, const std::string& filename)
-            Savefast(foldername, spectra, 1, getXPixels(), filename + "_" + std::to_string(i));
+            //(const std::string& foldername, const std::vector<int>& spectra, const std::vector<float>& wlArray, int numSpectra, int pixelsPerSpectrum, const std::string& filename)
+            Savefast(foldername, spectra, wlArray_, 1, getXPixels(), filename + "_" + std::to_string(i));
 
         } else if (finished == 2) {
             std::cerr << "Andor: warning - acquisition did not finish within expected time after trigger\n";
@@ -742,7 +742,8 @@ void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, const st
     startAcquisition();
     waitForAcquisition();
     const std::vector<int> spectra = getAllSpectra(1, getXPixels());
-    Savefast(foldername, spectra, 1, getXPixels(), filename);
+    // gather the WL array for the current camera
+    Savefast(foldername, spectra, wlArray_, 1, getXPixels(), filename);
 }
 
 void AndorCamera::setWLarray(std::vector<float>& WL) {
