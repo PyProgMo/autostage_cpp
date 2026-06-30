@@ -636,6 +636,22 @@ void AndorCameraProxy::setKineticCycleTime(float seconds) {
     sendCommand(req, res);
 }
 
+void AndorCameraProxy::AcquireSpecandSave(const std::string& foldername, const std::string& filename) {
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorAcquireSpecandSave;
+    // throw error if | in filename or foldername, since we use | as a separator
+    if (filename.find('|') != std::string::npos || foldername.find('|') != std::string::npos) {
+        throw std::runtime_error("AndorCameraProxy: filename and foldername cannot contain | character");
+    }
+    std::string combined = filename + "|" + foldername;
+    if (combined.size() >= sizeof(req.strArg)) {
+        throw std::runtime_error("AndorCameraProxy: filename and foldername too long");
+    }
+    strncpy(req.strArg, combined.c_str(), sizeof(req.strArg) - 1);
+    IpcMessage res = {};
+    sendCommand(req, res, 10000);
+}
+
 void AndorCameraProxy::setNumberKinetics(int numKin) {
     IpcMessage req = {}, res = {};
     req.command = IpcCommand::AndorSetNumberKinetics; req.iArgs[0] = numKin;

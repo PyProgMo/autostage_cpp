@@ -333,6 +333,8 @@ public:
                            TriggerMode trigMode,
                            float      exposureSeconds,
                            int        numSpectra = 1);
+    
+    void AcquireSpecandSave(const std::string& foldername, const std::string& filename);
 
     // FVB: single spectrum per trigger pulse (fastest for raster)
     void configureFVBKinetic(float exposureSeconds, int numLines);

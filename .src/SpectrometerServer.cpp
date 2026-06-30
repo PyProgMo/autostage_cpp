@@ -120,6 +120,21 @@ void ProcessClient(HANDLE hPipe) {
                 AppLogger::instance().info("SpectrometerServer: setAcquisitionMode");
                 cam.setAcquisitionMode(req.iArgs[0]);
                 break;
+            case IpcCommand::AndorAcquireSpecandSave: {
+                AppLogger::instance().info("SpectrometerServer: AcquireSpecandSave");
+                // get filename and foldername from: 
+                /*  std::string combined = filename + "|" + foldername;
+                    strncpy(req.strArg, combined.c_str(), sizeof(req.strArg) - 1);*/
+                std::string combined(req.strArg);
+                size_t sepPos = combined.find('|');
+                if (sepPos == std::string::npos) {
+                    throw std::runtime_error("Invalid argument format for AcquireSpecandSave");
+                }
+                std::string filename = combined.substr(0, sepPos);
+                std::string foldername = combined.substr(sepPos + 1);
+                cam.AcquireSpecandSave(foldername, filename);
+                break;
+            }
             case IpcCommand::AndorSetExposureTime:
                 AppLogger::instance().info("SpectrometerServer: setExposureTime");
                 cam.setExposureTime(static_cast<float>(req.dArgs[0]));

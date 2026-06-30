@@ -729,6 +729,17 @@ void AndorCamera::AcquireAndFetchSingle(int numPixels, std::vector<int>& spectru
     metadata = currentMetadata();
 }
 
+void AndorCamera::AcquireSpecandSave(const std::string& foldername, const std::string& filename) {
+    startAcquisition();
+    waitForAcquisition();
+    const std::vector<int> spectra = getAllSpectra(1, getXPixels());
+    const std::string measurementFolder = joinPath(executableDirectory(), foldername);
+    ensureDirectoryExists(measurementFolder);
+    const std::string stem = filename.empty() ? "spectrum" : filename;
+    saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, 1, getXPixels(), currentMetadata());
+    std::cout << "Saved spectrum to " << measurementFolder << "\n";
+}
+
 void AndorCamera::setWLarray(std::vector<float>& WL) {
     wlStart_ = WL.empty() ? 0 : WL.front();
     wlEnd_ = WL.empty() ? 0 : WL.back();

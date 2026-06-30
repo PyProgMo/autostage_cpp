@@ -165,6 +165,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     const double refVy = deltaY / durationS;
     const double refVz = deltaZ / durationS;
     const std::array<double, 3> referenceVelocity = {{refVx, refVy, refVz}};
+    int lastspecX=0;
 
     std::ofstream rowLog;
     if (logImportant) {
@@ -219,6 +220,16 @@ void runRowCorrectedLoop(PIStageProxy& stage,
 
     AppLogger::instance().info("rowcorrected: loop initialized for " + std::to_string(durationS) + "s");
     stage.moveto(targetPos[0], targetPos[1], targetPos[2]);
+
+    int specNum = 0;
+
+    std::string measurementFolder = logPath;
+    std::string filename = "spec_" + std::to_string(specNum) + ".txt";
+
+    // tell the spectrometer to measure by calling cam->AcquireSpecandSave(measurementFolder, filename);
+    cam.AcquireSpecandSave(measurementFolder, filename);
+    lastspecX = stage.getPos("1")*1000; // Convert to nanometers
+    specNum++;
 
     while (true) {
         const long long nowQpc = qpc_now();
@@ -332,7 +343,13 @@ void runRowCorrectedLoop(PIStageProxy& stage,
                    std::abs(row.commandedVelocityNmPerS[2]));
 
         // if traveled by DS trigger the spectrometer here (optional optimization for very long lines, but adds complexity to the loop and timing)
-        // 
+        if (std::abs(actual[0] - lastspecX) >= stepsize_nm) {
+            lastspecX = actual[0];
+            // Trigger spectrometer acquisition here
+            cam.AcquireSpecandSave(measurementFolder, "spec_" + std::to_string(specNum) + ".txt");
+            specNum++;
+            lastspecX = actual[0];
+        }
 
         // Break at the bottom of the iteration to avoid skipping the final adda call
         if (elapsedS >= durationS) {
@@ -426,15 +443,24 @@ void RasterScan::startrasterscan() {
     throw std::runtime_error("RasterScan::startrasterscan is legacy and not implemented");
 }
 
-void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double t_measure, double xDistanceNm, double stepsize_nm, bool logImportant, int tdead_perspec) {
+void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double t_measure, double xDistanceNm, double stepsize_nm, bool logImportant, int tdead_perspec_ms) {
     //velocity v = x/t, x=stepsize_nm, t = t_measure+tdead_perspec*1.2; // add 20% margin to dead time
-    const double velocityNmPerS = stepsize_nm / (t_measure + tdead_perspec * 1.2); // velocity in nm/s with 20% margin to dead time
-    if (velocityNmPerS < 10.0 || velocityNmPerS > 10000.0) {
-        throw std::runtime_error("Velocity must be between 10 and 10000 nm/s");
+    const double velocityNmPerS = stepsize_nm / (t_measure + tdead_perspec_ms * 1.2 / 1000.0); // velocity in nm/s with 20% margin to dead time
+
+    // debug: print the calculated velocity and the input parameters
+    std::cout << "Calculated velocity: " << velocityNmPerS << " nm/s" << std::endl;
+    std::cout << "Input parameters: t_measure=" << t_measure << ", xDistanceNm=" << xDistanceNm << ", stepsize_nm=" << stepsize_nm << ", tdead_perspec=" << tdead_perspec_ms << std::endl;
+
+    if (velocityNmPerS < 0.1 || velocityNmPerS > 10000.0) {
+        throw std::runtime_error("Velocity must be between 0.1 and 10000 nm/s");
     }
     if (xDistanceNm <= 0.0) {
         throw std::runtime_error("X distance must be greater than 0 nm");
     }
+
+    // init spectrometer with t_measure and external trigger, then run the row-corrected loop with the calculated parameters
+    cam.setExposureTime(t_measure / 1000.0); // set exposure time in seconds
+    cam.setTriggerMode(0); // set trigger mode internal
 
     const double durationS = xDistanceNm / velocityNmPerS;
     const std::array<double, 3> startPos = {{kStageTestStartNm, kStageTestStartNm, kStageTestStartNm}};
@@ -472,8 +498,7 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     //oss << filename;
     oss << filename;//_" << std::put_time(&tm, "%Y%m%d_%H%M%S") << ".csv";
 
-    double measurementtime_ms = t_measure+tdead_perspec*1.2; // add 20% margin to dead time
-
+    double measurementtime_ms = t_measure; // measurement time in ms, passed as parameter
     runRowCorrectedLoop(stage, cam, startPos, targetPos, stepsize_nm, measurementtime_ms, durationS, logImportant, oss.str());
 }
 

@@ -69,6 +69,9 @@ public:
          int pixelsPerSpectrum, 
          const SpectrumMetadata& meta,
          const std::string& filename);
+        
+    void AcquireSpecandSave(const std::string& foldername, const std::string& filename);
+
     
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }
