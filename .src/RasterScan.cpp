@@ -475,7 +475,7 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     cam.setExposureTime(t_measure / 1000.0); // set exposure time in seconds
     cam.setTriggerMode(0); // set trigger mode internal
 
-    const double durationS = xDistanceNm / velocityNmPerS * 1000; // units: nm / (nm/s) * 1000 = ms
+    const double durationMs = xDistanceNm / velocityNmPerS; // x / (nm/ms) = ms
     const std::array<double, 3> startPos = {{kStageTestStartNm, kStageTestStartNm, kStageTestStartNm}};
     const std::array<double, 3> targetPos = {{kStageTestStartNm + xDistanceNm, kStageTestStartNm, kStageTestStartNm}};
 
@@ -512,7 +512,7 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     oss << filename;//_" << std::put_time(&tm, "%Y%m%d_%H%M%S") << ".csv";
 
     double measurementtime_ms = t_measure; // measurement time in ms, passed as parameter
-    runRowCorrectedLoop(stage, cam, startPos, targetPos, stepsize_nm, measurementtime_ms, durationS, logImportant, oss.str());
+    runRowCorrectedLoop(stage, cam, startPos, targetPos, stepsize_nm, measurementtime_ms, durationMs, logImportant, oss.str());
 }
 
 void RasterScan::runRowCorrected(PIStageProxy& stage,
