@@ -25,8 +25,8 @@ namespace {
 #include <sys/stat.h>
 #endif
 constexpr double kStageTestMinNm = 0.0;
-constexpr double kStageTestMaxNm = 300000.0;
-constexpr double kStageTestStartNm = 1000.0;
+constexpr double kStageTestMaxNm = 300000.0; // unit: nm
+double kStageTestStartNm = 1000.0;
 constexpr double kStageTestTickMs = 10.0;
 constexpr double kStageTestTickS = kStageTestTickMs / 1000.0;
 constexpr double kRowCorrectedMaxCommandNmPerS = 5000.0;
@@ -149,7 +149,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
                          const std::array<double, 3>& targetPos,
                          double stepsize_nm,
                          int measurementtime_ms, 
-                         double durationS,
+                         double durationS, // total duration of the scan in ms
                          bool logImportant,
                          const std::string& logPath) 
 {
@@ -157,11 +157,11 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         throw std::runtime_error("runRowCorrectedLoop requires a positive duration");
     }
 
-    const double deltaX = targetPos[0] - startPos[0];
+    const double deltaX = targetPos[0] - startPos[0]; // units: nm
     const double deltaY = targetPos[1] - startPos[1];
     const double deltaZ = targetPos[2] - startPos[2];
     
-    const double refVx = deltaX / durationS;
+    const double refVx = deltaX / durationS; // units: nm / ms = nm/ms = mum/s
     const double refVy = deltaY / durationS;
     const double refVz = deltaZ / durationS;
     const std::array<double, 3> referenceVelocity = {{refVx, refVy, refVz}};
@@ -210,9 +210,11 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     long long tickIndex = 0;
     long long lastTickStart = startQpc;
 
+    // example calculation expected ticks for durationS = 1000 ms, loopms = 5 ms: expectedTicks = 1000 / 5 + 2048 = 4048
+
     // Compute explicit real-time allocation size to prevent hot-path heap allocations.
     // Keep extra headroom so longer-than-expected runs can keep logging without reallocating.
-    const size_t expectedTicks = static_cast<size_t>((durationS * 1000.0) / loopms) + 2048;
+    const size_t expectedTicks = static_cast<size_t>((durationS) / loopms) + 2048;
     const size_t maxLogRows = expectedTicks * 2;
     std::deque<RowCorrectedLogRow> logBuffer;
     
@@ -222,7 +224,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     size_t dtFallbackCount = 0;
     size_t logTruncationCount = 0;
 
-    AppLogger::instance().info("rowcorrected: loop initialized for " + std::to_string(durationS) + "s");
+    AppLogger::instance().info("rowcorrected: loop initialized for " + std::to_string(durationS) + "ms");
     stage.moveto(targetPos[0], targetPos[1], targetPos[2]);
 
     int specNum = 0;
@@ -261,8 +263,9 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         
         lastTickStart = tickStart;
 
+        // elapsedS is the total time since the start of the row-corrected loop, in seconds
         const double elapsedS = (double)(tickStart - startQpc) / (double)freq;
-        const double progress = std::min(elapsedS / durationS, 1.0);
+        const double progress = std::min(elapsedS / durationS/1000, 1.0);
 
         const std::array<double, 3> actual = stage.qpos();
 
@@ -275,7 +278,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         RowCorrectedLogRow row;
         row.timeS      = elapsedS;
         row.elapsedS   = elapsedS;
-        row.remainingS = std::max(durationS - elapsedS, 0.0);
+        row.remainingS = std::max(durationS/1000 - elapsedS, 0.0);
         
         row.referenceNm[0] = startPos[0] + deltaX * progress;
         row.referenceNm[1] = startPos[1] + deltaY * progress;
@@ -362,7 +365,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         }
 
         // Break at the bottom of the iteration to avoid skipping the final adda call
-        if (elapsedS >= durationS) {
+        if (elapsedS >= durationS/1000) {
             break;
         }
 
@@ -455,14 +458,14 @@ void RasterScan::startrasterscan() {
 
 void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double t_measure, double xDistanceNm, double stepsize_nm, bool logImportant, int tdead_perspec_ms) {
     //velocity v = x/t, x=stepsize_nm, t = t_measure+tdead_perspec*1.2; // add 20% margin to dead time
-    const double velocityNmPerS = stepsize_nm / (t_measure + tdead_perspec_ms * 1.2 / 1000.0); // velocity in nm/s with 20% margin to dead time
+    const double velocityNmPerS = stepsize_nm / ((t_measure + tdead_perspec_ms * 1.2)); // velocity in nm/ms = mum/s with 20% margin to dead time
 
     // debug: print the calculated velocity and the input parameters
     std::cout << "Calculated velocity: " << velocityNmPerS << " nm/s" << std::endl;
     std::cout << "Input parameters: t_measure=" << t_measure << ", xDistanceNm=" << xDistanceNm << ", stepsize_nm=" << stepsize_nm << ", tdead_perspec=" << tdead_perspec_ms << std::endl;
 
-    if (velocityNmPerS < 0.1 || velocityNmPerS > 10000.0) {
-        throw std::runtime_error("Velocity must be between 0.1 and 10000 nm/s");
+    if (velocityNmPerS < 0.001 || velocityNmPerS > 100.0) {
+        throw std::runtime_error("Velocity must be between 0.001 and 100.0 nm/s");
     }
     if (xDistanceNm <= 0.0) {
         throw std::runtime_error("X distance must be greater than 0 nm");
@@ -472,7 +475,7 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     cam.setExposureTime(t_measure / 1000.0); // set exposure time in seconds
     cam.setTriggerMode(0); // set trigger mode internal
 
-    const double durationS = xDistanceNm / velocityNmPerS;
+    const double durationS = xDistanceNm / velocityNmPerS * 1000; // units: nm / (nm/s) * 1000 = ms
     const std::array<double, 3> startPos = {{kStageTestStartNm, kStageTestStartNm, kStageTestStartNm}};
     const std::array<double, 3> targetPos = {{kStageTestStartNm + xDistanceNm, kStageTestStartNm, kStageTestStartNm}};
 
