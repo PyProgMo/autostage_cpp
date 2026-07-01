@@ -149,11 +149,11 @@ void runRowCorrectedLoop(PIStageProxy& stage,
                          const std::array<double, 3>& targetPos,
                          double stepsize_nm,
                          int measurementtime_ms, 
-                         double durationS, // total duration of the scan in ms
+                         double durationmS, // total duration of the scan in ms
                          bool logImportant,
                          const std::string& logPath) 
 {
-    if (durationS <= 0.0) {
+    if (durationmS <= 0.0) {
         throw std::runtime_error("runRowCorrectedLoop requires a positive duration");
     }
 
@@ -161,9 +161,9 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     const double deltaY = targetPos[1] - startPos[1];
     const double deltaZ = targetPos[2] - startPos[2];
     
-    const double refVx = deltaX / durationS; // units: nm / ms = nm/ms = mum/s
-    const double refVy = deltaY / durationS;
-    const double refVz = deltaZ / durationS;
+    const double refVx = deltaX / durationmS; // units: nm / ms = nm/ms = mum/s
+    const double refVy = deltaY / durationmS;
+    const double refVz = deltaZ / durationmS;
     const std::array<double, 3> referenceVelocity = {{refVx, refVy, refVz}};
     double lastspecX = startPos[0];
     double lastspecY = startPos[1];
@@ -214,7 +214,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
 
     // Compute explicit real-time allocation size to prevent hot-path heap allocations.
     // Keep extra headroom so longer-than-expected runs can keep logging without reallocating.
-    const size_t expectedTicks = static_cast<size_t>((durationS) / loopms) + 2048;
+    const size_t expectedTicks = static_cast<size_t>((durationmS) / loopms) + 2048;
     const size_t maxLogRows = expectedTicks * 2;
     std::deque<RowCorrectedLogRow> logBuffer;
     
@@ -224,7 +224,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     size_t dtFallbackCount = 0;
     size_t logTruncationCount = 0;
 
-    AppLogger::instance().info("rowcorrected: loop initialized for " + std::to_string(durationS) + "ms");
+    AppLogger::instance().info("rowcorrected: loop initialized for " + std::to_string(durationmS) + "ms");
     stage.moveto(targetPos[0], targetPos[1], targetPos[2]);
 
     int specNum = 0;
@@ -265,7 +265,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
 
         // elapsedS is the total time since the start of the row-corrected loop, in seconds
         const double elapsedS = (double)(tickStart - startQpc) / (double)freq;
-        const double progress = std::min(elapsedS / durationS/1000, 1.0);
+        const double progress = std::min(elapsedS / durationmS/1000, 1.0);
 
         const std::array<double, 3> actual = stage.qpos();
 
@@ -278,7 +278,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         RowCorrectedLogRow row;
         row.timeS      = elapsedS;
         row.elapsedS   = elapsedS;
-        row.remainingS = std::max(durationS/1000 - elapsedS, 0.0);
+        row.remainingS = std::max(durationmS/1000 - elapsedS, 0.0);
         
         row.referenceNm[0] = startPos[0] + deltaX * progress;
         row.referenceNm[1] = startPos[1] + deltaY * progress;
@@ -365,7 +365,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
         }
 
         // Break at the bottom of the iteration to avoid skipping the final adda call
-        if (elapsedS >= durationS/1000) {
+        if (elapsedS >= durationmS/1000) {
             break;
         }
 
