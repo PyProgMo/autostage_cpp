@@ -236,7 +236,7 @@ void runRowCorrectedLoop(PIStageProxy& stage,
     auto pos = stage.qpos();
 
     cam.AcquireSpecandSave(measurementFolder, pos[0], pos[1], pos[2], filename);
-    lastspecX = stage.getPos("1"); // Convert to nanometers
+    lastspecX = stage.getPos("1")*1000; // Convert to nanometers
     specNum++;
 
     while (true) {
@@ -359,7 +359,16 @@ void runRowCorrectedLoop(PIStageProxy& stage,
             // put posNm into metadata: xPosNm, yPosNm, zPosNm
 
             // Trigger spectrometer acquisition here
-            cam.AcquireSpecandSave(measurementFolder, posNm[0], posNm[1], posNm[2], "spec_" + std::to_string(specNum) + ".txt");
+            // measure, but please in another thread!!!
+
+            //cam.AcquireSpecandSave(measurementFolder, posNm[0], posNm[1], posNm[2], "spec_" + std::to_string(specNum) + ".txt");
+
+            // call cam.AcquireSpecandSave in a separate thread to avoid blocking the main loop
+            std::thread([&cam, measurementFolder, posNm, specNum]() {
+                std::string filename = "spec_" + std::to_string(specNum) + ".txt";
+                cam.AcquireSpecandSave(measurementFolder, posNm[0], posNm[1], posNm[2], filename);
+            }).detach();
+
             specNum++;
             lastspecX = actual[0];
         }
@@ -380,6 +389,9 @@ void runRowCorrectedLoop(PIStageProxy& stage,
             warnBuffer.push_back(oss.str());
         }
     } // end while(true)
+
+    // wait until all cam.AcquireSpecandSave threads are done before proceeding to log and cleanup
+    std::this_thread::sleep_for(std::chrono::milliseconds(500)); // wait for 500 ms to allow any detached threads to finish (adjust as needed)
 
     if (dtFallbackCount > 0) {
         warnBuffer.push_back("rowcorrected: non-positive dtS encountered " + std::to_string(dtFallbackCount) + " time(s)");
@@ -487,17 +499,32 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     }
     // to move on target: calculate the required velocity to cover the distance in the specified duration, then command a move with that velocity and wait for completion
     double currentpos[3];
-    currentpos[0] = stage.getPos("1"); currentpos[1] = stage.getPos("2"); currentpos[2] = stage.getPos("3");
+    currentpos[0] = stage.getPos("1")*1000; currentpos[1] = stage.getPos("2")*1000; currentpos[2] = stage.getPos("3")*1000;
     // take 10 seconds to get to the start position, then wait there for 1 second before starting the test move
-    stage.adda(
-        std::abs(startPos[0] - currentpos[0]) / 10.0,
-        std::abs(startPos[1] - currentpos[1]) / 10.0,
-        std::abs(startPos[2] - currentpos[2]) / 10.0
+    stage.adda( // y factor 500? unit conversion nm to mum but use double velocity *2/1000
+        std::abs((startPos[0] - currentpos[0])/500), // / 10.0, 
+        std::abs((startPos[1] - currentpos[1])/500), // / 10.0,
+        std::abs((startPos[2] - currentpos[2])/500) // / 10.0
     );    
     stage.moveto(startPos[0], startPos[1], startPos[2]);
     std::this_thread::sleep_for(std::chrono::seconds(11));
 
-    stage.adda(std::abs(velocityNmPerS), 0.0, 0.0);
+    // check if star position within tolerance of 20 nm, if not again set velocity and move to start position
+    currentpos[0] = stage.getPos("1")*1000; currentpos[1] = stage.getPos("2")*1000; currentpos[2] = stage.getPos("3")*1000;
+    if (std::abs(currentpos[0] - startPos[0]) > 20.0 || std::abs(currentpos[1] - startPos[1]) > 20.0 || std::abs(currentpos[2] - startPos[2]) > 20.0) {
+        // log this
+        std::cerr << "Start position is out of tolerance. Retry approach 2nd time. " << std::endl;
+
+        stage.adda(
+            std::abs((startPos[0] - currentpos[0])/500), // / 10.0,
+            std::abs((startPos[1] - currentpos[1])/500), // / 10.0,
+            std::abs((startPos[2] - currentpos[2])/500) // / 10.0
+        );
+        stage.moveto(startPos[0], startPos[1], startPos[2]);
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+    }
+
+    //stage.adda(std::abs(velocityNmPerS), 0.0, 0.0); // will be set later
     // build name of the rowcorrected_log file with timestamp: rowcorrected_log_YYYYMMDD_HHMMSS.csv
     const auto t = std::time(nullptr);
     const auto tm = *std::localtime(&t);
@@ -511,7 +538,25 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     //oss << filename;
     oss << filename;//_" << std::put_time(&tm, "%Y%m%d_%H%M%S") << ".csv";
 
+    // before start motion, set velocity to 0
+    stage.adda(0.0, 0.0, 0.0);
+
     double measurementtime_ms = t_measure; // measurement time in ms, passed as parameter
+
+    // debugging: print input args for runRowCorrectedLoop
+    
+    std::cout << "Running row-corrected loop with parameters:" << std::endl;
+    std::cout << "  startPos: (" << startPos[0] << ", " << startPos[1] << ", " << startPos[2] << ")" << std::endl;
+    std::cout << "  targetPos: (" << targetPos[0] << ", " << targetPos[1] << ", " << targetPos[2] << ")" << std::endl;
+    std::cout << "  stepsize_nm: " << stepsize_nm << std::endl;
+    std::cout << "  measurementtime_ms: " << measurementtime_ms << std::endl;
+    std::cout << "  durationMs: " << durationMs << std::endl;
+    std::cout << "  logImportant: " << (logImportant ? "true" : "false") << std::endl;
+
+    // print current position of the stage
+    std::array<double, 3> currentStagePos = stage.qpos();
+    std::cout << "Current stage position: (" << currentStagePos[0] << ", " << currentStagePos[1] << ", " << currentStagePos[2] << ")" << std::endl;
+
     runRowCorrectedLoop(stage, cam, startPos, targetPos, stepsize_nm, measurementtime_ms, durationMs, logImportant, oss.str());
 }
 
