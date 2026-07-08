@@ -144,7 +144,7 @@ bool ensureParentDirExists(const std::string& path) {
 #endif
 }
 
-static void startRowScanSimple(PIStageProxy& stage, 
+void RasterScan::startRowScanSimple(PIStageProxy& stage, 
         AndorCameraProxy& cam, 
         const std::array<double, 3>& pos, 
         double xDistanceNm, 
@@ -154,18 +154,19 @@ static void startRowScanSimple(PIStageProxy& stage,
         double tint_ms,
         double tdead_perspec_ms,
         bool logImportant, 
-        const std::string& logPathPrefix
+        const std::string& logPathPrefix, 
+        const std::string& savefolder
     )
     {
         // 1: approach: move to start position with velocity of pos-startpos/5
         auto cpos = stage.qpos(); // units: nm
-        stage.adda((pos[0] - cpos[0]) / 5, (pos[1] - cpos[1]) / 5, (pos[2] - cpos[2]) / 5);
+        stage.adda(std::abs(pos[0] - cpos[0]) / 5, std::abs(pos[1] - cpos[1]) / 5, std::abs(pos[2] - cpos[2]) / 5);
         stage.moveto(pos[0], pos[1], pos[2]);
         // 2: wait until we are at the start position
         int timeout = 6000; // 6 seconds timeout
         while (true) {
             cpos = stage.qpos();
-            if (std::abs(cpos[0] - pos[0]) < 1.0 && std::abs(cpos[1] - pos[1]) < 1.0 && std::abs(cpos[2] - pos[2]) < 1.0) {
+            if (std::abs(cpos[0] - pos[0]) < 50.0 && std::abs(cpos[1] - pos[1]) < 50.0 && std::abs(cpos[2] - pos[2]) < 50.0) {
                 break;
             }
             Sleep(10);
@@ -174,8 +175,13 @@ static void startRowScanSimple(PIStageProxy& stage,
                 throw std::runtime_error("Timeout waiting for stage to reach start position");
             }
         }
+        // create measurement folder if it does not exist
+        std::string measurementname = savefolder + "/" + std::to_string(std::time(nullptr));
+        ensureParentDirExists(measurementname);
+
         // 3: move to end position with constant velocity, measure a spectrum every stepsize_nm. Collect each row, save later. 
         // iterate over the yNsteps, for each, call runRowScanSimple, then move to the next y position.
+        AppLogger::instance().info("Starting row scan simple with " + std::to_string(yNsteps) + " rows, stepsize " + std::to_string(stepsize_nm) + " nm, tint " + std::to_string(tint_ms) + " ms, tdead " + std::to_string(tdead_perspec_ms) + " ms");
         for (int i = 0; i < yNsteps; ++i) {
             double yPos = pos[1] + i * stepsize_nm;
             // first row, move in x-direction, then move in y-direction for the next row (backward and forward scanning can be implemented later)
@@ -190,11 +196,11 @@ static void startRowScanSimple(PIStageProxy& stage,
             }
             // move to the start position of the row within 100 ms, then start the row scan with constant velocity, measure and save a spectrum every stepsize_nm, optionally log to a file.
             cpos = stage.qpos();
-            stage.adda((rowStartPos[0] - cpos[0]) / 0.1, (rowStartPos[1] - cpos[1]) / 0.1, (rowStartPos[2] - cpos[2]) / 0.1);
+            stage.adda(std::abs(rowStartPos[0] - cpos[0]) / 0.1, std::abs(rowStartPos[1] - cpos[1]) / 0.1, std::abs(rowStartPos[2] - cpos[2]) / 0.1);
             // waite 200 ms for the stage to reach the start position
             Sleep(200);
 
-            RasterScan::runRowScanSimple(stage, cam, rowStartPos, xDistanceNm, stepsize_nm, logImportant, logPathPrefix + "row_" + std::to_string(i) + ".csv");
+            RasterScan::runRowScanSimple(stage, cam, rowStartPos, xDistanceNm, stepsize_nm, logImportant, tint_ms, tdead_perspec_ms,  logPathPrefix + "row_" + std::to_string(i) + "_", measurementname);
         }
 
     }
@@ -205,10 +211,11 @@ void RasterScan::runRowScanSimple(PIStageProxy& stage,
                                 const std::array<double, 3>& startpos,
                                 double xDistanceNm,
                                 double stepsize_nm,
-                                bool logImportant = false,
-                                const std::string& logPath,
+                                bool logImportant,
                                 double tint_ms,
-                                double tdead_perspec_ms
+                                double tdead_perspec_ms, 
+                                const std::string& logPath,
+                                const std::string& savefolder
                             ) 
     {   
         std::array<double, 3> qpos = stage.qpos();
@@ -227,7 +234,12 @@ void RasterScan::runRowScanSimple(PIStageProxy& stage,
             // loop over for loop to measure and save a spectrum every timeperspec_ms, optionally log to a file.
             for (double x = startpos[0]; x <= endpos[0]; x += stepsize_nm) {
                 std::array<double, 3> currentPos = {x, startpos[1], startpos[2]};
-                cam.AcquireSpecandSave("build/measurement", currentPos[0], currentPos[1], currentPos[2], "spec_" + std::to_string(static_cast<int>(x)));
+                // make filename in logPath/spec_X
+                std::string specFilename = savefolder + "/spec_" + std::to_string(static_cast<int>(x)) + ".txt";
+                std::string logPath = logPath + "row_" + std::to_string(static_cast<int>(x)) + ".log";
+                ensureParentDirExists(specFilename);
+                ensureParentDirExists(logPath);
+                cam.AcquireSpecandSave(specFilename, currentPos[0], currentPos[1], currentPos[2], "spec_" + std::to_string(static_cast<int>(x)));
                 if (logImportant) {
                     std::ofstream logFile(logPath, std::ios::app);
                     if (!logFile.is_open()) {

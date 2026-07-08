@@ -81,7 +81,8 @@ public:
         double tint_ms = 100,
         double tdead_perspec_ms = 100,
         bool logImportant = false, 
-        const std::string& logPathPrefix = "build/rowcorrected_line_"
+        const std::string& logPathPrefix = "rowcorrected_line_",
+        const std::string& savefolder = "build/measurement"
     );
 
     // simple version: drive with constant velocity along one row, measure and save a spectrum every stepsize_nm, optionally log to a file. This is a simpler version of runRowCorrected that does not attempt to correct for stage motion errors.
@@ -90,10 +91,11 @@ public:
                                 const std::array<double, 3>& pos,
                                 double xDistanceNm,
                                 double stepsize_nm,
-                                bool logImportant = false,
-                                const std::string& logPath = "build/rowcorrected_log.csv", 
+                                bool logImportant = false,    
                                 double tint_ms = 100,
-                                double tdead_perspec_ms = 100
+                                double tdead_perspec_ms = 100,
+                                const std::string& logPath = "loggs", 
+                                const std::string& savefolder = "specs"
                             );
 
     // Corrected one-row scan that follows a fixed duration target and can optionally log to a file.
@@ -103,7 +105,7 @@ public:
                                 double xDistanceNm,
                                 double stepsize_nm,
                                 bool logImportant = false,
-                                const std::string& logPath = "build/rowcorrected_log.csv");
+                                const std::string& logPath = "loggs");
     
     // Configure area scan, that scans an area looping over runRowCorrected for each line. This will validate the config and pre-calculate nX/nY.
     static void runAreaScan(ScanConfig& cfg, 

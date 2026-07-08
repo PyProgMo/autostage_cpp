@@ -197,12 +197,12 @@ void PIStageProxy::moveto(double x, double y, double z) {
     sendCommand(req, res);
 
     // for testing, if move fails, retry after 2 ms
-
+    /*
     if (res.status != 0) {
         AppLogger::instance().warn("PIStageProxy: moveto failed, retrying after 2ms");
         Sleep(2);
         sendCommand(req, res);
-    }
+    }*/
 }
 
 void PIStageProxy::adda(double vx, double vy, double vz) {
