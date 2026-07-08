@@ -29,7 +29,8 @@ constexpr double kStageTestMaxNm = 300000.0; // unit: nm
 double kStageTestStartNm = 1000.0;
 constexpr double kStageTestTickMs = 10.0;
 constexpr double kStageTestTickS = kStageTestTickMs / 1000.0;
-constexpr double kRowCorrectedMaxCommandNmPerS = 5000.0;
+// kRowCorrectedMaxCommandNmPerS is the maximum velocity command that will be sent to the stage during a row-corrected scan. This is a safety limit to prevent the stage from being commanded to move too fast, which could cause it to overshoot or behave unpredictably. The actual maximum velocity of the stage may be higher, but we limit it here for safety and stability of the scan.
+constexpr double kRowCorrectedMaxCommandNmPerS = 10000.0;
 }
 static inline long long qpc_now();
 static inline long long qpc_freq();
@@ -143,20 +144,106 @@ bool ensureParentDirExists(const std::string& path) {
 #endif
 }
 
+static void startRowScanSimple(PIStageProxy& stage, 
+        AndorCameraProxy& cam, 
+        const std::array<double, 3>& pos, 
+        double xDistanceNm, 
+        double yNsteps, 
+        double stepsize_nm, 
+        // tiny dead time in ms, used to calculate velocity for the scan
+        double tint_ms = 100,
+        double tdead_perspec_ms = 100,
+        bool logImportant = false, 
+        const std::string& logPathPrefix = "build/rowcorrected_line_"
+    )
+    {
+        // 1: approach: move to start position with velocity of pos-startpos/5
+        auto cpos = stage.qpos(); // units: nm
+        stage.adda((pos[0] - cpos[0]) / 5, (pos[1] - cpos[1]) / 5, (pos[2] - cpos[2]) / 5);
+        stage.moveto(pos[0], pos[1], pos[2]);
+        // 2: wait until we are at the start position
+        int timeout = 6000; // 6 seconds timeout
+        while (true) {
+            cpos = stage.qpos();
+            if (std::abs(cpos[0] - pos[0]) < 1.0 && std::abs(cpos[1] - pos[1]) < 1.0 && std::abs(cpos[2] - pos[2]) < 1.0) {
+                break;
+            }
+            Sleep(10);
+            timeout -= 10;
+            if (timeout <= 0) {
+                throw std::runtime_error("Timeout waiting for stage to reach start position");
+            }
+        }
+        // 3: move to end position with constant velocity, measure a spectrum every stepsize_nm. Collect each row, save later. 
+        // iterate over the yNsteps, for each, call runRowScanSimple, then move to the next y position.
+        for (int i = 0; i < yNsteps; ++i) {
+            double yPos = pos[1] + i * stepsize_nm;
+            // first row, move in x-direction, then move in y-direction for the next row (backward and forward scanning can be implemented later)
+            std::array<double, 3> rowStartPos = {pos[0], yPos, pos[2]};
+            std::array<double, 3> rowEndPos = {pos[0] + xDistanceNm, yPos, pos[2]};
+            if (i%2 == 1) {
+                rowStartPos = {pos[0], yPos, pos[2]};
+                rowEndPos = {pos[0] + xDistanceNm, yPos, pos[2]};
+            } else {
+                rowStartPos = {pos[0] + xDistanceNm, yPos, pos[2]};
+                rowEndPos = {pos[0], yPos, pos[2]};
+            }
+            // move to the start position of the row within 100 ms, then start the row scan with constant velocity, measure and save a spectrum every stepsize_nm, optionally log to a file.
+            cpos = stage.qpos();
+            stage.adda((rowStartPos[0] - cpos[0]) / 0.1, (rowStartPos[1] - cpos[1]) / 0.1, (rowStartPos[2] - cpos[2]) / 0.1);
+            // waite 200 ms for the stage to reach the start position
+            Sleep(200);
+
+            RasterScan::runRowScanSimple(stage, cam, rowStartPos, xDistanceNm, stepsize_nm, logImportant, logPathPrefix + "row_" + std::to_string(i) + ".csv");
+        }
+
+    }
+
 // keep things simple: scan one row with constant velocity, measure and save a spectrum every stepsize_nm, optionally log to a file. This is a simpler version of runRowCorrected that does not attempt to correct for stage motion errors.
 void RasterScan::runRowScanSimple(PIStageProxy& stage,
                                 AndorCameraProxy& cam,
-                                const std::array<double, 3>& pos,
+                                const std::array<double, 3>& startpos,
                                 double xDistanceNm,
                                 double stepsize_nm,
                                 bool logImportant = false,
-                                const int scanNrows, // number of rows to scan (default 1 for single-row scan)
-                                const int rowdistance_nm, 
-                                // distance between rows in nm (default 100 nm for single-row scan)
-                                const std::string& logPath = "build/rowcorrected_log.csv"
+                                const std::string& logPath = "build/rowcorrected_log.csv",
+                                double tint_ms = 100,
+                                double tdead_perspec_ms = 100
                             ) 
-    {
-        // 1: approach: move to start position with velocity of pos-startpos/5 
+    {   
+        std::array<double, 3> qpos = stage.qpos();
+        std::array<double, 3> endpos = {startpos[0] + xDistanceNm, startpos[1], startpos[2]};
+        double totalDistanceNm = xDistanceNm;
+        double timeperspec_ms = tint_ms + tdead_perspec_ms;
+        double totalTime_ms = (totalDistanceNm / stepsize_nm) * timeperspec_ms;
+        double velocityNmPerS = (totalDistanceNm / totalTime_ms) * 1000.0; // convert ms to s
+        if (velocityNmPerS > kRowCorrectedMaxCommandNmPerS) {
+            throw std::runtime_error("Requested velocity exceeds maximum allowed value");
+
+        } else {
+            AppLogger::instance().info("runRowScanSimple: moving from " + std::to_string(startpos[0]) + " to " + std::to_string(endpos[0]) + " nm at velocity " + std::to_string(velocityNmPerS) + " nm/s");
+            stage.adda(velocityNmPerS, 0.0, 0.0);
+            stage.moveto(endpos[0], endpos[1], endpos[2]);
+            // loop over for loop to measure and save a spectrum every timeperspec_ms, optionally log to a file.
+            for (double x = startpos[0]; x <= endpos[0]; x += stepsize_nm) {
+                std::array<double, 3> currentPos = {x, startpos[1], startpos[2]};
+                cam.AcquireSpecandSave("build/measurement", currentPos[0], currentPos[1], currentPos[2], "spec_" + std::to_string(static_cast<int>(x)));
+                if (logImportant) {
+                    std::ofstream logFile(logPath, std::ios::app);
+                    if (!logFile.is_open()) {
+                        ensureParentDirExists(logPath);
+                        logFile.clear();
+                        logFile.open(logPath, std::ios::app);
+                    }
+                    if (!logFile.is_open()) {
+                        throw std::runtime_error("Failed to open log file: " + logPath);
+                    }
+                    logFile << "Measured spectrum at position: " << currentPos[0] << ", " << currentPos[1] << ", " << currentPos[2] << "\n";
+                }
+                Sleep(static_cast<DWORD>(timeperspec_ms));
+            }
+            
+        }
     }
 
 void runRowCorrectedLoop(PIStageProxy& stage,

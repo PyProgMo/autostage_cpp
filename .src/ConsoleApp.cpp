@@ -76,6 +76,7 @@ int main() {
             std::cout << "  stage halt\n";
             std::cout << "  stage velocitytest [spec_int_ms] [x_distance_nm] [stepsize_nm] [log 0|1] [tdead_ms]\n";
             std::cout << "  stage rowcorrected [duration_s] [x_distance_nm] [log 0|1]\n";
+            std::cout << "  stage simplescan [start_x_nm] [start_y_nm] [start_z_nm] [x_distance_nm] [stepsize_nm] [tint_ms] [tdead_ms] [log 0|1]\n";
             std::cout << "  stage m [axis] [pos] (in nm)\n";
             std::cout << "  stage wait [axis]\n";
             std::cout << "  andor connect [cameraIndex]\n";
@@ -163,6 +164,20 @@ int main() {
                         std::cout << "Velocity test completed.\n";
                     } else {
                         std::cout << "Usage: stage velocitytest [spec_int_ms] [x_distance_nm] [stepsize_nm] [log 0|1] [tdead_ms]\n";
+                    }
+                } else if (action == "simplescan") {
+                    double startX, startY, startZ;
+                    double xDistanceNm;
+                    double stepsize_nm;
+                    double tint_ms = 100; // default integration time in ms
+                    double tdead_ms = 100; // default dead time in ms
+                    bool logFlag = false;
+                    if (iss >> startX >> startY >> startZ >> xDistanceNm >> stepsize_nm >> tint_ms >> tdead_ms >> logFlag) {
+                        std::array<double, 3> startPos = {{startX, startY, startZ}};
+                        RasterScan::startRowScanSimple(*stage, *cam, startPos, xDistanceNm, 0.0, stepsize_nm, tint_ms, tdead_ms, logFlag);
+                        std::cout << "Simple scan completed.\n";
+                    } else {
+                        std::cout << "Usage: stage simplescan [start_x_nm] [start_y_nm] [start_z_nm] [x_distance_nm] [stepsize_nm] [tint_ms] [tdead_ms] [log 0|1]\n";
                     }
                 } else if (action == "rowcorrected") {
                     double durationS;
