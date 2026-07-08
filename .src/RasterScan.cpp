@@ -502,9 +502,9 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     currentpos[0] = stage.getPos("1")*1000; currentpos[1] = stage.getPos("2")*1000; currentpos[2] = stage.getPos("3")*1000;
     // take 10 seconds to get to the start position, then wait there for 1 second before starting the test move
     stage.adda( // y factor 500? unit conversion nm to mum but use double velocity *2/1000
-        std::abs((startPos[0] - currentpos[0])/500), // / 10.0, 
-        std::abs((startPos[1] - currentpos[1])/500), // / 10.0,
-        std::abs((startPos[2] - currentpos[2])/500) // / 10.0
+        std::abs((startPos[0] - currentpos[0])/10), // / 10.0, 
+        std::abs((startPos[1] - currentpos[1])/10), // / 10.0,
+        std::abs((startPos[2] - currentpos[2])/10) // / 10.0
     );    
     stage.moveto(startPos[0], startPos[1], startPos[2]);
     std::this_thread::sleep_for(std::chrono::seconds(11));
@@ -516,9 +516,9 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
         std::cerr << "Start position is out of tolerance. Retry approach 2nd time. " << std::endl;
 
         stage.adda(
-            std::abs((startPos[0] - currentpos[0])/500), // / 10.0,
-            std::abs((startPos[1] - currentpos[1])/500), // / 10.0,
-            std::abs((startPos[2] - currentpos[2])/500) // / 10.0
+            std::abs((startPos[0] - currentpos[0])/10), // / 10.0,
+            std::abs((startPos[1] - currentpos[1])/10), // / 10.0,
+            std::abs((startPos[2] - currentpos[2])/10) // / 10.0
         );
         stage.moveto(startPos[0], startPos[1], startPos[2]);
         std::this_thread::sleep_for(std::chrono::seconds(5));
