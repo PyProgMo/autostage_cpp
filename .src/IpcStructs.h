@@ -71,7 +71,7 @@ struct IpcMessage {
     char       strArg[256]; // e.g. serial num, dll name, or axis name
     
     int32_t    iArgs[8];
-    double     dArgs[4];
+    double     dArgs[6];
     
     int32_t    dataSize;    // For variable-length data to follow
     // add errorcodedArgs[0] for more specific error codes if needed

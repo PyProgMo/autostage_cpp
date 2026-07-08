@@ -86,7 +86,7 @@ public:
     );
 
     // simple version: drive with constant velocity along one row, measure and save a spectrum every stepsize_nm, optionally log to a file. This is a simpler version of runRowCorrected that does not attempt to correct for stage motion errors.
-    static void runRowScanSimple(PIStageProxy& stage,
+    static int runRowScanSimple(PIStageProxy& stage,
                                 AndorCameraProxy& cam,
                                 const std::array<double, 3>& pos,
                                 double xDistanceNm,
@@ -95,7 +95,8 @@ public:
                                 double tint_ms = 100,
                                 double tdead_perspec_ms = 100,
                                 const std::string& logPath = "loggs", 
-                                const std::string& savefolder = "specs"
+                                const std::string& savefolder = "specs", 
+                                int Nspec = 0
                             );
 
     // Corrected one-row scan that follows a fixed duration target and can optionally log to a file.

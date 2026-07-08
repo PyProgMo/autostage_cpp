@@ -182,6 +182,7 @@ void RasterScan::startRowScanSimple(PIStageProxy& stage,
         // 3: move to end position with constant velocity, measure a spectrum every stepsize_nm. Collect each row, save later. 
         // iterate over the yNsteps, for each, call runRowScanSimple, then move to the next y position.
         AppLogger::instance().info("Starting row scan simple with " + std::to_string(yNsteps) + " rows, stepsize " + std::to_string(stepsize_nm) + " nm, tint " + std::to_string(tint_ms) + " ms, tdead " + std::to_string(tdead_perspec_ms) + " ms");
+        int Nspec = 0;
         for (int i = 0; i < yNsteps; ++i) {
             double yPos = pos[1] + i * stepsize_nm;
             // first row, move in x-direction, then move in y-direction for the next row (backward and forward scanning can be implemented later)
@@ -200,13 +201,13 @@ void RasterScan::startRowScanSimple(PIStageProxy& stage,
             // waite 200 ms for the stage to reach the start position
             Sleep(200);
 
-            RasterScan::runRowScanSimple(stage, cam, rowStartPos, xDistanceNm, stepsize_nm, logImportant, tint_ms, tdead_perspec_ms,  logPathPrefix + "row_" + std::to_string(i) + "_", measurementname);
+            Nspec = RasterScan::runRowScanSimple(stage, cam, rowStartPos, xDistanceNm, stepsize_nm, logImportant, tint_ms, tdead_perspec_ms,  logPathPrefix + "row_" + std::to_string(i) + "_", measurementname, Nspec);
         }
 
     }
 
 // keep things simple: scan one row with constant velocity, measure and save a spectrum every stepsize_nm, optionally log to a file. This is a simpler version of runRowCorrected that does not attempt to correct for stage motion errors.
-void RasterScan::runRowScanSimple(PIStageProxy& stage,
+int RasterScan::runRowScanSimple(PIStageProxy& stage,
                                 AndorCameraProxy& cam,
                                 const std::array<double, 3>& startpos,
                                 double xDistanceNm,
@@ -215,7 +216,8 @@ void RasterScan::runRowScanSimple(PIStageProxy& stage,
                                 double tint_ms,
                                 double tdead_perspec_ms, 
                                 const std::string& logPath,
-                                const std::string& savefolder
+                                const std::string& savefolder, 
+                                int Nspec
                             ) 
     {   
         std::array<double, 3> qpos = stage.qpos();
@@ -233,29 +235,21 @@ void RasterScan::runRowScanSimple(PIStageProxy& stage,
             stage.moveto(endpos[0], endpos[1], endpos[2]);
             // loop over for loop to measure and save a spectrum every timeperspec_ms, optionally log to a file.
             for (double x = startpos[0]; x <= endpos[0]; x += stepsize_nm) {
+                Nspec++;
                 std::array<double, 3> currentPos = {x, startpos[1], startpos[2]};
                 // make filename in logPath/spec_X
-                std::string specFilename = savefolder + "/spec_" + std::to_string(static_cast<int>(x)) + ".txt";
-                std::string logPath = logPath + "row_" + std::to_string(static_cast<int>(x)) + ".log";
-                ensureParentDirExists(specFilename);
+                ensureParentDirExists(savefolder);
                 ensureParentDirExists(logPath);
-                cam.AcquireSpecandSave(specFilename, currentPos[0], currentPos[1], currentPos[2], "spec_" + std::to_string(static_cast<int>(x)));
+                std::array<double, 3> qpos = stage.qpos(); // <- get the metadata, pump them trough the pipe to the camera, and save the spectrum with the metadata.
+                cam.AcquireSpecandSave(savefolder, currentPos[0], currentPos[1], currentPos[2], "spec_" + std::to_string(static_cast<int>(Nspec))+".txt");
                 if (logImportant) {
-                    std::ofstream logFile(logPath, std::ios::app);
-                    if (!logFile.is_open()) {
-                        ensureParentDirExists(logPath);
-                        logFile.clear();
-                        logFile.open(logPath, std::ios::app);
-                    }
-                    if (!logFile.is_open()) {
-                        throw std::runtime_error("Failed to open log file: " + logPath);
-                    }
-                    logFile << "Measured spectrum at position: " << currentPos[0] << ", " << currentPos[1] << ", " << currentPos[2] << "\n";
+                    std::cout << "Measured spectrum at position: " << currentPos[0] << ", " << currentPos[1] << ", " << currentPos[2] << "\n";
                 }
                 Sleep(static_cast<DWORD>(timeperspec_ms));
             }
             
         }
+        return Nspec;
     }
 
 void runRowCorrectedLoop(PIStageProxy& stage,

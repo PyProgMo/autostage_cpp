@@ -150,6 +150,9 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<int>& spect
     put("x-position: %.3f\n", meta.xPos);
     put("y-position: %.3f\n", meta.yPos);
     put("z-position: %.3f\n", meta.zPos);
+    put("x-qpos: %.3f\n", meta.xPosNm);
+    put("y-qpos: %.3f\n", meta.yPosNm);
+    put("z-qpos: %.3f\n", meta.zPosNm);
     put("switchUD: %d\n", meta.switchUD);
     put("switchLR: %d\n", meta.switchLR);
     out += "Light Source Settings\n";
@@ -243,6 +246,9 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<int>& spect
         put("x-position: %.3f\n", meta.xPos);
         put("y-position: %.3f\n", meta.yPos);
         put("z-position: %.3f\n", meta.zPos);
+        put("x-qpos: %.3f\n", meta.xPosNm);
+        put("y-qpos: %.3f\n", meta.yPosNm);
+        put("z-qpos: %.3f\n", meta.zPosNm);
         put("switchUD: %d\n", meta.switchUD);
         put("switchLR: %d\n", meta.switchLR);
         out += "Light Source Settings\n";
@@ -943,9 +949,10 @@ void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, double x
     }
     std::cout << "Wavelength array fetched, preparing to save...\n";
     auto metadata = currentMetadata();
-    metadata.xPosNm = x;
-    metadata.yPosNm = y;
-    metadata.zPosNm = z;
+
+    metadata.xPos = x;
+    metadata.yPos = y;
+    metadata.zPos = z;
 
     std::cout << "Metadata fetched, preparing to save...\n";
 
