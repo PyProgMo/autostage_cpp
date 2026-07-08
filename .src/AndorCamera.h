@@ -347,7 +347,7 @@ public:
                            int        numSpectra = 1);
     
     void AcquireSpecandSave(const std::string& foldername, const std::string& filename);
-    void AcquireSpecandSavefast(const std::string& foldername, const std::string& filename);
+    void AcquireSpecandSavefast(const std::string& foldername, double x, double y, double z, const std::string& filename);
 
     // FVB: single spectrum per trigger pulse (fastest for raster)
     void configureFVBKinetic(float exposureSeconds, int numLines);
@@ -392,6 +392,8 @@ public:
     std::string TranslateCameraErrorToString(int status);
 
     void measureandsaveNspecs(const std::string& foldername, int nspecs);
+    std::map<int, SpectrumMetadata> metadataMap_;
+
 
 private:
     HMODULE hDll_ = nullptr;
@@ -404,7 +406,6 @@ private:
     int wlStart_ = 0, wlEnd_ = 1023; // placeholder values for wavelength calibration range
     int wlNumPoints_ = 1024; // placeholder for number of points in wavelength calibration, typically matches pixel count
     std::vector<float> wlArray_; // placeholder for wavelength calibration data, on start initialize with pixel indices, later with real wavelength values
-    std::map<int, SpectrumMetadata> metadataMap_;
 
     FP_Initialize              pInitialize              = nullptr;
     FP_GetAvailableCameras      pGetAvailableCameras     = nullptr;

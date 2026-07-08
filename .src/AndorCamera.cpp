@@ -119,6 +119,7 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<int>& spect
         }
         outFile << '\n';
     }*/
+   /* v2 crashed my code, lets try v3
    std::string out;
     out.reserve(1536 + static_cast<size_t>(pixelsPerSpectrum) * 32); // avoid reallocations
 
@@ -139,7 +140,7 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<int>& spect
     put("Central Wavelength (nm): %.2f\n", meta.centralWlNm);
     out += "Detector Settings\n";
     put("Detector: %s\n",                  meta.detector.c_str());
-    put("Cooling Temperature (\xC2\xB0C): %.0f\n", meta.coolingTempC);
+    put("Cooling Temperature (\xC2\xB0" "C): %.0f\n", meta.coolingTempC);
     put("Exposure Time (s): %.2f\n",       meta.exposureTimeS);
     put("Horizontal Binning: %dx\n",       meta.horizontalBinning);
     put("Wavelength First Pixel (nm): %.2f\n", meta.wlFirstPixelNm);
@@ -181,6 +182,119 @@ void writeSpectrumTxt(const std::string& filePath, const std::vector<int>& spect
     outFile.write(out.data(), static_cast<std::streamsize>(out.size()));
     if (!outFile) {
         throw std::runtime_error("Andor: failed while writing TXT: " + filePath);
+    } */
+    // ---- 1. SAFETY & BOUNDS CHECKING ----
+    if (pixelsPerSpectrum < 0) {
+        throw std::invalid_argument("writeSpectrumTxt: pixelsPerSpectrum cannot be negative: " + std::to_string(pixelsPerSpectrum));
+    }
+    
+    size_t requiredSize = static_cast<size_t>(pixelsPerSpectrum);
+    
+    if (wlArray.size() < requiredSize) {
+        throw std::out_of_range("writeSpectrumTxt: wlArray size (" + std::to_string(wlArray.size()) + 
+                                ") is smaller than pixelsPerSpectrum (" + std::to_string(pixelsPerSpectrum) + ")");
+    }
+    if (BG.size() < requiredSize) {
+        throw std::out_of_range("writeSpectrumTxt: BG vector size (" + std::to_string(BG.size()) + 
+                                ") is smaller than pixelsPerSpectrum (" + std::to_string(pixelsPerSpectrum) + ")");
+    }
+    if (spectra.size() < requiredSize) {
+        throw std::out_of_range("writeSpectrumTxt: spectra vector size (" + std::to_string(spectra.size()) + 
+                                ") is smaller than pixelsPerSpectrum (" + std::to_string(pixelsPerSpectrum) + ")");
+    }
+
+    try {
+        std::string out;
+        // Over-reserve heavily just in case metadata strings are large
+        out.reserve(4096 + requiredSize * 40); 
+
+        char buf[512]; // Bumped up buffer size to prevent metadata truncation clipping
+        
+        // Helper lambda with truncation check
+        auto put = [&](const char* fmt, auto... args) {
+            int n = std::snprintf(buf, sizeof(buf), fmt, args...);
+            if (n < 0) {
+                throw std::runtime_error("writeSpectrumTxt: Encoding error occurred during snprintf.");
+            }
+            if (static_cast<size_t>(n) >= sizeof(buf)) {
+                throw std::runtime_error("writeSpectrumTxt: Buffer overflow prevented! Metadata string was too long for buffer.");
+            }
+            out.append(buf, static_cast<size_t>(n));
+        };
+
+        // ---- 2. METADATA HEADER ----
+        put("Date of Measurement: %s\n", meta.date.c_str());
+        put("User Name: %s\n",           meta.userName.c_str());
+        put("File Name: %s\n",           meta.fileName.c_str());
+        out += "Spectrograph Settings\n";
+        put("Slit Width (\xC2\xB5m): %.1f\n", meta.slitWidthUm);
+        put("Grating: %s\n",                  meta.grating.c_str());
+        put("Filter: %s\n",                   meta.filter.c_str());
+        put("Central Wavelength (nm): %.2f\n", meta.centralWlNm);
+        out += "Detector Settings\n";
+        put("Detector: %s\n",                  meta.detector.c_str());
+        put("Cooling Temperature (\xC2\xB0" "C): %.0f\n", meta.coolingTempC);
+        put("Exposure Time (s): %.2f\n",       meta.exposureTimeS);
+        put("Horizontal Binning: %dx\n",       meta.horizontalBinning);
+        put("Wavelength First Pixel (nm): %.2f\n", meta.wlFirstPixelNm);
+        put("Wavelength Last Pixel (nm): %.2f\n",  meta.wlLastPixelNm);
+        put("Delta Wavelength (nm): %.3f\n",       meta.deltaWlNm);
+        out += "Nano Stage Settings\n";
+        put("x-position: %.3f\n", meta.xPos);
+        put("y-position: %.3f\n", meta.yPos);
+        put("z-position: %.3f\n", meta.zPos);
+        put("switchUD: %d\n", meta.switchUD);
+        put("switchLR: %d\n", meta.switchLR);
+        out += "Light Source Settings\n";
+        put("NKT System: %s\n", meta.nktSystem.c_str());
+        put("Operation: %s\n",  meta.operation.c_str());
+        put("Power Level: %.1f%%\n", meta.powerLevelPct);
+        put("Short Wavelength (nm): %.0f\n", meta.shortWlNm);
+        put("Long Wavelength (nm): %.0f\n",  meta.longWlNm);
+        out += "Background Measurement with Open Shutter\n";
+        
+        // Critical point: Ensure readModeToString doesn't return null or crash
+        const char* modeStr = readModeToString(meta.ReadMode);
+        put("Readout Mode: %s\n", modeStr ? modeStr : "UNKNOWN");
+        
+        out += "Microscopy:\n";
+        put("Laser Position  (x,y): (%.0f,%.0f)\n", meta.laserPosX, meta.laserPosY);
+        put("magnification: %.3f\n", meta.magnification);
+        put("Power at Glass Plate (\xC2\xB5W): %.6f\n", meta.powerAtGlassUW);
+
+        out += "WL           \tBG           \tPL           \n";
+
+        // ---- 3. HOT LOOP WITH EXPLICIT BOUNDS ----
+        for (int j = 0; j < pixelsPerSpectrum; ++j) {
+            int n = std::snprintf(buf, sizeof(buf), "%8.3f\t%8d\t%8d\n",
+                                   wlArray[j], BG[j], spectra[j]);
+            
+            if (n < 0 || static_cast<size_t>(n) >= sizeof(buf)) {
+                throw std::runtime_error("writeSpectrumTxt: Loop formatting failed at index " + std::to_string(j));
+            }
+            out.append(buf, static_cast<size_t>(n));
+        }
+
+        // ---- 4. FILE WRITING WITH EXCEPTIONS ENABLED ----
+        std::ofstream outFile;
+        outFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+        
+        try {
+            outFile.open(filePath, std::ios::binary);
+            outFile.write(out.data(), static_cast<std::streamsize>(out.size()));
+            outFile.close();
+        } 
+        catch (const std::ios_base::failure& e) {
+            throw std::runtime_error("writeSpectrumTxt: Disk I/O Failure while writing to " + filePath + ". Reason: " + e.what());
+        }
+
+    } 
+    catch (const std::bad_alloc& e) {
+        throw std::runtime_error("writeSpectrumTxt: Out of memory during string construction: " + std::string(e.what()));
+    }
+    catch (const std::exception& e) {
+        // Re-throw any other standard exceptions so they propagate up cleanly with their message
+        throw;
     }
 }
 
@@ -688,7 +802,6 @@ void AndorCamera::Savefast(const std::string& foldername, const std::vector<int>
     }
     const std::string measurementFolder = joinPath(executableDirectory(), foldername);
     ensureDirectoryExists(measurementFolder);
-    const std::vector<int> background = getBackground();
     // write spectrum to .txt
     const std::string txtFilePath = joinPath(measurementFolder, filename + ".txt");
     writeSpectrumTxt(txtFilePath, spectra, background, wlArray, numSpectra, pixelsPerSpectrum, metadata);
@@ -734,7 +847,6 @@ void AndorCamera::runfastAcquistiontriggered(float exposureSeconds, int numSpect
     }
     
 }
-
 
 void AndorCamera::measureBackground(float exposureSeconds, const std::string& filename) {
     configureSpectral(ReadMode::FVB, TriggerMode::Internal, exposureSeconds);
@@ -802,12 +914,47 @@ void AndorCamera::AcquireSpecandSave(const std::string& foldername, const std::s
     std::cout << "Saved spectrum to " << measurementFolder << "\n";
 }
 
-void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, const std::string& filename) {
+void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, double x, double y, double z, const std::string& filename) {
+    std::cout << "Starting acquisition and savefast to " << foldername << "/" << filename << "\n";
     startAcquisition();
+    std::cout << "Acquisition started, waiting for completion...\n";
     waitForAcquisition();
-    const std::vector<int> spectra = getAllSpectra(1, getXPixels());
+
+    std::cout << "Acquisition complete, fetching spectra...\n";
+    auto spectra = getAllSpectra(1, getXPixels());
+    std::cout << "Spectra fetched, preparing to save...\n";
+    auto background = getBackground();
+    //ensure the background is fetched. if not, init a array of zeros
+    // error: what():  writeSpectrumTxt: BG vector size (0) is smaller than pixelsPerSpectrum (1024) fix: initialize background to zeros if empty
+    if (background.empty()) {
+        background.resize(getXPixels(), 0);
+    }
+
+    std::cout << "Background fetched, preparing to save...\n";
+    auto wl = wlArray_; // <- bug: wlArray_ is what():  writeSpectrumTxt: wlArray size (0) is smaller than pixelsPerSpectrum (1024)
+    // todo: fetch the actual wavelength array from the camera or calibration data
+    if (wl.empty()) {
+        //getWLarray(0.0f, 0.0f, wl); // placeholder: fill wl with default values
+        // For now, just fill wl with 0 to numPixels-1
+        wl.resize(getXPixels());
+        for (int i = 0; i < getXPixels(); ++i) {
+            wl[i] = static_cast<float>(i);
+        }
+    }
+    std::cout << "Wavelength array fetched, preparing to save...\n";
+    auto metadata = currentMetadata();
+    metadata.xPosNm = x;
+    metadata.yPosNm = y;
+    metadata.zPosNm = z;
+
+    std::cout << "Metadata fetched, preparing to save...\n";
+
     // gather the WL array for the current camera
-    Savefast(foldername, spectra, getBackground(), wlArray_,  1, getXPixels(), filename, currentMetadata());
+    // Savefast(foldername, spectra, getBackground(), wlArray_,  1, getXPixels(), filename, currentMetadata());
+    std::thread saveThread([this, foldername, spectra, background, wl, filename, metadata]() {
+        Savefast(foldername, spectra, background, wl, 1, getXPixels(), filename, metadata);
+    });
+    saveThread.join();
 }
 
 void AndorCamera::setWLarray(std::vector<float>& WL) {

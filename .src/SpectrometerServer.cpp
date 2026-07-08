@@ -130,9 +130,13 @@ void ProcessClient(HANDLE hPipe) {
                 if (sepPos == std::string::npos) {
                     throw std::runtime_error("Invalid argument format for AcquireSpecandSave");
                 }
+                double x = req.dArgs[0];
+                double y = req.dArgs[1];
+                double z = req.dArgs[2];
+
                 std::string filename = combined.substr(0, sepPos);
                 std::string foldername = combined.substr(sepPos + 1);
-                cam.AcquireSpecandSavefast(foldername, filename);
+                cam.AcquireSpecandSavefast(foldername, x, y, z, filename);
                 break;
             }
             case IpcCommand::AndorSetExposureTime:
