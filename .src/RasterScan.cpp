@@ -151,10 +151,10 @@ static void startRowScanSimple(PIStageProxy& stage,
         double yNsteps, 
         double stepsize_nm, 
         // tiny dead time in ms, used to calculate velocity for the scan
-        double tint_ms = 100,
-        double tdead_perspec_ms = 100,
-        bool logImportant = false, 
-        const std::string& logPathPrefix = "build/rowcorrected_line_"
+        double tint_ms,
+        double tdead_perspec_ms,
+        bool logImportant, 
+        const std::string& logPathPrefix
     )
     {
         // 1: approach: move to start position with velocity of pos-startpos/5
@@ -206,9 +206,9 @@ void RasterScan::runRowScanSimple(PIStageProxy& stage,
                                 double xDistanceNm,
                                 double stepsize_nm,
                                 bool logImportant = false,
-                                const std::string& logPath = "build/rowcorrected_log.csv",
-                                double tint_ms = 100,
-                                double tdead_perspec_ms = 100
+                                const std::string& logPath,
+                                double tint_ms,
+                                double tdead_perspec_ms
                             ) 
     {   
         std::array<double, 3> qpos = stage.qpos();
