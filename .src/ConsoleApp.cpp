@@ -144,7 +144,7 @@ int main() {
                     std::string axis;
                     iss >> axis;
                     if (axis.empty()) axis = "1";
-                    double pos = stage->getPos(axis.c_str())*1e3; // convert µm to nm for user
+                    double pos = stage->getPos(axis.c_str())*1e3; // convert µm to nm for user, x=1, y=2, z=3
                     std::cout << axis << " Position: " << pos << "\n";
                 } else if (action == "qpos") { // print x y z positions
                     auto pos = stage->qpos();
