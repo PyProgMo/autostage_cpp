@@ -143,6 +143,22 @@ bool ensureParentDirExists(const std::string& path) {
 #endif
 }
 
+// keep things simple: scan one row with constant velocity, measure and save a spectrum every stepsize_nm, optionally log to a file. This is a simpler version of runRowCorrected that does not attempt to correct for stage motion errors.
+void RasterScan::runRowScanSimple(PIStageProxy& stage,
+                                AndorCameraProxy& cam,
+                                const std::array<double, 3>& pos,
+                                double xDistanceNm,
+                                double stepsize_nm,
+                                bool logImportant = false,
+                                const int scanNrows, // number of rows to scan (default 1 for single-row scan)
+                                const int rowdistance_nm, 
+                                // distance between rows in nm (default 100 nm for single-row scan)
+                                const std::string& logPath = "build/rowcorrected_log.csv"
+                            ) 
+    {
+        // 1: approach: move to start position with velocity of pos-startpos/5 
+    }
+
 void runRowCorrectedLoop(PIStageProxy& stage,
                          AndorCameraProxy& cam,
                          const std::array<double, 3>& startPos,

@@ -71,6 +71,18 @@ public:
     // Diagnostic one-row test scan used by the console velocitytest command.
     static void runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, double velocityNmPerS, double xDistanceNm, double stepsize_nm, bool logImportant = false, int tdead_perspec = 60);
 
+    // simple version: drive with constant velocity along one row, measure and save a spectrum every stepsize_nm, optionally log to a file. This is a simpler version of runRowCorrected that does not attempt to correct for stage motion errors.
+    static void runRowScanSimple(PIStageProxy& stage,
+                                AndorCameraProxy& cam,
+                                const std::array<double, 3>& pos,
+                                double xDistanceNm,
+                                double stepsize_nm,
+                                bool logImportant = false,
+                                const int scanNrows = 1, // number of rows to scan (default 1 for single-row scan)
+                                const int rowdistance_nm = 200, // distance between rows in nm (default 100 nm for single-row scan)
+                                const std::string& logPath = "build/rowcorrected_log.csv"
+                            );
+
     // Corrected one-row scan that follows a fixed duration target and can optionally log to a file.
     static void runRowCorrected(PIStageProxy& stage,
                                 AndorCameraProxy& cam,
