@@ -48,7 +48,7 @@ PIStageProxy::~PIStageProxy() {
 }
 
 void PIStageProxy::sendCommand(const IpcMessage& msg, IpcMessage& response) {
-    AppLogger::instance().info(std::string("PIStageProxy: sending command ") + ipcMessageSummary(msg));
+    // AppLogger::instance().info(std::string("PIStageProxy: sending command ") + ipcMessageSummary(msg));
     // Robust write: ensure entire message is written
     const BYTE* outPtr = reinterpret_cast<const BYTE*>(&msg);
     size_t toWrite = sizeof(IpcMessage);
@@ -64,7 +64,7 @@ void PIStageProxy::sendCommand(const IpcMessage& msg, IpcMessage& response) {
         outPtr += bytesWritten;
         toWrite -= bytesWritten;
     }
-    AppLogger::instance().info(std::string("PIStageProxy: write complete for command ") + ipcCommandName(msg.command));
+    // AppLogger::instance().info(std::string("PIStageProxy: write complete for command ") + ipcCommandName(msg.command));
 
     // Robust read: loop until we have the full response header
     BYTE* inPtr = reinterpret_cast<BYTE*>(&response);
@@ -88,8 +88,8 @@ void PIStageProxy::sendCommand(const IpcMessage& msg, IpcMessage& response) {
         toRead -= bytesRead;
     }
 
-    AppLogger::instance().info(std::string("PIStageProxy: read complete for command ") + ipcCommandName(msg.command) +
-                               " status=" + std::to_string(response.status));
+    // AppLogger::instance().info(std::string("PIStageProxy: read complete for command ") + ipcCommandName(msg.command) +
+    //                            " status=" + std::to_string(response.status));
 
     if (response.status != 0) {
         std::string message = std::string("PIStageProxy: server returned error status: ") + std::to_string(response.status) +
@@ -165,7 +165,7 @@ double PIStageProxy::getPos(const char* axis) {
 }
 
 std::array<double, 3> PIStageProxy::qpos() {
-    AppLogger::instance().info("PIStageProxy: qpos");
+    //AppLogger::instance().info("PIStageProxy: qpos");
     IpcMessage req = {};
     req.command = IpcCommand::QueryPosTuple;
 

@@ -183,30 +183,32 @@ void RasterScan::startRowScanSimple(PIStageProxy& stage,
         // iterate over the yNsteps, for each, call runRowScanSimple, then move to the next y position.
         AppLogger::instance().info("Starting row scan simple with " + std::to_string(yNsteps) + " rows, stepsize " + std::to_string(stepsize_nm) + " nm, tint " + std::to_string(tint_ms) + " ms, tdead " + std::to_string(tdead_perspec_ms) + " ms");
         int Nspec = 0;
-        int disctancecurrentscan = xDistanceNm;
+        int distancecurrentscan = xDistanceNm;
+        double yPos = pos[1];
+        std::array<double, 3> rowStartPos = {pos[0], yPos, pos[2]};
+        std::array<double, 3> rowEndPos = {pos[0] + xDistanceNm, yPos, pos[2]};
         for (int i = 0; i < yNsteps; ++i) {
-            double yPos = pos[1] + i * stepsize_nm;
+            yPos = pos[1] + i * stepsize_nm;
             // first row, move in x-direction, then move in y-direction for the next row (backward and forward scanning can be implemented later)
-            std::array<double, 3> rowStartPos = {pos[0], yPos, pos[2]};
-            std::array<double, 3> rowEndPos = {pos[0] + xDistanceNm, yPos, pos[2]};
-            if (i%2 == 1) {
+            if (i%2 == 1) { // backward scan
+                rowStartPos = {pos[0] + xDistanceNm, yPos, pos[2]};
+                rowEndPos = {pos[0] - xDistanceNm, yPos, pos[2]};
+                distancecurrentscan = -xDistanceNm;
+            } else { // forward scan
                 rowStartPos = {pos[0], yPos, pos[2]};
                 rowEndPos = {pos[0] + xDistanceNm, yPos, pos[2]};
-                disctancecurrentscan = xDistanceNm;
-            } else {
-                rowStartPos = {pos[0] + xDistanceNm, yPos, pos[2]};
-                rowEndPos = {pos[0], yPos, pos[2]};
-                disctancecurrentscan = -xDistanceNm;
+                distancecurrentscan = xDistanceNm;
             }
             // move to the start position of the row within 100 ms, then start the row scan with constant velocity, measure and save a spectrum every stepsize_nm, optionally log to a file.
             cpos = stage.qpos();
             stage.adda(std::abs(rowStartPos[0] - cpos[0]) / 0.1, std::abs(rowStartPos[1] - cpos[1]) / 0.1, std::abs(rowStartPos[2] - cpos[2]) / 0.1);
+            stage.moveto(rowStartPos[0], rowStartPos[1], rowStartPos[2]);
             // wait 200 ms for the stage to reach the start position
             Sleep(200);
             stage.adda(0.0, 0.0, 0.0); // stop the stage
             std::cout << "Starting row " << i << " from " << rowStartPos[0] << ", " << rowStartPos[1] << ", " << rowStartPos[2] << " to " << rowEndPos[0] << ", " << rowEndPos[1] << ", " << rowEndPos[2] << "\n";
 
-            Nspec = RasterScan::runRowScanSimple(stage, cam, rowStartPos, disctancecurrentscan, stepsize_nm, logImportant, tint_ms, tdead_perspec_ms,  logPathPrefix + "row_" + std::to_string(i) + "_", measurementname, Nspec);
+            Nspec = RasterScan::runRowScanSimple(stage, cam, rowStartPos, distancecurrentscan, stepsize_nm, logImportant, tint_ms, tdead_perspec_ms,  logPathPrefix + "row_" + std::to_string(i) + "_", measurementname, Nspec);
         }
 
     }
@@ -227,7 +229,7 @@ int RasterScan::runRowScanSimple(PIStageProxy& stage,
     {   
         std::array<double, 3> qpos = stage.qpos();
         std::array<double, 3> endpos = {startpos[0] + xDistanceNm, startpos[1], startpos[2]};
-        double totalDistanceNm = xDistanceNm;
+        double totalDistanceNm = std::abs(xDistanceNm);
         double timeperspec_ms = tint_ms + tdead_perspec_ms;
         double totalTime_ms = (totalDistanceNm / stepsize_nm) * timeperspec_ms;
         double velocityNmPerS = (totalDistanceNm / totalTime_ms) * 1000.0; // convert ms to s

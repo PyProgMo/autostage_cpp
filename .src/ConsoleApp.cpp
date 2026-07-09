@@ -188,7 +188,7 @@ int main() {
                     if (iss >> startX >> startY >> startZ >> xDistanceNm >> stepsize_nm >> N_rows >> tint_ms >> tdead_ms >> logFlag) {
                         std::array<double, 3> startPos = {{startX, startY, startZ}};
                         RasterScan::startRowScanSimple(*stage, *cam, startPos, xDistanceNm, N_rows, stepsize_nm, tint_ms, tdead_ms, logFlag);
-                        std::cout << "Simple scan started.\n";
+                        std::cout << "Simple scan completed.\n";
                     } else {
                         std::cout << "Usage: stage simplescan [start_x_nm] [start_y_nm] [start_z_nm] [x_distance_nm] [stepsize_nm] [N_rows] [tint_ms] [tdead_ms] [log 0|1]\n";
                     }
