@@ -198,8 +198,10 @@ void RasterScan::startRowScanSimple(PIStageProxy& stage,
             // move to the start position of the row within 100 ms, then start the row scan with constant velocity, measure and save a spectrum every stepsize_nm, optionally log to a file.
             cpos = stage.qpos();
             stage.adda(std::abs(rowStartPos[0] - cpos[0]) / 0.1, std::abs(rowStartPos[1] - cpos[1]) / 0.1, std::abs(rowStartPos[2] - cpos[2]) / 0.1);
-            // waite 200 ms for the stage to reach the start position
+            // wait 200 ms for the stage to reach the start position
             Sleep(200);
+            stage.adda(0.0, 0.0, 0.0); // stop the stage
+            std::cout << "Starting row " << i << " from " << rowStartPos[0] << ", " << rowStartPos[1] << ", " << rowStartPos[2] << " to " << rowEndPos[0] << ", " << rowEndPos[1] << ", " << rowEndPos[2] << "\n";
 
             Nspec = RasterScan::runRowScanSimple(stage, cam, rowStartPos, xDistanceNm, stepsize_nm, logImportant, tint_ms, tdead_perspec_ms,  logPathPrefix + "row_" + std::to_string(i) + "_", measurementname, Nspec);
         }
