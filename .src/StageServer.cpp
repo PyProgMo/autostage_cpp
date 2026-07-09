@@ -70,6 +70,15 @@ void ProcessClient(HANDLE hPipe) {
                 AppLogger::instance().info("StageServer: connected to stage");
                 break;
             case IpcCommand::Disconnect: {
+                // disable servos
+                try {
+                    stage.enableServo("1", false);
+                    stage.enableServo("2", false);
+                    stage.enableServo("3", false);
+                } catch (const std::exception& e) {
+                    AppLogger::instance().error(std::string("StageServer: servo disable failed: ") + e.what());
+                }
+
                 bool ok = stage.disconnect();  // blocks until DLL call returns
                 res.command = IpcCommand::Disconnect;
                 res.status  = ok ? 0 : -1;
