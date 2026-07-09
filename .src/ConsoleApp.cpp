@@ -30,10 +30,10 @@ void startProcess(const std::string& cmdLine) {
 int main() {
     std::cout << "--- Master Console ---\n";
     std::cout << "Starting 32-bit StageServer...\n";
-    startProcess("build\\StageServer.exe");
+    startProcess("StageServer.exe");
     
     std::cout << "Starting 64-bit SpectrometerServer...\n";
-    startProcess("build\\SpectrometerServer.exe");
+    startProcess("SpectrometerServer.exe");
 
     Sleep(1000); // Give servers time to bind to pipes
 

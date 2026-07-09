@@ -183,6 +183,7 @@ void RasterScan::startRowScanSimple(PIStageProxy& stage,
         // iterate over the yNsteps, for each, call runRowScanSimple, then move to the next y position.
         AppLogger::instance().info("Starting row scan simple with " + std::to_string(yNsteps) + " rows, stepsize " + std::to_string(stepsize_nm) + " nm, tint " + std::to_string(tint_ms) + " ms, tdead " + std::to_string(tdead_perspec_ms) + " ms");
         int Nspec = 0;
+        int disctancecurrentscan = xDistanceNm;
         for (int i = 0; i < yNsteps; ++i) {
             double yPos = pos[1] + i * stepsize_nm;
             // first row, move in x-direction, then move in y-direction for the next row (backward and forward scanning can be implemented later)
@@ -191,9 +192,11 @@ void RasterScan::startRowScanSimple(PIStageProxy& stage,
             if (i%2 == 1) {
                 rowStartPos = {pos[0], yPos, pos[2]};
                 rowEndPos = {pos[0] + xDistanceNm, yPos, pos[2]};
+                disctancecurrentscan = xDistanceNm;
             } else {
                 rowStartPos = {pos[0] + xDistanceNm, yPos, pos[2]};
                 rowEndPos = {pos[0], yPos, pos[2]};
+                disctancecurrentscan = -xDistanceNm;
             }
             // move to the start position of the row within 100 ms, then start the row scan with constant velocity, measure and save a spectrum every stepsize_nm, optionally log to a file.
             cpos = stage.qpos();
@@ -203,7 +206,7 @@ void RasterScan::startRowScanSimple(PIStageProxy& stage,
             stage.adda(0.0, 0.0, 0.0); // stop the stage
             std::cout << "Starting row " << i << " from " << rowStartPos[0] << ", " << rowStartPos[1] << ", " << rowStartPos[2] << " to " << rowEndPos[0] << ", " << rowEndPos[1] << ", " << rowEndPos[2] << "\n";
 
-            Nspec = RasterScan::runRowScanSimple(stage, cam, rowStartPos, xDistanceNm, stepsize_nm, logImportant, tint_ms, tdead_perspec_ms,  logPathPrefix + "row_" + std::to_string(i) + "_", measurementname, Nspec);
+            Nspec = RasterScan::runRowScanSimple(stage, cam, rowStartPos, disctancecurrentscan, stepsize_nm, logImportant, tint_ms, tdead_perspec_ms,  logPathPrefix + "row_" + std::to_string(i) + "_", measurementname, Nspec);
         }
 
     }
