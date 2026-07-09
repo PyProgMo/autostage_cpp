@@ -61,12 +61,13 @@ int main() {
     while (true) {
         std::cout << "> ";
         if (!std::getline(std::cin, cmd)) break;
-        if (cmd == "exit" || cmd == "quit") break;
+        if (cmd == "quit") break;
         if (cmd.empty()) continue;
         // if cmd == "help" print user guidance
         if (cmd == "help") {
             std::cout << "Commands:\n";
             std::cout << "  init\n";
+            std::cout << "  exit\n";
             std::cout << "  stage connect\n";
             std::cout << "  stage disconnect\n";
             std::cout << "  stage pos [axis] \n";
@@ -132,6 +133,17 @@ int main() {
                 std::string bgFilename = "background.txt";
                 cam->measureBackground(bgFilename);
 
+            } else if (target == "exit") {
+                // if stage is connected, disconnect
+                if (stage) {
+                    stage->disconnect();
+                    std::cout << "Stage disconnected.\n";
+                } // if camera is connected, shutdown
+                if (cam) {
+                    cam->shutdown();
+                    std::cout << "Camera shutdown.\n";
+                }
+                break;
             }
             else if (target == "stage") {
                 if (action == "connect") {
