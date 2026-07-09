@@ -230,18 +230,25 @@ int RasterScan::runRowScanSimple(PIStageProxy& stage,
         std::array<double, 3> qpos = stage.qpos();
         std::array<double, 3> endpos = {startpos[0] + xDistanceNm, startpos[1], startpos[2]};
         double totalDistanceNm = std::abs(xDistanceNm);
+        const double scanStepNm = std::abs(stepsize_nm);
+        if (scanStepNm <= 0.0) {
+            throw std::runtime_error("stepsize_nm must be greater than 0");
+        }
+        const double scanDirection = (xDistanceNm >= 0.0) ? 1.0 : -1.0;
         double timeperspec_ms = tint_ms + tdead_perspec_ms;
-        double totalTime_ms = (totalDistanceNm / stepsize_nm) * timeperspec_ms;
+        double totalTime_ms = (totalDistanceNm / scanStepNm) * timeperspec_ms;
         double velocityNmPerS = (totalDistanceNm / totalTime_ms) * 1000.0; // convert ms to s
         if (velocityNmPerS > kRowCorrectedMaxCommandNmPerS) {
             throw std::runtime_error("Requested velocity exceeds maximum allowed value");
 
         } else {
             AppLogger::instance().info("runRowScanSimple: moving from " + std::to_string(startpos[0]) + " to " + std::to_string(endpos[0]) + " nm at velocity " + std::to_string(velocityNmPerS) + " nm/s");
-            stage.adda(velocityNmPerS, 0.0, 0.0);
+            stage.adda(scanDirection * velocityNmPerS, 0.0, 0.0);
             stage.moveto(endpos[0], endpos[1], endpos[2]);
             // loop over for loop to measure and save a spectrum every timeperspec_ms, optionally log to a file.
-            for (double x = startpos[0]; x <= endpos[0]; x += stepsize_nm) {
+            for (double x = startpos[0];
+                 (scanDirection > 0.0) ? (x <= endpos[0]) : (x >= endpos[0]);
+                 x += scanDirection * scanStepNm) {
                 Nspec++;
                 std::array<double, 3> currentPos = {x, startpos[1], startpos[2]};
                 // make filename in logPath/spec_X
