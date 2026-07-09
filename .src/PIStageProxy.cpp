@@ -129,6 +129,11 @@ void PIStageProxy::disconnect() {
     IpcMessage res = {};
     try {
         sendCommand(req, res);
+        if (res.status == 0) {
+            AppLogger::instance().info("PIStageProxy: disconnect successful");
+        } else {
+            AppLogger::instance().error(std::string("PIStageProxy: disconnect failed with status=") + std::to_string(res.status));
+        }
     } catch (const std::exception& e) {
         AppLogger::instance().error(std::string("PIStageProxy: disconnect failed: ") + e.what());
     }

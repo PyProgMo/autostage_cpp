@@ -69,10 +69,16 @@ void ProcessClient(HANDLE hPipe) {
                 }
                 AppLogger::instance().info("StageServer: connected to stage");
                 break;
-            case IpcCommand::Disconnect:
-                stage.disconnect();
-                AppLogger::instance().info("StageServer: disconnected from stage");
+            case IpcCommand::Disconnect: {
+                bool ok = stage.disconnect();  // blocks until DLL call returns
+                res.command = IpcCommand::Disconnect;
+                res.status  = ok ? 0 : -1;
+                res.errorCode = ok ? 0 : 1; // optional: more specific error code
+                AppLogger::instance().info(ok
+                    ? "StageServer: disconnected from stage"
+                    : "StageServer: disconnect failed");
                 break;
+}
             case IpcCommand::MoveAbs:
                 AppLogger::instance().info(std::string("StageServer: MoveAbs axis=") + req.strArg + " target=" + std::to_string(req.dArgs[0]));
                 stage.moveAbs(req.strArg, req.dArgs[0]);

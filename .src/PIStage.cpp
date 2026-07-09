@@ -125,7 +125,6 @@ std::array<double, 3> PIStage::qpos() {
     const char* primary = "1 2 3"; // numeric axis IDs (known-working form)
 
     // Attempt 1: primary form
-    AppLogger::instance().info("PIStage: qpos attempt 1 using '1 2 3'");
     if (pqPOS(id_, primary, positions.data())) return positions;
 
     // Capture error info for diagnostics
@@ -625,8 +624,25 @@ void PIStage::checkError() {
     }
 }
 
-void PIStage::disconnect() {
-    if (id_ >= 0) { pCloseConnection(id_); id_ = -1; }
+bool PIStage::disconnect() {
+    if (id_ < 0) return true;  // already disconnected
+    if (!pCloseConnection) return false;
+
+    BOOL ok = pCloseConnection(id_);
+
+    // Optional: confirm the driver actually dropped the session
+    // (only if pIsConnected is safe to call with a now-invalid id;
+    // check PI docs — some DLLs allow this, some don't)
+    // BOOL stillConnected = pIsConnected ? pIsConnected(id_) : FALSE;
+    if (!ok) {
+        int err = pGetError ? pGetError(id_) : 0;
+        char msg[256] = {};
+        if (pTranslateError) pTranslateError(err, msg, sizeof(msg));
+        AppLogger::instance().error(std::string("PIStage: disconnect failed: code=") + std::to_string(err) + " msg=" + msg);
+    }
+
+    id_ = -1;
+    return ok != FALSE;
 }
 
 PIStage::~PIStage() { disconnect(); if (hDll_) FreeLibrary(hDll_); }

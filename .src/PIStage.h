@@ -59,7 +59,7 @@ public:
 
     void loadDLL(const std::string& dllPath);
     void connect(const std::string& serialNum);
-    void disconnect();
+    bool disconnect();
 
     void enableServo(const char* axis, bool enable);
     void moveAbs(const char* axis, double position);
