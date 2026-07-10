@@ -5,6 +5,7 @@
 #include "AndorCamera.h"
 #include "IpcStructs.h"
 #include "Logger.h"
+#include <array>
 
 #include <sstream>
 
@@ -50,6 +51,8 @@ bool writeExact(HANDLE pipe, const void* buffer, size_t totalBytes) {
 void ProcessClient(HANDLE hPipe) {
     AndorCamera cam;
     bool running = true;
+    std::array<double, 3> vpos = {0.0, 0.0, 0.0};
+    std::array<double, 3> qpos = {0.0, 0.0, 0.0};
 
     AppLogger::instance().info("SpectrometerServer: client handler started");
 
@@ -130,13 +133,35 @@ void ProcessClient(HANDLE hPipe) {
                 if (sepPos == std::string::npos) {
                     throw std::runtime_error("Invalid argument format for AcquireSpecandSave");
                 }
-                double x = req.dArgs[0];
-                double y = req.dArgs[1];
-                double z = req.dArgs[2];
+                double vx = req.dArgs[0];
+                double vy = req.dArgs[1];
+                double vz = req.dArgs[2];
+                double qx = req.dArgs[3];
+                double qy = req.dArgs[4];
+                double qz = req.dArgs[5];
 
                 std::string filename = combined.substr(0, sepPos);
                 std::string foldername = combined.substr(sepPos + 1);
-                cam.AcquireSpecandSavefast(foldername, x, y, z, filename);
+                cam.AcquireSpecandSavefast(foldername, vx, vy, vz, qx, qy, qz, filename);
+                break;
+            } 
+            case IpcCommand::AndorAcquireSpecandSave2: {
+                AppLogger::instance().info("SpectrometerServer: AcquireSpecandSave2");
+                // get filename and foldername from: 
+                /*  std::string combined = filename + "|" + foldername;
+                    strncpy(req.strArg, combined.c_str(), sizeof(req.strArg) - 1);*/
+                std::string combined(req.strArg);
+                size_t sepPos = combined.find('|');
+                if (sepPos == std::string::npos) {
+                    throw std::runtime_error("Invalid argument format for AcquireSpecandSave2");
+                }
+                std::string filename = combined.substr(0, sepPos);
+                std::string foldername = combined.substr(sepPos + 1);
+
+                vpos[0] = req.dArgs[0]; vpos[1] = req.dArgs[1]; vpos[2] = req.dArgs[2];
+                qpos[0] = req.dArgs[3]; qpos[1] = req.dArgs[4]; qpos[2] = req.dArgs[5];
+
+                cam.AcquireSpecandSavefast(foldername, vpos[0], vpos[1], vpos[2], qpos[0], qpos[1], qpos[2], filename);
                 break;
             }
             case IpcCommand::AndorSetExposureTime:

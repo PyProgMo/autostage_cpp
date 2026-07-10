@@ -347,7 +347,8 @@ public:
                            int        numSpectra = 1);
     
     void AcquireSpecandSave(const std::string& foldername, const std::string& filename);
-    void AcquireSpecandSavefast(const std::string& foldername, double x, double y, double z, const std::string& filename);
+    void AcquireSpecandSave2(const std::string& foldername, const std::array<double, 3>& vpos, const std::array<double, 3>& qpos, const std::string& filename);
+    void AcquireSpecandSavefast(const std::string& foldername, double vx=0.0, double vy=0.0, double vz=0.0, double qx=0.0, double qy=0.0, double qz=0.0, const std::string& filename="NoPredefinedFilename");
 
     // FVB: single spectrum per trigger pulse (fastest for raster)
     void configureFVBKinetic(float exposureSeconds, int numLines);

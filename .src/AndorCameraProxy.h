@@ -71,6 +71,7 @@ public:
          const std::string& filename);
         
     void AcquireSpecandSave(const std::string& foldername, double x, double y, double z, const std::string& filename);
+    void AcquireSpecandSave2(const std::string& foldername, const std::array<double, 3>& vpos, const std::array<double, 3>& qpos, const std::string& filename);
     
     int getXPixels() const { return xpix_; }
     int getYPixels() const { return ypix_; }

@@ -243,7 +243,7 @@ int RasterScan::runRowScanSimple(PIStageProxy& stage,
 
         } else {
             AppLogger::instance().info("runRowScanSimple: moving from " + std::to_string(startpos[0]) + " to " + std::to_string(endpos[0]) + " nm at velocity " + std::to_string(velocityNmPerS) + " nm/s");
-            stage.adda(scanDirection * velocityNmPerS, 0.0, 0.0);
+            stage.adda(std::abs(scanDirection * velocityNmPerS), 0.0, 0.0);
             stage.moveto(endpos[0], endpos[1], endpos[2]);
             // loop over for loop to measure and save a spectrum every timeperspec_ms, optionally log to a file.
             for (double x = startpos[0];
@@ -255,7 +255,8 @@ int RasterScan::runRowScanSimple(PIStageProxy& stage,
                 ensureParentDirExists(savefolder);
                 ensureParentDirExists(logPath);
                 std::array<double, 3> qpos = stage.qpos(); // <- get the metadata, pump them trough the pipe to the camera, and save the spectrum with the metadata.
-                cam.AcquireSpecandSave(savefolder, currentPos[0], currentPos[1], currentPos[2], "spec_" + std::to_string(static_cast<int>(Nspec))+".txt");
+
+                cam.AcquireSpecandSave2(savefolder, currentPos, qpos, "spec_" + std::to_string(static_cast<int>(Nspec))+".txt");
                 if (logImportant) {
                     std::cout << "Measured spectrum at position: " << currentPos[0] << ", " << currentPos[1] << ", " << currentPos[2] << "\n";
                 }

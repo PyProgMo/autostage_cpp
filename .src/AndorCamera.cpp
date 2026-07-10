@@ -920,7 +920,18 @@ void AndorCamera::AcquireSpecandSave(const std::string& foldername, const std::s
     std::cout << "Saved spectrum to " << measurementFolder << "\n";
 }
 
-void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, double x, double y, double z, const std::string& filename) {
+void AndorCamera::AcquireSpecandSave2(const std::string& foldername, const std::array<double, 3>& vpos, const std::array<double, 3>& qpos, const std::string& filename) {
+    startAcquisition();
+    waitForAcquisition();
+    const std::vector<int> spectra = getAllSpectra(1, getXPixels());
+    const std::string measurementFolder = joinPath(executableDirectory(), foldername);
+    ensureDirectoryExists(measurementFolder);
+    const std::string stem = filename.empty() ? "spectrum" : filename;
+    saveSpectrumSet(measurementFolder, stem, spectra, wlArray_, 1, getXPixels(), currentMetadata());
+    std::cout << "Saved spectrum to " << measurementFolder << "\n";
+}
+
+void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, double vx, double vy, double vz, double qx, double qy, double qz, const std::string& filename) {
     std::cout << "Starting acquisition and savefast to " << foldername << "/" << filename << "\n";
     startAcquisition();
     std::cout << "Acquisition started, waiting for completion...\n";
@@ -950,9 +961,12 @@ void AndorCamera::AcquireSpecandSavefast(const std::string& foldername, double x
     std::cout << "Wavelength array fetched, preparing to save...\n";
     auto metadata = currentMetadata();
 
-    metadata.xPos = x;
-    metadata.yPos = y;
-    metadata.zPos = z;
+    metadata.xPos = vx;
+    metadata.yPos = vy;
+    metadata.zPos = vz;
+    metadata.xPosNm = qx;
+    metadata.yPosNm = qy;
+    metadata.zPosNm = qz;
 
     std::cout << "Metadata fetched, preparing to save...\n";
 

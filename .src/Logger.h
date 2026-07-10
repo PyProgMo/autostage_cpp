@@ -79,6 +79,7 @@ inline const char* ipcCommandName(IpcCommand command) {
     case IpcCommand::MeasureAndSaveNSpecs: return "MeasureAndSaveNSpecs";
     case IpcCommand::getTotalNumberImagesAcquired: return "getTotalNumberImagesAcquired";
     case IpcCommand::AndorAcquireSpecandSave: return "AndorAcquireSpecandSave";
+    case IpcCommand::AndorAcquireSpecandSave2: return "AndorAcquireSpecandSave2";
     default: return "Unknown (logger)";
     }
 }

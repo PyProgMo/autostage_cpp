@@ -657,6 +657,31 @@ void AndorCameraProxy::AcquireSpecandSave(const std::string& foldername, double 
     IpcMessage res = {};
     sendCommand(req, res, 10000);
 }
+// vpos: array of x, y, z
+void AndorCameraProxy::AcquireSpecandSave2(const std::string& foldername, const std::array<double, 3>& vpos, const std::array<double, 3>& qpos, const std::string& filename) {
+    IpcMessage req = {};
+    req.command = IpcCommand::AndorAcquireSpecandSave2;
+    // throw error if | in filename or foldername, since we use | as a separator
+    if (filename.find('|') != std::string::npos || foldername.find('|') != std::string::npos) {
+        throw std::runtime_error("AndorCameraProxy: filename and foldername cannot contain | character");
+    }
+    std::string combined = filename + "|" + foldername;
+    if (combined.size() >= sizeof(req.strArg)) {
+        throw std::runtime_error("AndorCameraProxy: filename and foldername too long");
+    }
+    strncpy(req.strArg, combined.c_str(), sizeof(req.strArg) - 1);
+
+    // x, y, z are in um upstream — convert to nm as integers for exact IPC transfer
+    req.dArgs[0] = vpos[0];
+    req.dArgs[1] = vpos[1];
+    req.dArgs[2] = vpos[2];
+    req.dArgs[3] = qpos[0];
+    req.dArgs[4] = qpos[1];
+    req.dArgs[5] = qpos[2];
+
+    IpcMessage res = {};
+    sendCommand(req, res, 10000);
+}
 
 void AndorCameraProxy::setNumberKinetics(int numKin) {
     IpcMessage req = {}, res = {};

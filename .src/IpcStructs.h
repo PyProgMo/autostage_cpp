@@ -61,6 +61,7 @@ enum class IpcCommand : int32_t {
     MeasureAndSaveNSpecs,
     getTotalNumberImagesAcquired,
     AndorAcquireSpecandSave,
+    AndorAcquireSpecandSave2,
 };
 
 #pragma pack(push, 1)
