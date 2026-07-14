@@ -18,4 +18,6 @@ try/__pycache__/
 # ignore all .env files
 *.env
 /build/*
+# this one is just for testing
+.src/AndorCamera1.h 
 
