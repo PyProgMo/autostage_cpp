@@ -65,16 +65,21 @@ def add_dll_directory_if_needed(dll_path: Path) -> None:
 @dataclass
 class CaptureConfig:
     dll_path: Path
+    shamrock_dll_path: Path | None = None
     ini_dir: str = "."
     output_dir: Path = Path("captures")
-    camera_index: int = 0
+    camera_index: int = 1
+    spectrograph_index: int = 0
     read_mode: str = "FVB"
     trigger_mode: str = "Internal"
     acquisition_mode: str = "Single"
     exposure_s: float = 0.1
+    central_wavelength_nm: float | None = None
+    pixel_width_um: float = 13.5
     cooling: bool = False
     temperature_c: int | None = None
     continue_on_error: bool = False
+    list_spectrographs: bool = False
 
 
 class AndorSDK:
@@ -271,6 +276,95 @@ class AndorSDK:
         self._call("ShutDown")
 
 
+class ShamrockSDK:
+    def __init__(self, dll_path: Path) -> None:
+        self.dll_path = dll_path
+        self.lib = ctypes.WinDLL(str(dll_path), use_last_error=True)
+        self._bind()
+
+    def _bind(self) -> None:
+        self.lib.ShamrockInitialize.argtypes = [ctypes.c_char_p]
+        self.lib.ShamrockInitialize.restype = ctypes.c_uint
+
+        self.lib.ShamrockClose.argtypes = []
+        self.lib.ShamrockClose.restype = ctypes.c_uint
+
+        self.lib.ShamrockGetNumberDevices.argtypes = [ctypes.POINTER(ctypes.c_int)]
+        self.lib.ShamrockGetNumberDevices.restype = ctypes.c_uint
+
+        self.lib.ShamrockGetSerialNumber.argtypes = [ctypes.c_int, ctypes.c_char_p]
+        self.lib.ShamrockGetSerialNumber.restype = ctypes.c_uint
+
+        self.lib.ShamrockSetWavelength.argtypes = [ctypes.c_int, ctypes.c_float]
+        self.lib.ShamrockSetWavelength.restype = ctypes.c_uint
+
+        self.lib.ShamrockGetWavelength.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_float)]
+        self.lib.ShamrockGetWavelength.restype = ctypes.c_uint
+
+        self.lib.ShamrockSetNumberPixels.argtypes = [ctypes.c_int, ctypes.c_int]
+        self.lib.ShamrockSetNumberPixels.restype = ctypes.c_uint
+
+        self.lib.ShamrockSetPixelWidth.argtypes = [ctypes.c_int, ctypes.c_float]
+        self.lib.ShamrockSetPixelWidth.restype = ctypes.c_uint
+
+        self.lib.ShamrockGetCalibration.argtypes = [
+            ctypes.c_int,
+            ctypes.POINTER(ctypes.c_float),
+            ctypes.c_int,
+        ]
+        self.lib.ShamrockGetCalibration.restype = ctypes.c_uint
+
+    def _call(self, name: str, *args) -> int:
+        fn = getattr(self.lib, name)
+        result = int(fn(*args))
+        print(f"{name}: {result} ({status_name(result)})")
+        return result
+
+    def initialize(self, ini_dir: str) -> int:
+        return self._call("ShamrockInitialize", ini_dir.encode("utf-8"))
+
+    def close(self) -> None:
+        self._call("ShamrockClose")
+
+    def get_number_devices(self) -> int:
+        total = ctypes.c_int(0)
+        result = self._call("ShamrockGetNumberDevices", ctypes.byref(total))
+        if result == DRV_SUCCESS:
+            print(f"Available spectrographs: {total.value}")
+        return total.value
+
+    def list_spectrographs(self) -> list[str]:
+        count = self.get_number_devices()
+        serials: list[str] = []
+        for device_index in range(count):
+            buffer = ctypes.create_string_buffer(64)
+            result = self._call("ShamrockGetSerialNumber", ctypes.c_int(device_index), buffer)
+            if result == DRV_SUCCESS:
+                serials.append(buffer.value.decode("utf-8", errors="replace"))
+        return serials
+
+    def set_wavelength(self, device_index: int, wavelength_nm: float) -> float:
+        self._call("ShamrockSetWavelength", ctypes.c_int(device_index), ctypes.c_float(wavelength_nm))
+        return self.get_wavelength(device_index)
+
+    def get_wavelength(self, device_index: int) -> float:
+        wavelength = ctypes.c_float(0.0)
+        result = self._call("ShamrockGetWavelength", ctypes.c_int(device_index), ctypes.byref(wavelength))
+        if result != DRV_SUCCESS:
+            raise RuntimeError(f"ShamrockGetWavelength failed: {status_name(result)}")
+        print(f"Central wavelength: {wavelength.value:.3f} nm")
+        return float(wavelength.value)
+
+    def get_calibration(self, device_index: int, number_pixels: int, pixel_width_um: float) -> list[float]:
+        self._call("ShamrockSetNumberPixels", ctypes.c_int(device_index), ctypes.c_int(number_pixels))
+        self._call("ShamrockSetPixelWidth", ctypes.c_int(device_index), ctypes.c_float(pixel_width_um))
+        buffer = (ctypes.c_float * number_pixels)()
+        result = self._call("ShamrockGetCalibration", ctypes.c_int(device_index), buffer, ctypes.c_int(number_pixels))
+        if result != DRV_SUCCESS:
+            raise RuntimeError(f"ShamrockGetCalibration failed: {status_name(result)}")
+        return [float(value) for value in buffer]
+
+
 def resolve_dll_path(cli_path: str | None) -> Path:
     if cli_path:
         return Path(cli_path).expanduser().resolve()
@@ -288,7 +382,34 @@ def resolve_dll_path(cli_path: str | None) -> Path:
     return candidates[0].resolve()
 
 
-def write_spectrum(output_dir: Path, camera_index: int, pixels: list[int], exposure_s: float, status: int) -> Path:
+def resolve_shamrock_dll_path(cli_path: str | None) -> Path | None:
+    if cli_path:
+        return Path(cli_path).expanduser().resolve()
+
+    repo_root = Path(__file__).resolve().parents[1]
+    candidates = [
+        repo_root / "dlls" / "ShamrockCIF64.dll",
+        repo_root / "dlls" / "atspectrograph.dll",
+        repo_root / "dlls" / "atshamrock64.dll",
+        repo_root / "dlls" / "ShamrockCIF.dll",
+        repo_root / "dlls" / "atshamrock.dll",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate.resolve()
+
+    return None
+
+
+def write_spectrum(
+    output_dir: Path,
+    camera_index: int,
+    pixels: list[int],
+    exposure_s: float,
+    status: int,
+    wavelengths_nm: list[float] | None = None,
+    central_wavelength_nm: float | None = None,
+) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = output_dir / f"andor_spectrum_cam{camera_index}_{stamp}.txt"
@@ -296,9 +417,16 @@ def write_spectrum(output_dir: Path, camera_index: int, pixels: list[int], expos
         handle.write(f"camera_index={camera_index}\n")
         handle.write(f"exposure_s={exposure_s}\n")
         handle.write(f"status={status} ({status_name(status)})\n")
-        handle.write("pixel,count\n")
-        for index, count in enumerate(pixels):
-            handle.write(f"{index},{count}\n")
+        if central_wavelength_nm is not None:
+            handle.write(f"central_wavelength_nm={central_wavelength_nm}\n")
+        if wavelengths_nm is None:
+            handle.write("pixel,count\n")
+            for index, count in enumerate(pixels):
+                handle.write(f"{index},{count}\n")
+        else:
+            handle.write("wavelength_nm,count\n")
+            for wavelength, count in zip(wavelengths_nm, pixels):
+                handle.write(f"{wavelength:.6f},{count}\n")
     return output_file
 
 
@@ -311,12 +439,28 @@ def run_capture(cfg: CaptureConfig) -> int:
         os.add_dll_directory(str(cfg.dll_path.parent))
 
     sdk = AndorSDK(cfg.dll_path)
+    shamrock: ShamrockSDK | None = None
 
     try:
         print(f"Loading SDK from {cfg.dll_path}")
         init_result = sdk.initialize(cfg.ini_dir)
         if init_result != DRV_SUCCESS:
             return init_result
+
+        if cfg.shamrock_dll_path is not None:
+            if not cfg.shamrock_dll_path.exists():
+                print(f"Shamrock DLL not found: {cfg.shamrock_dll_path}", file=sys.stderr)
+            else:
+                print(f"Loading Shamrock SDK from {cfg.shamrock_dll_path}")
+                shamrock = ShamrockSDK(cfg.shamrock_dll_path)
+                shamrock.initialize(cfg.ini_dir)
+                if cfg.list_spectrographs:
+                    serials = shamrock.list_spectrographs()
+                    if serials:
+                        for index, serial in enumerate(serials):
+                            print(f"Spectrograph {index}: {serial}")
+                    else:
+                        print("No Shamrock spectrographs reported by the SDK.")
 
         camera_count = sdk.get_available_cameras()
         if camera_count <= 0:
@@ -357,6 +501,26 @@ def run_capture(cfg: CaptureConfig) -> int:
         sdk.configure(cfg.read_mode, cfg.acquisition_mode, cfg.exposure_s, cfg.trigger_mode, xpix)
         sdk.get_status()
 
+        wavelengths_nm: list[float] | None = None
+        central_wavelength_nm = cfg.central_wavelength_nm
+        if shamrock is not None:
+            if central_wavelength_nm is not None:
+                central_wavelength_nm = shamrock.set_wavelength(cfg.spectrograph_index, central_wavelength_nm)
+            else:
+                try:
+                    central_wavelength_nm = shamrock.get_wavelength(cfg.spectrograph_index)
+                except Exception as exc:
+                    print(f"Central wavelength readback failed: {exc}")
+
+            try:
+                wavelengths_nm = shamrock.get_calibration(cfg.spectrograph_index, xpix, cfg.pixel_width_um)
+                if wavelengths_nm:
+                    print(
+                        f"Calibration range: {wavelengths_nm[0]:.3f} nm -> {wavelengths_nm[-1]:.3f} nm"
+                    )
+            except Exception as exc:
+                print(f"Wavelength calibration failed: {exc}")
+
         print("Starting acquisition test")
         sdk.start_acquisition()
         sdk.wait_for_acquisition()
@@ -369,7 +533,15 @@ def run_capture(cfg: CaptureConfig) -> int:
 
         pixels = sdk.get_images16(1, total_images, xpix)
         if pixels:
-            out_file = write_spectrum(cfg.output_dir, cfg.camera_index, pixels[:xpix], cfg.exposure_s, status)
+            out_file = write_spectrum(
+                cfg.output_dir,
+                cfg.camera_index,
+                pixels[:xpix],
+                cfg.exposure_s,
+                status,
+                wavelengths_nm=wavelengths_nm[:xpix] if wavelengths_nm else None,
+                central_wavelength_nm=central_wavelength_nm,
+            )
             print(f"Saved spectrum to {out_file}")
 
         return 0
@@ -379,6 +551,11 @@ def run_capture(cfg: CaptureConfig) -> int:
             return 0
         return 1
     finally:
+        if shamrock is not None:
+            try:
+                shamrock.close()
+            except Exception:
+                pass
         try:
             sdk.abort_acquisition()
         except Exception:
@@ -392,30 +569,40 @@ def run_capture(cfg: CaptureConfig) -> int:
 def parse_args() -> CaptureConfig:
     parser = argparse.ArgumentParser(description="Andor SDK smoke test for camera selection and single-spectrum capture")
     parser.add_argument("--dll", help="Path to atmcd64d.dll")
+    parser.add_argument("--shamrock-dll", help="Path to a Shamrock spectrograph DLL")
     parser.add_argument("--ini-dir", default=".", help="Initialization directory passed to Initialize")
     parser.add_argument("--output-dir", default="captures", help="Folder for saved spectra")
     parser.add_argument("--camera-index", type=int, default=0, help="Camera index to select for the capture test")
+    parser.add_argument("--spectrograph-index", type=int, default=0, help="Shamrock spectrograph index")
     parser.add_argument("--read-mode", choices=sorted(READ_MODES), default="FVB", help="Andor read mode")
     parser.add_argument("--trigger-mode", choices=sorted(TRIGGER_MODES), default="Internal", help="Andor trigger mode")
     parser.add_argument("--acquisition-mode", choices=sorted(ACQUISITION_MODES), default="Single", help="Andor acquisition mode")
-    parser.add_argument("--exposure", type=float, default=0.1, help="Exposure time in seconds")
+    parser.add_argument("--exposure", type=float, default=1.0, help="Exposure time in seconds")
+    parser.add_argument("--central-wavelength-nm", type=float, help="Set the Shamrock central wavelength before capture")
+    parser.add_argument("--pixel-width-um", type=float, default=13.5, help="Camera pixel width in microns for Shamrock calibration")
     parser.add_argument("--cooling", action="store_true", help="Turn the cooler on before capture")
     parser.add_argument("--temperature", type=int, help="Target camera temperature in C")
     parser.add_argument("--continue-on-error", action="store_true", help="Keep probing other cameras after a failure")
+    parser.add_argument("--list-spectrographs", action="store_true", help="Print Shamrock spectrograph serial numbers when available")
     args = parser.parse_args()
 
     return CaptureConfig(
         dll_path=resolve_dll_path(args.dll),
+        shamrock_dll_path=resolve_shamrock_dll_path(args.shamrock_dll),
         ini_dir=args.ini_dir,
         output_dir=Path(args.output_dir),
         camera_index=args.camera_index,
+        spectrograph_index=args.spectrograph_index,
         read_mode=args.read_mode,
         trigger_mode=args.trigger_mode,
         acquisition_mode=args.acquisition_mode,
         exposure_s=args.exposure,
+        central_wavelength_nm=args.central_wavelength_nm,
+        pixel_width_um=args.pixel_width_um,
         cooling=args.cooling,
         temperature_c=args.temperature,
         continue_on_error=args.continue_on_error,
+        list_spectrographs=args.list_spectrographs,
     )
 
 
@@ -426,10 +613,13 @@ def main() -> int:
     print(f"  ini_dir={cfg.ini_dir}")
     print(f"  output_dir={cfg.output_dir}")
     print(f"  camera_index={cfg.camera_index}")
+    print(f"  spectrograph_index={cfg.spectrograph_index}")
     print(f"  read_mode={cfg.read_mode}")
     print(f"  trigger_mode={cfg.trigger_mode}")
     print(f"  acquisition_mode={cfg.acquisition_mode}")
     print(f"  exposure_s={cfg.exposure_s}")
+    print(f"  central_wavelength_nm={cfg.central_wavelength_nm}")
+    print(f"  pixel_width_um={cfg.pixel_width_um}")
     print(f"  cooling={cfg.cooling}")
     print(f"  temperature_c={cfg.temperature_c}")
     return run_capture(cfg)
