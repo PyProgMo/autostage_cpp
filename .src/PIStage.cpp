@@ -646,3 +646,53 @@ bool PIStage::disconnect() {
 }
 
 PIStage::~PIStage() { disconnect(); if (hDll_) FreeLibrary(hDll_); }
+
+// fast logging function for recording positions at high speed (5ms per tick)
+void PIStage::initFastLogging(int coordper_row){
+    coordper_row_ = coordper_row;
+    fastlogging = true;
+    // empty the buffer
+    for (int i = 0; i < MaxLogNpositions_; ++i) {
+        flpositions[i][0] = 0.0;
+        flpositions[i][1] = 0.0;
+        flpositions[i][2] = 0.0;
+    }
+    tstart_rowscan_ = GetTickCount64();
+}
+
+void PIStage::logPositionfast(double x, double y, double z){
+    if (!fastlogging) return;
+    if (logcounter_ >= MaxLogNpositions_) {
+        AppLogger::instance().warn("PIStage: logPositionfast exceeded MaxLogNpositions_ limit, skipping further logging.");
+        return;
+    }
+    flpositions[logcounter_][0] = x;
+    flpositions[logcounter_][1] = y;
+    flpositions[logcounter_][2] = z;
+    fltimestamps[logcounter_] = GetTickCount64()-tstart_rowscan_;
+    logcounter_++;
+}
+
+void PIStage::fastloggingWriterow(int rowIndex, std::string folderpath, std::string filenameprefix){
+    
+    if (!fastlogging) return;
+    if (rowIndex < 0 || rowIndex >= logcounter_) {
+        AppLogger::instance().warn("PIStage: fastloggingWriterow called with invalid rowIndex.");
+        return;
+    }
+    std::string filename = filenameprefix + "_row" + std::to_string(rowIndex);
+    std::string filepath = folderpath + "\\" + filenameprefix + ".txt";
+    FILE* file = std::fopen(filepath.c_str(), "w");
+    if (!file) {
+        AppLogger::instance().error("PIStage: Failed to open file for writing: " + filepath);
+        return;
+    }
+
+    for (int i = 0; i < coordper_row_; ++i) {
+        std::fprintf(file, "%.3f\t%.3f\t%.3f\t%llu\n", flpositions[i][0], flpositions[i][1], flpositions[i][2], fltimestamps[i]);
+    }
+
+    std::fclose(file);
+
+}
+

@@ -57,6 +57,17 @@ public:
     PIStage();
     ~PIStage();
 
+    // fast position logging: //
+    bool fastlogging = false;
+    // 100000/200 makes 5000 seconds of log per row (this should not be exceeded, otherwise the log will be overwritten)
+    int coordper_row_ = 100000;
+    int logcounter_ = 0;
+    const int MaxLogNpositions_ = 100000;  
+    std::vector<std::array<double, 3>> flpositions = std::vector<std::array<double, 3>>(100000); 
+    // important: each position also needs a timestamp. so initialize a vector of timestamps with the same size as flpositions
+    double tstart_rowscan_ = 0.0;
+    std::vector<double> fltimestamps = std::vector<double>(100000);
+
     void loadDLL(const std::string& dllPath);
     void connect(const std::string& serialNum);
     bool disconnect();
@@ -97,6 +108,12 @@ public:
 
     void checkError();
 
+    void initFastLogging(int coordper_row = 100000);
+    void logPositionfast(double x, double y, double z);
+    void fastloggingWriterow(int rowIndex=0, std::string folderpath="C:/logs", std::string filenameprefix="PIStage_log_row");
+
+
+
 private:
     HMODULE  hDll_  = nullptr;
     int      id_    = -1;
@@ -124,4 +141,5 @@ private:
 
     template<typename T>
     T loadProc(const char* name, bool required = true);
+    
 };
