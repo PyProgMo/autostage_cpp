@@ -207,8 +207,18 @@ void RasterScan::startRowScanSimple(PIStageProxy& stage,
             Sleep(200);
             stage.adda(0.0, 0.0, 0.0); // stop the stage
             std::cout << "Starting row " << i << " from " << rowStartPos[0] << ", " << rowStartPos[1] << ", " << rowStartPos[2] << " to " << rowEndPos[0] << ", " << rowEndPos[1] << ", " << rowEndPos[2] << "\n";
+            // before we start, init fastlogging, then log the position every 10 ms, and write the log to a file after the row is done.
+            /*
+            logging cycles are: 
+            for (double x = startpos[0];
+                 (scanDirection > 0.0) ? (x <= endpos[0]) : (x >= endpos[0]);
+                 x += scanDirection * scanStepNm)
+            */
+
+            stage.initFastLogging(static_cast<int>(std::abs(distancecurrentscan / stepsize_nm)) + 1);
 
             Nspec = RasterScan::runRowScanSimple(stage, cam, rowStartPos, distancecurrentscan, stepsize_nm, logImportant, tint_ms, tdead_perspec_ms,  logPathPrefix + "row_" + std::to_string(i) + "_", measurementname, Nspec);
+
         }
 
     }
@@ -245,10 +255,11 @@ int RasterScan::runRowScanSimple(PIStageProxy& stage,
             AppLogger::instance().info("runRowScanSimple: moving from " + std::to_string(startpos[0]) + " to " + std::to_string(endpos[0]) + " nm at velocity " + std::to_string(velocityNmPerS) + " nm/s");
             stage.adda(std::abs(scanDirection * velocityNmPerS), 0.0, 0.0);
             stage.moveto(endpos[0], endpos[1], endpos[2]);
-            // loop over for loop to measure and save a spectrum every timeperspec_ms, optionally log to a file.
-            for (double x = startpos[0];
-                 (scanDirection > 0.0) ? (x <= endpos[0]) : (x >= endpos[0]);
-                 x += scanDirection * scanStepNm) {
+            // Keep each iteration close to tint_ms + tdead_perspec_ms by timing the whole body.
+            const long long loopBudgetQpc = static_cast<long long>(timeperspec_ms * qpc_freq() / 1000.0);
+            double x = startpos[0];
+            while ((scanDirection > 0.0) ? (x <= endpos[0]) : (x >= endpos[0])) {
+                const long long tickStart = qpc_now();
                 Nspec++;
                 std::array<double, 3> currentPos = {x, startpos[1], startpos[2]};
                 // make filename in logPath/spec_X
@@ -260,7 +271,17 @@ int RasterScan::runRowScanSimple(PIStageProxy& stage,
                 if (logImportant) {
                     std::cout << "Measured spectrum at position: " << currentPos[0] << ", " << currentPos[1] << ", " << currentPos[2] << "\n";
                 }
-                Sleep(static_cast<DWORD>(timeperspec_ms));
+                const long long tickEnd = qpc_now();
+                const long long elapsedQpc = tickEnd - tickStart;
+                if (elapsedQpc < loopBudgetQpc) {
+                    Sleep(static_cast<DWORD>((loopBudgetQpc - elapsedQpc) * 1000.0 / qpc_freq()));
+                } else {
+                    AppLogger::instance().warn(
+                        "runRowScanSimple: iteration overran budget by " +
+                        std::to_string((elapsedQpc - loopBudgetQpc) * 1000.0 / qpc_freq()) +
+                        " ms");
+                }
+                x += scanDirection * scanStepNm;
             }
             
         }
@@ -667,6 +688,8 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
 
     double measurementtime_ms = t_measure; // measurement time in ms, passed as parameter
 
+
+
     // debugging: print input args for runRowCorrectedLoop
     
     std::cout << "Running row-corrected loop with parameters:" << std::endl;
@@ -680,6 +703,8 @@ void RasterScan::runOneRowTest(PIStageProxy& stage, AndorCameraProxy& cam, doubl
     // print current position of the stage
     std::array<double, 3> currentStagePos = stage.qpos();
     std::cout << "Current stage position: (" << currentStagePos[0] << ", " << currentStagePos[1] << ", " << currentStagePos[2] << ")" << std::endl;
+
+    // init fast logging before starting the row-corrected loop
 
     runRowCorrectedLoop(stage, cam, startPos, targetPos, stepsize_nm, measurementtime_ms, durationMs, logImportant, oss.str());
 }

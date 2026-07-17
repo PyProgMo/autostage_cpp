@@ -437,3 +437,37 @@ std::vector<double> PIStageProxy::readRecorder(int startOffset, int numValues,
 void PIStageProxy::checkError() {
     // Errors are already thrown automatically on response.status != 0
 }
+
+// fast logging functions for recording positions at high speed (e g, by obtaining positions every 5ms)
+void PIStageProxy::initFastLogging(int coordper_row){
+    AppLogger::instance().info(std::string("PIStageProxy: initFastLogging coordper_row=") + std::to_string(coordper_row));
+    IpcMessage req = {};
+    req.command = IpcCommand::InitFastLogging;
+    req.iArgs[0] = coordper_row;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+}
+
+void PIStageProxy::logPositionfast(double x_nm, double y_nm, double z_nm){
+    IpcMessage req = {};
+    req.command = IpcCommand::LogPositionFast;
+    req.dArgs[0] = x_nm / 1e3;
+    req.dArgs[1] = y_nm / 1e3;
+    req.dArgs[2] = z_nm / 1e3;
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+}
+
+void PIStageProxy::fastloggingWriterow(int rowIndex, const std::string& folderPath){
+    AppLogger::instance().info(std::string("PIStageProxy: fastloggingWriterow rowIndex=") + std::to_string(rowIndex) +
+                               " folderPath=" + folderPath);
+    IpcMessage req = {};
+    req.command = IpcCommand::FastLoggingWriteRow;
+    req.iArgs[0] = rowIndex;
+    strncpy(req.strArg, folderPath.c_str(), sizeof(req.strArg) - 1);
+
+    IpcMessage res = {};
+    sendCommand(req, res);
+}

@@ -87,7 +87,7 @@ void ProcessClient(HANDLE hPipe) {
                     ? "StageServer: disconnected from stage"
                     : "StageServer: disconnect failed");
                 break;
-}
+            }
             case IpcCommand::MoveAbs:
                 AppLogger::instance().info(std::string("StageServer: MoveAbs axis=") + req.strArg + " target=" + std::to_string(req.dArgs[0]));
                 stage.moveAbs(req.strArg, req.dArgs[0]);
@@ -211,6 +211,19 @@ void ProcessClient(HANDLE hPipe) {
             case IpcCommand::SetRecordRate:
                 AppLogger::instance().info(std::string("StageServer: SetRecordRate cycleDiv=") + std::to_string(req.iArgs[0]));
                 stage.setRecordRate(req.iArgs[0]);
+                break;
+            // send the fast logging commands (with data) grough the pipe
+            case IpcCommand::InitFastLogging: // the init can print (not time-critical)
+                AppLogger::instance().info(std::string("StageServer: InitFastLogging coordper_row=") + std::to_string(req.iArgs[0]));
+                stage.initFastLogging(req.iArgs[0]);
+                break;
+            case IpcCommand::LogPositionFast: // no prints, this one must be fast
+                stage.logPositionfast(req.dArgs[0], req.dArgs[1], req.dArgs[2]);
+                break;
+            case IpcCommand::FastLoggingWriteRow: // the write can print (not time-critical)
+                AppLogger::instance().info(std::string("StageServer: FastLoggingWriteRow rowIndex=") + std::to_string(req.iArgs[0]) +
+                                           " folderpath='" + req.strArg + "'");
+                stage.fastloggingWriterow(req.iArgs[0], req.strArg);
                 break;
             case IpcCommand::ReadRecorder: {
                 int startOffset = req.iArgs[0];

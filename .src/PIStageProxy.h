@@ -52,6 +52,10 @@ public:
 
     void checkError();
 
+    void initFastLogging(int coordPerRow);
+    void logPositionfast(double x_nm, double y_nm, double z_nm);
+    void fastloggingWriterow(int rowIndex, const std::string& folderPath);
+
 private:
     void sendCommand(const struct IpcMessage& msg, struct IpcMessage& response);
     HANDLE hPipe_ = INVALID_HANDLE_VALUE;

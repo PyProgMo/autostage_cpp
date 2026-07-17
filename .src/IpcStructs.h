@@ -29,6 +29,11 @@ enum class IpcCommand : int32_t {
     // Scan Commands
     RunVelocitySweep,
     UploadZProfile,
+
+    //stage fast logging commands
+    InitFastLogging,
+    LogPositionFast,
+    FastLoggingWriteRow,
     
     // Andor commands
     AndorLoadDLL,
