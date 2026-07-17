@@ -689,7 +689,7 @@ void PIStage::fastloggingWriterow(int rowIndex, std::string folderpath, std::str
     }
 
     for (int i = 0; i < coordper_row_; ++i) {
-        std::fprintf(file, "%.3f\t%.3f\t%.3f\t%llu\n", flpositions[i][0], flpositions[i][1], flpositions[i][2], fltimestamps[i]);
+        std::fprintf(file, "%.3f\t%.3f\t%.3f\t%.3f\n", flpositions[i][0], flpositions[i][1], flpositions[i][2], fltimestamps[i]);
     }
 
     std::fclose(file);
